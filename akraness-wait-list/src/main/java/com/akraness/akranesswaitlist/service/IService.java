@@ -6,4 +6,5 @@ import org.springframework.http.ResponseEntity;
 
 public interface IService {
 ResponseEntity<Response> joinWaitList(WaitListRequestDto request);
+ResponseEntity<Response> getAllWaitingUsers();
 }
