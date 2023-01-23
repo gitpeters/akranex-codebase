@@ -1,0 +1,16 @@
+package com.akraness.akranesswaitlist.dto;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotBlank;
+
+@Data
+@Builder
+public class EmailVerificationRequestDto {
+    @NotBlank(message = "Country code is required.")
+    private String countryCode;
+    @NotBlank(message = "Email is required.")
+    private String email;
+}
