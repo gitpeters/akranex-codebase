@@ -3,6 +3,7 @@ package com.akraness.akranesswaitlist.controller;
 import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
+import com.akraness.akranesswaitlist.serviceimpl.AuthenticationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import javax.validation.Valid;
 public class NonAuthController {
     private final IService service;
     private final INotificationService notificationService;
+    private final AuthenticationService authenticationService;
 
     @PostMapping
     public ResponseEntity<Response> users(@RequestBody @Validated WaitListRequestDto requestDto) {
@@ -51,5 +53,10 @@ public class NonAuthController {
     @PostMapping("/signup")
     public ResponseEntity<Response> Signup(@RequestBody @Validated SignupRequestDto requestDto) throws JsonProcessingException {
         return service.signup(requestDto);
+    }
+
+    @PostMapping("/authenticate")
+    public ResponseEntity<Response> authenticate(@RequestBody @Validated LoginRequestDto requestDto) throws Exception {
+        return authenticationService.createAuthenticationToken(requestDto);
     }
 }

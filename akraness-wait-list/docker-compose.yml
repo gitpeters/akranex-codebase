@@ -34,7 +34,23 @@ services:
       REDIS_DISABLE_COMMANDS: FLUSHDB,FLUSHALL
     volumes:
       - "redis_data:/bitnami/redis/data"
+  mysql:
+    image: mysql
+    restart: always
+    ports:
+      - 3306:3306
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "Password@1"
+      MYSQL_DATABASE: "akranex"
+      MYSQL_USER: "root"
+      MYSQL_PASSWORD: "Password@1"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - mysql_config:/etc/mysql/conf.d
 volumes:
+  mysql_data:
+  mysql_config:
   redis_data:
     driver: local
 

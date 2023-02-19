@@ -1,6 +1,7 @@
 package com.akraness.akranesswaitlist.controller.advice;
 
 import com.akraness.akranesswaitlist.dto.Response;
+import com.akraness.akranesswaitlist.exception.ApplicationAuthenticationException;
 import com.akraness.akranesswaitlist.exception.DuplicateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,14 @@ public class ControllerAdvice {
         Response response = new Response(String.valueOf(status.value()),
                 messageSource.getMessage("duplicate.email.message", e.getArgs(),
                         LocaleContextHolder.getLocale()), null);
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(ApplicationAuthenticationException.class)
+    public ResponseEntity<Response> handleApplicationAuthenticationException(ApplicationAuthenticationException e) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        Response response = new Response(String.valueOf(status.value()),
+                e.getMessage(), null);
         return ResponseEntity.status(status).body(response);
     }
 }
