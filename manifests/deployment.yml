@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: akranex-wait-list
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: akranex-wait-list
+  template:
+    metadata:
+      labels:
+        app: akranex-wait-list
+    spec:
+      containers:
+      - name: akranex-wait-list-service
+        image: #{acr_url}#/akranex-wait-list:#{Build.Buildid}#
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8083
+# service type loadbalancer       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: akranex-wait-list
+    k8s-app: akranex-wait-list
+  name: akranex-wait-list
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8083
+  type: ClusterIP
+  selector:
+    app: akranex-wait-list
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: akranex-wait-list-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - user-service-dev.akranex.com
+    secretName: akranex-wait-list-secret
+  rules:
+  - host: user-service-dev.akranex.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: akranex-wait-list
+            port:
+              number: 80

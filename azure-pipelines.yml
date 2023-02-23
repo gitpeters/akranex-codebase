@@ -1,0 +1,67 @@
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Maven@4
+      inputs:
+        mavenPomFile: 'akraness-wait-list/pom.xml'
+        mavenOptions: '-Xmx3072m'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        jdkArchitectureOption: 'x64'
+        jdkVersionOption: 1.17
+        mavenVersionOption: 'Default'
+        mavenAuthenticateFeed: true
+        effectivePomSkip: false
+        sonarQubeRunAnalysis: false
+        goals: 'package'
+        options: '-DskipTests=true'
+        
+    - task: Docker@2
+      displayName: 'build an image'
+      inputs:
+        containerRegistry: akranexacrconection
+        repository: akranex-wait-list
+        tags: $(Build.BuildId)
+        command: build
+        Dockerfile: '**/Dockerfile'
+
+    - task: Docker@2
+      displayName: 'Push an image'
+      inputs:
+        containerRegistry: akranexacrconection
+        repository: akranex-wait-list
+        tags: $(Build.BuildId)
+        command: push
+
+
+    - task: CopyFiles@2
+      displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+      inputs:
+        SourceFolder: '$(system.defaultworkingdirectory)/manifests'
+        Contents: '**/*.yml'
+        TargetFolder: '$(build.artifactstagingdirectory)'
+        condition: succeededOrFailed()
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+   
