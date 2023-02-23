@@ -14,7 +14,8 @@ create table if not exists user
     email_verified                TINYINT(1) DEFAULT 0,
     mobile_verified               TINYINT(1) DEFAULT 0,
     first_login                   TINYINT(1) DEFAULT 0,
-    created_date                  DATETIME not null,
+    created_on                    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_modified_on              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_date               DATETIME null,
     date_of_birth                 DATE null
 )

@@ -12,9 +12,9 @@ import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.shaded.json.JSONObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -45,9 +45,9 @@ public class Service implements IService {
     @Autowired
     private StringRedisTemplate redisTemplate;
     private static final String ALLOWED_COUNTRIES = "allowed-countries";
-    @Value("${email.regex}")
+    @Value("${regex.email}")
     private String emailRegexPattern;
-    @Value("${mobile.no.regex}")
+    @Value("${regex.mobile-no}")
     private String phoneRegexPattern;
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -90,7 +90,7 @@ public class Service implements IService {
             else {
                 jsonObject = om.readValue(this.getClass().getClassLoader()
                         .getResourceAsStream("country-details.json"), JSONObject.class);
-                redisTemplate.opsForValue().set(ALLOWED_COUNTRIES, jsonObject.toJSONString());
+                redisTemplate.opsForValue().set(ALLOWED_COUNTRIES, jsonObject.toString());
             }
             Response resp = new Response("200", "Successful", null);
             resp.setData(jsonObject);

@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.akraness.akranesswaitlist.exception.ApplicationAuthenticationException;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.User;
@@ -16,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JwtUserDetailsService implements UserDetailsService {
 	private final IUserRepository userDao;
 

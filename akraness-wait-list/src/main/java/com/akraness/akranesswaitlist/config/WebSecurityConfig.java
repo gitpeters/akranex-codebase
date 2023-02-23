@@ -55,6 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authorizeRequests()
 				.antMatchers(
 						"/users/signup","/users/signup/**","/users/**",
+						"/users/countries",
 						"/actuator/**","/users/authenticate",
 						"/configuration/ui",
 						"/swagger-resources/**",

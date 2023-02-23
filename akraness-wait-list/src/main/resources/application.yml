@@ -1,0 +1,94 @@
+#server
+server:
+  servlet:
+    context-path: /user
+  port: 8083
+
+#jwt
+jwt:
+  access:
+    expiration:
+      milliseconds: 900000
+  refresh:
+    expiration:
+      milliseconds: 3000000
+  secret: securesecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecucuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecure
+
+#jdbc variables
+jdbc:
+  url: jdbc:mysql://localhost:3306/akraness?createDatabaseIfNotExist=true&autoReconnect=true
+  user: root
+  password: Password@1
+  driver: com.mysql.cj.jdbc.Driver
+
+#spring
+spring:
+  datasource:
+    url: ${jdbc.url}
+    username: ${jdbc.user}
+    password: ${jdbc.password}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+      idle-timeout: 10000
+      max-lifetime: 1000
+  redis:
+    host: localhost
+    port: 6379
+    password: L8A8mavfFB
+    expiration: 15
+
+  #Kafka
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: notification
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      group-id: notification
+topic:
+  name:
+    producer: notifications
+    partition: 1
+    replica: 1
+
+auto:
+  create:
+    topics:
+      enable: true
+
+#azure storage
+azure:
+  storage:
+    account-name: tgipay
+    account-key: tgipay
+    container-name: tgipay
+    endpoint: tgipay
+
+#regex
+regex:
+  email: ^(?=.{1,64}@)[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*(\.[A-Za-z]{2,})$
+  password: ^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()?[{}]:;',?/*~$^+=<>]).{8,20}$
+  mobile-no: (^$|\d{11,14})
+
+#temp config - should delete
+activation:
+  url: http://tgipay.test.com/activate-account/
+
+#password reset
+reset:
+  valid:
+    for: 10
+merchant-user:
+  application-access:
+    key: MERCHANT_USER
+    value: 454badb3-e37e-459b-9e71-eb7f9409d149
