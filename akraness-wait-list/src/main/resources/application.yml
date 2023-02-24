@@ -16,9 +16,9 @@ jwt:
 
 #jdbc variables
 jdbc:
-  url: jdbc:mysql://localhost:3306/akraness?createDatabaseIfNotExist=true&autoReconnect=true
-  user: root
-  password: Password@1
+  url: jdbc:mysql://akranex-dev-database.mysql.database.azure.com:3306/akraness?createDatabaseIfNotExist=true&autoReconnect=true
+  user: akranex_admin@akranex-dev-database
+  password: P@ssw0rd123#
   driver: com.mysql.cj.jdbc.Driver
 
 #spring
@@ -45,7 +45,7 @@ spring:
   #Kafka
   kafka:
     consumer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: kafka.kafka-dev.svc.cluster.local:9092
       group-id: notification
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -69,10 +69,10 @@ auto:
 #azure storage
 azure:
   storage:
-    account-name: tgipay
-    account-key: tgipay
-    container-name: tgipay
-    endpoint: tgipay
+    account-name: akranex
+    account-key: akranex
+    container-name: akranex
+    endpoint: akranex
 
 #regex
 regex:
@@ -82,7 +82,7 @@ regex:
 
 #temp config - should delete
 activation:
-  url: http://tgipay.test.com/activate-account/
+  url: http://akranex.test.com/activate-account/
 
 #password reset
 reset:
