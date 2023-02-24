@@ -37,9 +37,9 @@ spring:
       idle-timeout: 10000
       max-lifetime: 1000
   redis:
-    host: localhost
+    host: redis-master.redis-dev.svc.cluster.local
     port: 6379
-    password: L8A8mavfFB
+    password: NY8lg9CzBP
     expiration: 15
 
   #Kafka
