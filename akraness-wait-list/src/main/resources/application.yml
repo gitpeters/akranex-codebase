@@ -39,7 +39,7 @@ spring:
   redis:
     host: localhost
     port: 6379
-    password: L8A8mavfFB
+    password: P@sswor12
     expiration: 15
 
   #Kafka
@@ -69,10 +69,10 @@ auto:
 #azure storage
 azure:
   storage:
-    account-name: tgipay
-    account-key: tgipay
-    container-name: tgipay
-    endpoint: tgipay
+    account-name: akranex
+    account-key: akranex
+    container-name: akranex
+    endpoint: akranex
 
 #regex
 regex:
@@ -82,13 +82,13 @@ regex:
 
 #temp config - should delete
 activation:
-  url: http://tgipay.test.com/activate-account/
+  url: http://akranex.test.com/activate-account/
 
 #password reset
 reset:
   valid:
     for: 10
-merchant-user:
-  application-access:
-    key: MERCHANT_USER
-    value: 454badb3-e37e-459b-9e71-eb7f9409d149
+#email template ids
+email:
+  otp:
+    verification: d-ccd5124343c343a4afa05a201dd190f2

@@ -37,7 +37,6 @@ public class User extends BaseEntity implements UserDetails {
     private boolean mobileVerified;
     private boolean firstLogin;
     private LocalDateTime lastLoginDate;
-    private LocalDateTime createdDate;
     private LocalDate dateOfBirth;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

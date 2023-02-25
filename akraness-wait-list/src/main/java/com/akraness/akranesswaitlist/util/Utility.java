@@ -10,7 +10,7 @@ public class Utility {
     private static Random random = new Random();
     public String generateEmailVeirificationCode(){
         random = new Random(System.currentTimeMillis());
-        long code = ((1 + random.nextInt(2))*1000000 + random.nextInt(1000000));
+        long code = ((1 + random.nextInt(2))*100000 + random.nextInt(100000));
         String ref = String.valueOf(code);
         if(ref.startsWith("-")){
             ref = ref.replace("-","");

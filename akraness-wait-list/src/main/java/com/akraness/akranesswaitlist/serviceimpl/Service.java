@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -50,6 +51,8 @@ public class Service implements IService {
     @Value("${regex.mobile-no}")
     private String phoneRegexPattern;
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    @Value("${email.otp.verification}")
+    private String emailOtpVerificationTemplate;
 
     @Override
     public ResponseEntity<Response> joinWaitList(WaitListRequestDto request) {
@@ -59,7 +62,6 @@ public class Service implements IService {
         Response response;
         WaitList entity = new WaitList();
         entity.setEmail(request.getEmail());
-        entity.setCreatedDate(LocalDate.now());
         waitListRepository.save(entity);
         response = new Response("200", "Successful", null);
         return ResponseEntity.ok(response);
@@ -118,8 +120,10 @@ public class Service implements IService {
         NotificationDto notificationDto = NotificationDto.builder()
                 .message("Your verification code is " + verificationDto.getCode())
                 .recipient(requestDto.getEmail())
-                .subject("Akranex email verification")
+                .subject("verification")
                 .type(NotificationType.EMAIL)
+                .templateId(emailOtpVerificationTemplate)
+                .substitutions(Map.of("email",requestDto.getEmail(),"otp",verificationDto.getCode()))
                 .build();
         notificationService.sendNotification(notificationDto);
         return ResponseEntity.ok().body(new Response("200", "Please proceed to verifying the code sent to your email.", null));
@@ -171,7 +175,6 @@ public class Service implements IService {
                 .countryCode(requestDto.getCountryCode())
                 .accountType(requestDto.getAccountType())
                 .active(true)
-                .createdDate(LocalDateTime.now())
                 .emailVerified(true)
                 .firstName(requestDto.getFirstName())
                 .lastName(requestDto.getLastName())
@@ -187,13 +190,17 @@ public class Service implements IService {
         userRepository.save(user);
         redisTemplate.delete(requestDto.getEmail());
         log.info("Successfully deleted user email {} from redis store.",requestDto.getEmail());
-        NotificationDto notificationDto = NotificationDto.builder()
+        NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
+        notificationService.sendNotification(notificationDto);
+        return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
+    }
+
+    private NotificationDto buildSignUpNotificationDto(SignupRequestDto requestDto) {
+        return NotificationDto.builder()
                 .message("Welcome to Akranex Inc. You can start using our system with ease now.")
                 .recipient(requestDto.getEmail())
                 .subject("Akranex Signup Notification")
                 .type(NotificationType.EMAIL)
                 .build();
-        notificationService.sendNotification(notificationDto);
-        return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
     }
 }

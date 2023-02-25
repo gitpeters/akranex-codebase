@@ -18,5 +18,4 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class WaitList extends BaseEntity {
     private String email;
-    private LocalDate createdDate;
 }
