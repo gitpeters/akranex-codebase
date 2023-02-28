@@ -111,14 +111,15 @@ public class Service implements IService {
         if (userRepository.existsByEmail(requestDto.getEmail())) {
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email exists already.", null));
         }
+        String otp = utility.generateEmailVeirificationCode();
         EmailVerificationDto verificationDto = EmailVerificationDto.builder()
                 .email(requestDto.getEmail())
-                .code(utility.generateEmailVeirificationCode())
+                .code(otp)
                 .build();
 
         redisTemplate.opsForValue().set(requestDto.getEmail(), new ObjectMapper().writeValueAsString(verificationDto), Duration.ofMinutes(15));
         NotificationDto notificationDto = NotificationDto.builder()
-                .message("Your verification code is " + verificationDto.getCode())
+                .message("Your verification code is " + otp)
                 .recipient(requestDto.getEmail())
                 .subject("verification")
                 .type(NotificationType.EMAIL)
