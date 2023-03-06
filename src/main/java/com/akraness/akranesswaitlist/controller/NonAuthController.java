@@ -12,9 +12,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.security.Principal;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users/no-auth")
 @RequiredArgsConstructor
 @Slf4j
 public class NonAuthController {
@@ -22,7 +23,7 @@ public class NonAuthController {
     private final INotificationService notificationService;
     private final AuthenticationService authenticationService;
 
-    @PostMapping
+    @PostMapping("/join-waitlist")
     public ResponseEntity<Response> users(@RequestBody @Validated WaitListRequestDto requestDto) {
         return service.joinWaitList(requestDto);
     }
@@ -58,5 +59,20 @@ public class NonAuthController {
     @PostMapping("/authenticate")
     public ResponseEntity<Response> authenticate(@RequestBody @Validated LoginRequestDto requestDto) throws Exception {
         return authenticationService.createAuthenticationToken(requestDto);
+    }
+
+    @PostMapping("/verify-phone")
+    public ResponseEntity<Response> verifyPhone(@RequestBody @Validated PhoneVerificationDto requestDto) throws JsonProcessingException {
+        return service.verifyPhone(requestDto);
+    }
+
+    @PostMapping("/create-magic-pin")
+    public ResponseEntity<Response> createMagicPin(@RequestBody @Validated MagicPinRequestDto requestDto) {
+        return service.createMagicPin(requestDto);
+    }
+
+    @PostMapping("/resend-phone-otp")
+    public ResponseEntity<Response> resendPhoneOtpCode(@RequestBody @Validated ResendPhoneOtpRequest requestDto) throws JsonProcessingException {
+        return service.resendPhoneOtpCode(requestDto);
     }
 }
