@@ -38,6 +38,8 @@ public class User extends BaseEntity implements UserDetails {
     private boolean firstLogin;
     private LocalDateTime lastLoginDate;
     private LocalDate dateOfBirth;
+    private String magicPin;
+    private String transactionPin;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.EMPTY_SET;

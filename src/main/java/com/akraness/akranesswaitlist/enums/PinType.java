@@ -1,12 +1,12 @@
 package com.akraness.akranesswaitlist.enums;
 
-public enum NotificationType {
-    SMS("SMS"),
-    EMAIL("EMAIL");
+public enum PinType {
+    TRANSACTION("TRANSACTION"),
+    MAGIC("MAGIC");
 
     public final String type;
 
-    NotificationType(String type) {
+    PinType(String type) {
         this.type = type;
     }
 

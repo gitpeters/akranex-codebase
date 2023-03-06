@@ -4,6 +4,7 @@ import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.entity.WaitList;
 import com.akraness.akranesswaitlist.enums.NotificationType;
+import com.akraness.akranesswaitlist.enums.PinType;
 import com.akraness.akranesswaitlist.exception.DuplicateException;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.repository.IWaitList;
@@ -24,15 +25,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.webjars.NotFoundException;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @org.springframework.stereotype.Service
@@ -172,6 +169,22 @@ public class Service implements IService {
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email verification code does not exist or has expired", null));
         }
 
+        String otp = utility.generateEmailVeirificationCode();
+        PhoneVerificationDto verificationDto = PhoneVerificationDto.builder()
+                .phoneNumber(requestDto.getMobileNumber())
+                .code(otp)
+                .verified(false)
+                .build();
+
+        redisTemplate.opsForValue().set(requestDto.getMobileNumber(), new ObjectMapper().writeValueAsString(verificationDto), Duration.ofMinutes(5));
+        NotificationDto notificationDto_sms = NotificationDto.builder()
+                .message("Akranex verification code is " + otp)
+                .recipient(requestDto.getMobileNumber())
+                .subject("verification")
+                .type(NotificationType.SMS)
+                .build();
+        notificationService.sendNotification(notificationDto_sms);
+
         var user  = User.builder()
                 .countryCode(requestDto.getCountryCode())
                 .accountType(requestDto.getAccountType())
@@ -194,6 +207,93 @@ public class Service implements IService {
         NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
         notificationService.sendNotification(notificationDto);
         return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
+    }
+
+    @Override
+    public ResponseEntity<Response> verifyPhone(PhoneVerificationDto requestDto) throws JsonProcessingException {
+        if (!userRepository.existsByMobileNumber(requestDto.getPhoneNumber())) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Phone number does not exists.", null));
+        }
+
+        Optional<User> userOp = userRepository.findByMobileNumber(requestDto.getPhoneNumber());
+        User user = userOp.get();
+        String requestObj = redisTemplate.opsForValue().get(requestDto.getPhoneNumber());
+
+        if (requestObj != null) {
+            PhoneVerificationDto savedCopy = new ObjectMapper().readValue(requestObj, PhoneVerificationDto.class);
+            if (!requestDto.getCode().equalsIgnoreCase(savedCopy.getCode()))
+                return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Code does not belongs to the provided phone number", null));
+            user.setMobileVerified(true);
+            userRepository.save(user);
+            redisTemplate.delete(requestDto.getPhoneNumber());
+            return ResponseEntity.ok().body(new Response("200", "Phone number verified successfully.", null));
+        } else {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Phone number does not exist or code has expired.", null));
+        }
+    }
+
+    @Override
+    public ResponseEntity<Response> createMagicPin(MagicPinRequestDto requestDto) {
+        if(!userRepository.existsByEmail(requestDto.getEmail())) {
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "No match found with the provided email.", null));
+        }
+        Optional<User> userOp = userRepository.findByUsername(requestDto.getEmail());
+        User user = userOp.get();
+        if(!user.isMobileVerified())
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Mobile number must be verified first.", null));
+
+        if(!user.isEmailVerified())
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Email must be verified first.", null));
+
+        user.setMagicPin(requestDto.getMagicPin());
+        userRepository.save(user);
+        return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
+    }
+
+    @Override
+    public ResponseEntity<Response> createTransactionPin(TransactionPinRequestDto requestDto, Principal principal) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Response> verifyPin(VerifyPinRequestDto requestDto) {
+
+        Optional<User> userOp = userRepository.findByUsername(requestDto.getUsername());
+        if(!userOp.isPresent())
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Provided access token is not valid.", null));
+
+        User user = userOp.get();
+        if(requestDto.getPinType().equals(PinType.MAGIC) && user.getMagicPin().equals(requestDto.getPin())){
+            return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
+        }else if(requestDto.getPinType().equals(PinType.TRANSACTION) && user.getTransactionPin().equals(requestDto.getPin())){
+            return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
+        }
+        return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Invalid pin provided.", null));
+    }
+
+    @Override
+    public ResponseEntity<Response> resendPhoneOtpCode(ResendPhoneOtpRequest requestDto) throws JsonProcessingException {
+        if (!userRepository.existsByMobileNumber(requestDto.getPhoneNumber())) {
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Mobile number does not exists.", null));
+        }
+
+        String otp = utility.generateEmailVeirificationCode();
+        PhoneVerificationDto verificationDto = PhoneVerificationDto.builder()
+                .phoneNumber(requestDto.getPhoneNumber())
+                .code(otp)
+                .verified(false)
+                .build();
+
+        redisTemplate.opsForValue().getAndSet(requestDto.getPhoneNumber(), new ObjectMapper().writeValueAsString(verificationDto));
+        NotificationDto notificationDto_sms = NotificationDto.builder()
+                .message("Akranex verification code is " + otp)
+                .recipient(requestDto.getPhoneNumber())
+                .subject("verification")
+                .type(NotificationType.SMS)
+                .build();
+        notificationService.sendNotification(notificationDto_sms);
+
+        return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
     }
 
     private NotificationDto buildSignUpNotificationDto(SignupRequestDto requestDto) {

@@ -54,9 +54,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				// dont authenticate this particular request
 				.authorizeRequests()
 				.antMatchers(
-						"/users/signup","/users/signup/**","/users/**",
-						"/users/countries",
-						"/actuator/**","/users/authenticate",
+						"/api/v1/users/no-auth/**",
+						"/api/v1/users/verify-pin",
+						"/actuator/**",
 						"/configuration/ui",
 						"/swagger-resources/**",
 						"/configuration/security",
