@@ -378,3 +378,137 @@ org.apache.kafka.common.config.ConfigException: No resolvable bootstrap urls giv
 2023-03-04 10:34:17,277  INFO | SpringApplicationShutdownHook | o.s.orm.jpa.LocalContainerEntityManagerFactoryBean      | Closing JPA EntityManagerFactory for persistence unit 'default' 
 2023-03-04 10:34:17,281  INFO | SpringApplicationShutdownHook | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown initiated... 
 2023-03-04 10:34:17,306  INFO | SpringApplicationShutdownHook | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown completed. 
+2023-03-04 10:39:05,258  INFO | background-preinit | org.hibernate.validator.internal.util.Version           | HV000001: Hibernate Validator 6.2.0.Final 
+2023-03-04 10:39:05,267  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | Starting AkranessWaitListApplication using Java 11.0.16.1 on DESKTOP-F3OLI6E with PID 13360 (C:\Users\Admin\Documents\Java Projects\Akranex-api-backend\akraness-wait-list\target\classes started by Admin in C:\Users\Admin\Documents\Java Projects\Akranex-api-backend\akraness-wait-list) 
+2023-03-04 10:39:05,269  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | No active profile set, falling back to default profiles: default 
+2023-03-04 10:39:07,169  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Multiple Spring Data modules found, entering strict repository configuration mode! 
+2023-03-04 10:39:07,174  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode. 
+2023-03-04 10:39:07,472  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 284 ms. Found 2 JPA repository interfaces. 
+2023-03-04 10:39:07,489  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Multiple Spring Data modules found, entering strict repository configuration mode! 
+2023-03-04 10:39:07,491  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data Redis repositories in DEFAULT mode. 
+2023-03-04 10:39:07,517  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.repository.IUserRepository. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-04 10:39:07,518  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.repository.IWaitList. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-04 10:39:07,518  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 9 ms. Found 0 Redis repository interfaces. 
+2023-03-04 10:39:09,241  INFO | main | o.s.boot.web.embedded.tomcat.TomcatWebServer            | Tomcat initialized with port(s): 8083 (http) 
+2023-03-04 10:39:09,256  INFO | main | org.apache.coyote.http11.Http11NioProtocol              | Initializing ProtocolHandler ["http-nio-8083"] 
+2023-03-04 10:39:09,257  INFO | main | org.apache.catalina.core.StandardService                | Starting service [Tomcat] 
+2023-03-04 10:39:09,257  INFO | main | org.apache.catalina.core.StandardEngine                 | Starting Servlet engine: [Apache Tomcat/9.0.56] 
+2023-03-04 10:39:09,468  INFO | main | o.a.c.core.ContainerBase.[Tomcat].[localhost].[/user]   | Initializing Spring embedded WebApplicationContext 
+2023-03-04 10:39:09,468  INFO | main | o.s.b.w.s.context.ServletWebServerApplicationContext    | Root WebApplicationContext: initialization completed in 4116 ms 
+2023-03-04 10:39:10,059  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Starting... 
+2023-03-04 10:39:10,634  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Start completed. 
+2023-03-04 10:39:10,710  INFO | main | org.flywaydb.core.internal.license.VersionPrinter       | Flyway Community Edition 8.0.5 by Redgate 
+2023-03-04 10:39:10,711  INFO | main | o.flywaydb.core.internal.database.base.BaseDatabaseType | Database: jdbc:mysql://localhost:3306/akraness (MySQL 8.0) 
+2023-03-04 10:39:10,900  INFO | main | org.flywaydb.core.internal.command.DbValidate           | Successfully validated 2 migrations (execution time 00:00.051s) 
+2023-03-04 10:39:10,925  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Current version of schema `akraness`: 1674026758 
+2023-03-04 10:39:10,928  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Schema `akraness` is up to date. No migration necessary. 
+2023-03-04 10:39:11,102  INFO | main | org.hibernate.jpa.internal.util.LogHelper               | HHH000204: Processing PersistenceUnitInfo [name: default] 
+2023-03-04 10:39:11,215  INFO | main | org.hibernate.Version                                   | HHH000412: Hibernate ORM core version 5.6.4.Final 
+2023-03-04 10:39:11,554  INFO | main | org.hibernate.annotations.common.Version                | HCANN000001: Hibernate Commons Annotations {5.1.2.Final} 
+2023-03-04 10:39:11,840  INFO | main | org.hibernate.dialect.Dialect                           | HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect 
+2023-03-04 10:39:13,673  INFO | main | o.h.e.t.jta.platform.internal.JtaPlatformInitiator      | HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] 
+2023-03-04 10:39:13,703  INFO | main | o.s.orm.jpa.LocalContainerEntityManagerFactoryBean      | Initialized JPA EntityManagerFactory for persistence unit 'default' 
+2023-03-04 10:39:15,305  WARN | main | o.s.b.a.o.jpa.JpaBaseConfiguration$JpaWebConfiguration  | spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning 
+2023-03-04 10:39:16,297  INFO | main | o.s.security.web.DefaultSecurityFilterChain             | Will secure any request with [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2b57dc2, org.springframework.security.web.context.SecurityContextPersistenceFilter@54d0d561, org.springframework.security.web.header.HeaderWriterFilter@26864891, org.springframework.security.web.authentication.logout.LogoutFilter@23c24c0e, com.akraness.akranesswaitlist.security.JwtRequestFilter@f047670, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@3448a248, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@7c52df60, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@75c36570, org.springframework.security.web.session.SessionManagementFilter@6f526f91, org.springframework.security.web.access.ExceptionTranslationFilter@46e32574, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@62b3871] 
+2023-03-04 10:39:19,244  WARN | main | o.s.b.a.freemarker.FreeMarkerAutoConfiguration          | Cannot find template location(s): [classpath:/templates/] (please add some templates, check your FreeMarker configuration, or set spring.freemarker.checkTemplateLocation=false) 
+2023-03-04 10:39:19,405  INFO | main | o.s.boot.actuate.endpoint.web.EndpointLinksResolver     | Exposing 1 endpoint(s) beneath base path '/actuator' 
+2023-03-04 10:39:19,547  INFO | main | org.apache.coyote.http11.Http11NioProtocol              | Starting ProtocolHandler ["http-nio-8083"] 
+2023-03-04 10:39:19,609  INFO | main | o.s.boot.web.embedded.tomcat.TomcatWebServer            | Tomcat started on port(s): 8083 (http) with context path '/user' 
+2023-03-04 10:39:19,667  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | Started AkranessWaitListApplication in 15.039 seconds (JVM running for 16.175) 
+2023-03-04 10:40:03,752  INFO | http-nio-8083-exec-2 | o.a.c.core.ContainerBase.[Tomcat].[localhost].[/user]   | Initializing Spring DispatcherServlet 'dispatcherServlet' 
+2023-03-04 10:40:03,753  INFO | http-nio-8083-exec-2 | org.springframework.web.servlet.DispatcherServlet       | Initializing Servlet 'dispatcherServlet' 
+2023-03-04 10:40:03,755  INFO | http-nio-8083-exec-2 | org.springframework.web.servlet.DispatcherServlet       | Completed initialization in 2 ms 
+2023-03-04 10:40:03,782  WARN | http-nio-8083-exec-2 | com.akraness.akranesswaitlist.security.JwtRequestFilter | JWT Token does not begin with Bearer String 
+2023-03-04 10:40:07,560  INFO | http-nio-8083-exec-2 | c.a.akranesswaitlist.serviceimpl.NotificationService    | Payload received for recipient johnoseni26@gmail.com  and type is EMAIL  
+2023-03-04 10:40:07,637  INFO | http-nio-8083-exec-2 | org.apache.kafka.clients.producer.ProducerConfig        | ProducerConfig values: 
+	acks = -1
+	batch.size = 16384
+	bootstrap.servers = [localhost:9092]
+	buffer.memory = 33554432
+	client.dns.lookup = use_all_dns_ips
+	client.id = producer-1
+	compression.type = none
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 120000
+	enable.idempotence = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+	linger.ms = 0
+	max.block.ms = 60000
+	max.in.flight.requests.per.connection = 5
+	max.request.size = 1048576
+	metadata.max.age.ms = 300000
+	metadata.max.idle.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partitioner.class = class org.apache.kafka.clients.producer.internals.DefaultPartitioner
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.mechanism = GSSAPI
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	transaction.timeout.ms = 60000
+	transactional.id = null
+	value.serializer = class org.apache.kafka.common.serialization.StringSerializer
+ 
+2023-03-04 10:40:07,854  INFO | http-nio-8083-exec-2 | org.apache.kafka.common.utils.AppInfoParser             | Kafka version: 3.0.0 
+2023-03-04 10:40:07,855  INFO | http-nio-8083-exec-2 | org.apache.kafka.common.utils.AppInfoParser             | Kafka commitId: 8cb0a5e9d3441962 
+2023-03-04 10:40:07,855  INFO | http-nio-8083-exec-2 | org.apache.kafka.common.utils.AppInfoParser             | Kafka startTimeMs: 1677922807849 
+2023-03-04 10:40:08,707  INFO | kafka-producer-network-thread | producer-1 | org.apache.kafka.clients.Metadata                       | [Producer clientId=producer-1] Cluster ID: dk--efDzSjGoo1yYYwyL-A 
+2023-03-04 10:40:08,747  INFO | http-nio-8083-exec-2 | c.a.akranesswaitlist.serviceimpl.NotificationService    | payload sent to queue for recipient johnoseni26@gmail.com  
+2023-03-04 10:41:22,923  WARN | http-nio-8083-exec-5 | com.akraness.akranesswaitlist.security.JwtRequestFilter | JWT Token does not begin with Bearer String 
+2023-03-04 10:41:22,986  INFO | http-nio-8083-exec-5 | com.akraness.akranesswaitlist.serviceimpl.Service       | new validity object is: {"email":"johnoseni26@gmail.com","code":"228427","verified":true}  
+2023-03-04 10:42:08,936  WARN | http-nio-8083-exec-6 | com.akraness.akranesswaitlist.security.JwtRequestFilter | JWT Token does not begin with Bearer String 
+2023-03-04 10:42:09,729  INFO | http-nio-8083-exec-6 | com.akraness.akranesswaitlist.serviceimpl.Service       | Successfully deleted user email johnoseni26@gmail.com from redis store. 
+2023-03-04 10:42:09,730  INFO | http-nio-8083-exec-6 | c.a.akranesswaitlist.serviceimpl.NotificationService    | Payload received for recipient johnoseni26@gmail.com  and type is EMAIL  
+2023-03-04 10:42:09,733  INFO | http-nio-8083-exec-6 | c.a.akranesswaitlist.serviceimpl.NotificationService    | payload sent to queue for recipient johnoseni26@gmail.com  
+2023-03-04 10:48:10,184  WARN | http-nio-8083-exec-9 | com.akraness.akranesswaitlist.security.JwtRequestFilter | JWT Token does not begin with Bearer String 
+2023-03-04 11:04:28,733  INFO | SpringApplicationShutdownHook | org.apache.kafka.clients.producer.KafkaProducer         | [Producer clientId=producer-1] Closing the Kafka producer with timeoutMillis = 30000 ms. 
+2023-03-04 11:04:28,754  INFO | SpringApplicationShutdownHook | org.apache.kafka.common.metrics.Metrics                 | Metrics scheduler closed 
+2023-03-04 11:04:28,756  INFO | SpringApplicationShutdownHook | org.apache.kafka.common.metrics.Metrics                 | Closing reporter org.apache.kafka.common.metrics.JmxReporter 
+2023-03-04 11:04:28,757  INFO | SpringApplicationShutdownHook | org.apache.kafka.common.metrics.Metrics                 | Metrics reporters closed 
+2023-03-04 11:04:28,759  INFO | SpringApplicationShutdownHook | org.apache.kafka.common.utils.AppInfoParser             | App info kafka.producer for producer-1 unregistered 
+2023-03-04 11:04:28,768  INFO | SpringApplicationShutdownHook | o.s.orm.jpa.LocalContainerEntityManagerFactoryBean      | Closing JPA EntityManagerFactory for persistence unit 'default' 
+2023-03-04 11:04:28,776  INFO | SpringApplicationShutdownHook | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown initiated... 
+2023-03-04 11:04:28,810  INFO | SpringApplicationShutdownHook | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown completed. 
