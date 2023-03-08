@@ -30,4 +30,8 @@ public class Utility {
                 .matcher(input)
                 .matches();
     }
+
+    public boolean isNullOrEmpty(String value) {
+        return value == null || value.isEmpty();
+    }
 }

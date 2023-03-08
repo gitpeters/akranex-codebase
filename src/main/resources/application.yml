@@ -92,3 +92,8 @@ reset:
 email:
   otp:
     verification: d-ccd5124343c343a4afa05a201dd190f2
+
+#chimoney
+chimoney:
+  base-url: https://api.chimoney.io/v0.2/
+  api-key: 132ead4929662de139829dc2d8e1587fd29befa58033ec109df09f0f5349c009

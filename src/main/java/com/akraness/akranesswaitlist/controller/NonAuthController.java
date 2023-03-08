@@ -1,5 +1,7 @@
 package com.akraness.akranesswaitlist.controller;
 
+import com.akraness.akranesswaitlist.chimoney.request.SubAccountRequest;
+import com.akraness.akranesswaitlist.chimoney.service.ISubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
@@ -22,6 +24,7 @@ public class NonAuthController {
     private final IService service;
     private final INotificationService notificationService;
     private final AuthenticationService authenticationService;
+    private final ISubAccountService subAccountService;
 
     @PostMapping("/join-waitlist")
     public ResponseEntity<Response> users(@RequestBody @Validated WaitListRequestDto requestDto) {
@@ -74,5 +77,15 @@ public class NonAuthController {
     @PostMapping("/resend-phone-otp")
     public ResponseEntity<Response> resendPhoneOtpCode(@RequestBody @Validated ResendPhoneOtpRequest requestDto) throws JsonProcessingException {
         return service.resendPhoneOtpCode(requestDto);
+    }
+
+    @PostMapping("/create-sub-account")
+    public ResponseEntity<?> createSubAccount(@RequestBody @Validated SubAccountRequest request ) {
+        return subAccountService.createSubAccount(request);
+    }
+
+    @GetMapping("/get-sub-account")
+    public ResponseEntity<?> getSubAccount(@RequestParam("id") String subAccountId) {
+        return subAccountService.getSubAccount(subAccountId);
     }
 }
