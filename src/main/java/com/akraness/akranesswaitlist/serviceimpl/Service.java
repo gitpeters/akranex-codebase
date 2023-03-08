@@ -6,6 +6,7 @@ import com.akraness.akranesswaitlist.entity.WaitList;
 import com.akraness.akranesswaitlist.enums.NotificationType;
 import com.akraness.akranesswaitlist.enums.PinType;
 import com.akraness.akranesswaitlist.exception.DuplicateException;
+import com.akraness.akranesswaitlist.repository.ICountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.repository.IWaitList;
 import com.akraness.akranesswaitlist.service.INotificationService;
@@ -40,6 +41,7 @@ public class Service implements IService {
     private final INotificationService notificationService;
     private final Utility utility;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final ICountryRepository countryRepository;
     @Autowired
     private StringRedisTemplate redisTemplate;
     private static final String ALLOWED_COUNTRIES = "allowed-countries";
@@ -294,6 +296,11 @@ public class Service implements IService {
         notificationService.sendNotification(notificationDto_sms);
 
         return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
+    }
+
+    @Override
+    public ResponseEntity<?> getCountries() {
+        return ResponseEntity.ok().body(countryRepository.findAll());
     }
 
     private NotificationDto buildSignUpNotificationDto(SignupRequestDto requestDto) {
