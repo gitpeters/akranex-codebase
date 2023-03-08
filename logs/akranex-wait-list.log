@@ -1902,3 +1902,342 @@ com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Cannot construct 
 2023-03-06 17:30:04,334  INFO | SpringApplicationShutdownHook | o.s.orm.jpa.LocalContainerEntityManagerFactoryBean      | Closing JPA EntityManagerFactory for persistence unit 'default' 
 2023-03-06 17:30:04,337  INFO | SpringApplicationShutdownHook | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown initiated... 
 2023-03-06 17:30:04,345  INFO | SpringApplicationShutdownHook | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown completed. 
+2023-03-08 11:56:30,990  INFO | background-preinit | org.hibernate.validator.internal.util.Version           | HV000001: Hibernate Validator 6.2.0.Final 
+2023-03-08 11:56:31,007  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | Starting AkranessWaitListApplication using Java 18.0.2.1 on DESKTOP-H3FSNV6 with PID 24072 (C:\Users\HP\Documents\akranex\user-service\target\classes started by HP in C:\Users\HP\Documents\akranex\user-service) 
+2023-03-08 11:56:31,009  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | No active profile set, falling back to default profiles: default 
+2023-03-08 11:56:33,438  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Multiple Spring Data modules found, entering strict repository configuration mode! 
+2023-03-08 11:56:33,442  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode. 
+2023-03-08 11:56:33,752  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 300 ms. Found 3 JPA repository interfaces. 
+2023-03-08 11:56:33,774  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Multiple Spring Data modules found, entering strict repository configuration mode! 
+2023-03-08 11:56:33,776  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data Redis repositories in DEFAULT mode. 
+2023-03-08 11:56:33,802  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:56:33,803  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.repository.IUserRepository. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:56:33,803  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.repository.IWaitList. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:56:33,803  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 14 ms. Found 0 Redis repository interfaces. 
+2023-03-08 11:56:34,925  INFO | main | o.s.boot.web.embedded.tomcat.TomcatWebServer            | Tomcat initialized with port(s): 8083 (http) 
+2023-03-08 11:56:34,941  INFO | main | org.apache.coyote.http11.Http11NioProtocol              | Initializing ProtocolHandler ["http-nio-8083"] 
+2023-03-08 11:56:34,942  INFO | main | org.apache.catalina.core.StandardService                | Starting service [Tomcat] 
+2023-03-08 11:56:34,943  INFO | main | org.apache.catalina.core.StandardEngine                 | Starting Servlet engine: [Apache Tomcat/9.0.56] 
+2023-03-08 11:56:35,181  INFO | main | o.a.c.core.ContainerBase.[Tomcat].[localhost].[/user]   | Initializing Spring embedded WebApplicationContext 
+2023-03-08 11:56:35,182  INFO | main | o.s.b.w.s.context.ServletWebServerApplicationContext    | Root WebApplicationContext: initialization completed in 4045 ms 
+2023-03-08 11:56:35,695  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Starting... 
+2023-03-08 11:56:36,243  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Start completed. 
+2023-03-08 11:56:36,298  INFO | main | org.flywaydb.core.internal.license.VersionPrinter       | Flyway Community Edition 8.0.5 by Redgate 
+2023-03-08 11:56:36,299  INFO | main | o.flywaydb.core.internal.database.base.BaseDatabaseType | Database: jdbc:mysql://localhost:3306/akranex-db (MySQL 8.0) 
+2023-03-08 11:56:36,430 ERROR | main | o.s.boot.web.embedded.tomcat.TomcatStarter              | Error starting Tomcat context. Exception: org.springframework.beans.factory.UnsatisfiedDependencyException. Message: Error creating bean with name 'jwtRequestFilter': Unsatisfied dependency expressed through field 'jwtUserDetailsService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'jwtUserDetailsService' defined in file [C:\Users\HP\Documents\akranex\user-service\target\classes\com\akraness\akranesswaitlist\serviceimpl\JwtUserDetailsService.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'IUserRepository' defined in com.akraness.akranesswaitlist.repository.IUserRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Cannot create inner bean '(inner bean)#b428830' of type [org.springframework.orm.jpa.SharedEntityManagerCreator] while setting bean property 'entityManager'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name '(inner bean)#b428830': Cannot resolve reference to bean 'entityManagerFactory' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/autoconfigure/flyway/FlywayAutoConfiguration$FlywayConfiguration.class]: Invocation of init method failed; nested exception is org.flywaydb.core.api.exception.FlywayValidateException: Validate failed: Migrations have failed validation
+Detected applied migration not resolved locally: 1674026762. If you removed this migration intentionally, run repair to mark the migration as deleted.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE 
+2023-03-08 11:56:36,548  INFO | main | org.apache.catalina.core.StandardService                | Stopping service [Tomcat] 
+2023-03-08 11:56:36,605  WARN | main | org.apache.catalina.loader.WebappClassLoaderBase        | The web application [user] appears to have started a thread named [HikariPool-1 housekeeper] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@18.0.2.1/jdk.internal.misc.Unsafe.park(Native Method)
+ java.base@18.0.2.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+ java.base@18.0.2.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1672)
+ java.base@18.0.2.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)
+ java.base@18.0.2.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)
+ java.base@18.0.2.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+ java.base@18.0.2.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+ java.base@18.0.2.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+ java.base@18.0.2.1/java.lang.Thread.run(Thread.java:833) 
+2023-03-08 11:56:36,609  WARN | main | org.apache.catalina.loader.WebappClassLoaderBase        | The web application [user] appears to have started a thread named [HikariPool-1 connection adder] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@18.0.2.1/sun.security.util.math.intpoly.IntegerPolynomial$MutableElement.setSum(IntegerPolynomial.java:710)
+ java.base@18.0.2.1/sun.security.util.math.intpoly.IntegerPolynomial$MutableElement.setSum(IntegerPolynomial.java:624)
+ platform/jdk.crypto.ec@18.0.2.1/sun.security.ec.ECOperations.setDouble(ECOperations.java:330)
+ platform/jdk.crypto.ec@18.0.2.1/sun.security.ec.ECOperations.double4(ECOperations.java:219)
+ platform/jdk.crypto.ec@18.0.2.1/sun.security.ec.ECOperations.multiply(ECOperations.java:275)
+ platform/jdk.crypto.ec@18.0.2.1/sun.security.ec.ECKeyPairGenerator.generateKeyPairImpl(ECKeyPairGenerator.java:200)
+ platform/jdk.crypto.ec@18.0.2.1/sun.security.ec.ECKeyPairGenerator.generateKeyPair(ECKeyPairGenerator.java:149)
+ java.base@18.0.2.1/java.security.KeyPairGenerator$Delegate.generateKeyPair(KeyPairGenerator.java:727)
+ java.base@18.0.2.1/sun.security.ssl.ECDHKeyExchange$ECDHEPossession.<init>(ECDHKeyExchange.java:119)
+ java.base@18.0.2.1/sun.security.ssl.NamedGroup$ECDHEScheme.createPossession(NamedGroup.java:584)
+ java.base@18.0.2.1/sun.security.ssl.NamedGroup$NamedGroupSpec.createPossession(NamedGroup.java:520)
+ java.base@18.0.2.1/sun.security.ssl.NamedGroup.createPossession(NamedGroup.java:428)
+ java.base@18.0.2.1/sun.security.ssl.SSLKeyExchange$T13KeyAgreement.createPossession(SSLKeyExchange.java:588)
+ java.base@18.0.2.1/sun.security.ssl.SSLKeyExchange.createPossessions(SSLKeyExchange.java:97)
+ java.base@18.0.2.1/sun.security.ssl.KeyShareExtension$CHKeyShareProducer.getShare(KeyShareExtension.java:299)
+ java.base@18.0.2.1/sun.security.ssl.KeyShareExtension$CHKeyShareProducer.produce(KeyShareExtension.java:261)
+ java.base@18.0.2.1/sun.security.ssl.SSLExtension.produce(SSLExtension.java:599)
+ java.base@18.0.2.1/sun.security.ssl.SSLExtensions.produce(SSLExtensions.java:265)
+ java.base@18.0.2.1/sun.security.ssl.ClientHello$ClientHelloKickstartProducer.produce(ClientHello.java:638)
+ java.base@18.0.2.1/sun.security.ssl.SSLHandshake.kickstart(SSLHandshake.java:529)
+ java.base@18.0.2.1/sun.security.ssl.ClientHandshakeContext.kickstart(ClientHandshakeContext.java:112)
+ java.base@18.0.2.1/sun.security.ssl.TransportContext.kickstart(TransportContext.java:251)
+ java.base@18.0.2.1/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:448)
+ java.base@18.0.2.1/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426)
+ app//com.mysql.cj.protocol.ExportControlled.performTlsHandshake(ExportControlled.java:347)
+ app//com.mysql.cj.protocol.StandardSocketFactory.performTlsHandshake(StandardSocketFactory.java:194)
+ app//com.mysql.cj.protocol.a.NativeSocketConnection.performTlsHandshake(NativeSocketConnection.java:101)
+ app//com.mysql.cj.protocol.a.NativeProtocol.negotiateSSLConnection(NativeProtocol.java:308)
+ app//com.mysql.cj.protocol.a.NativeAuthenticationProvider.connect(NativeAuthenticationProvider.java:204)
+ app//com.mysql.cj.protocol.a.NativeProtocol.connect(NativeProtocol.java:1369)
+ app//com.mysql.cj.NativeSession.connect(NativeSession.java:133)
+ app//com.mysql.cj.jdbc.ConnectionImpl.connectWithRetries(ConnectionImpl.java:843)
+ app//com.mysql.cj.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:824)
+ app//com.mysql.cj.jdbc.ConnectionImpl.<init>(ConnectionImpl.java:449)
+ app//com.mysql.cj.jdbc.ConnectionImpl.getInstance(ConnectionImpl.java:242)
+ app//com.mysql.cj.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:198)
+ app//com.zaxxer.hikari.util.DriverDataSource.getConnection(DriverDataSource.java:138)
+ app//com.zaxxer.hikari.pool.PoolBase.newConnection(PoolBase.java:364)
+ app//com.zaxxer.hikari.pool.PoolBase.newPoolEntry(PoolBase.java:206)
+ app//com.zaxxer.hikari.pool.HikariPool.createPoolEntry(HikariPool.java:476)
+ app//com.zaxxer.hikari.pool.HikariPool.access$100(HikariPool.java:71)
+ app//com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call(HikariPool.java:726)
+ app//com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call(HikariPool.java:712)
+ java.base@18.0.2.1/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+ java.base@18.0.2.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+ java.base@18.0.2.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+ java.base@18.0.2.1/java.lang.Thread.run(Thread.java:833) 
+2023-03-08 11:56:36,613  WARN | main | o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext | Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Unable to start web server; nested exception is org.springframework.boot.web.server.WebServerException: Unable to start embedded Tomcat 
+2023-03-08 11:56:36,614  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown initiated... 
+2023-03-08 11:56:36,641  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown completed. 
+2023-03-08 11:56:36,673  INFO | main | o.s.b.a.l.ConditionEvaluationReportLoggingListener      | 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+2023-03-08 11:56:36,704 ERROR | main | org.springframework.boot.SpringApplication              | Application run failed 
+org.springframework.context.ApplicationContextException: Unable to start web server; nested exception is org.springframework.boot.web.server.WebServerException: Unable to start embedded Tomcat
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:163)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:577)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:145)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:414)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:302)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1303)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1292)
+	at com.akraness.akranesswaitlist.AkranessWaitListApplication.main(AkranessWaitListApplication.java:12)
+Caused by: org.springframework.boot.web.server.WebServerException: Unable to start embedded Tomcat
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:142)
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.<init>(TomcatWebServer.java:104)
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getTomcatWebServer(TomcatServletWebServerFactory.java:478)
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getWebServer(TomcatServletWebServerFactory.java:211)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.createWebServer(ServletWebServerApplicationContext.java:182)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:160)
+	... 8 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'jwtRequestFilter': Unsatisfied dependency expressed through field 'jwtUserDetailsService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'jwtUserDetailsService' defined in file [C:\Users\HP\Documents\akranex\user-service\target\classes\com\akraness\akranesswaitlist\serviceimpl\JwtUserDetailsService.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'IUserRepository' defined in com.akraness.akranesswaitlist.repository.IUserRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Cannot create inner bean '(inner bean)#b428830' of type [org.springframework.orm.jpa.SharedEntityManagerCreator] while setting bean property 'entityManager'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name '(inner bean)#b428830': Cannot resolve reference to bean 'entityManagerFactory' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/autoconfigure/flyway/FlywayAutoConfiguration$FlywayConfiguration.class]: Invocation of init method failed; nested exception is org.flywaydb.core.api.exception.FlywayValidateException: Validate failed: Migrations have failed validation
+Detected applied migration not resolved locally: 1674026762. If you removed this migration intentionally, run repair to mark the migration as deleted.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:659)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:639)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:119)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:399)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1431)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:619)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:213)
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.getOrderedBeansOfType(ServletContextInitializerBeans.java:212)
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAsRegistrationBean(ServletContextInitializerBeans.java:175)
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAsRegistrationBean(ServletContextInitializerBeans.java:170)
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addAdaptableBeans(ServletContextInitializerBeans.java:155)
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.<init>(ServletContextInitializerBeans.java:87)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.getServletContextInitializerBeans(ServletWebServerApplicationContext.java:260)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.selfInitialize(ServletWebServerApplicationContext.java:234)
+	at org.springframework.boot.web.embedded.tomcat.TomcatStarter.onStartup(TomcatStarter.java:53)
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:5219)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1396)
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1386)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at org.apache.tomcat.util.threads.InlineExecutorService.execute(InlineExecutorService.java:75)
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145)
+	at org.apache.catalina.core.ContainerBase.startInternal(ContainerBase.java:919)
+	at org.apache.catalina.core.StandardHost.startInternal(StandardHost.java:835)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1396)
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1386)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at org.apache.tomcat.util.threads.InlineExecutorService.execute(InlineExecutorService.java:75)
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145)
+	at org.apache.catalina.core.ContainerBase.startInternal(ContainerBase.java:919)
+	at org.apache.catalina.core.StandardEngine.startInternal(StandardEngine.java:263)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)
+	at org.apache.catalina.core.StandardService.startInternal(StandardService.java:432)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)
+	at org.apache.catalina.core.StandardServer.startInternal(StandardServer.java:927)
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183)
+	at org.apache.catalina.startup.Tomcat.start(Tomcat.java:486)
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:123)
+	... 13 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'jwtUserDetailsService' defined in file [C:\Users\HP\Documents\akranex\user-service\target\classes\com\akraness\akranesswaitlist\serviceimpl\JwtUserDetailsService.class]: Unsatisfied dependency expressed through constructor parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'IUserRepository' defined in com.akraness.akranesswaitlist.repository.IUserRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Cannot create inner bean '(inner bean)#b428830' of type [org.springframework.orm.jpa.SharedEntityManagerCreator] while setting bean property 'entityManager'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name '(inner bean)#b428830': Cannot resolve reference to bean 'entityManagerFactory' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/autoconfigure/flyway/FlywayAutoConfiguration$FlywayConfiguration.class]: Invocation of init method failed; nested exception is org.flywaydb.core.api.exception.FlywayValidateException: Validate failed: Migrations have failed validation
+Detected applied migration not resolved locally: 1674026762. If you removed this migration intentionally, run repair to mark the migration as deleted.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:800)
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:229)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1372)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1222)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:582)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1389)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1309)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:656)
+	... 55 common frames omitted
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'IUserRepository' defined in com.akraness.akranesswaitlist.repository.IUserRepository defined in @EnableJpaRepositories declared on JpaRepositoriesRegistrar.EnableJpaRepositoriesConfiguration: Cannot create inner bean '(inner bean)#b428830' of type [org.springframework.orm.jpa.SharedEntityManagerCreator] while setting bean property 'entityManager'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name '(inner bean)#b428830': Cannot resolve reference to bean 'entityManagerFactory' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/autoconfigure/flyway/FlywayAutoConfiguration$FlywayConfiguration.class]: Invocation of init method failed; nested exception is org.flywaydb.core.api.exception.FlywayValidateException: Validate failed: Migrations have failed validation
+Detected applied migration not resolved locally: 1674026762. If you removed this migration intentionally, run repair to mark the migration as deleted.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveInnerBean(BeanDefinitionValueResolver.java:389)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:134)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyPropertyValues(AbstractAutowireCapableBeanFactory.java:1707)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1452)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:619)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208)
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1389)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1309)
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:887)
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791)
+	... 68 common frames omitted
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name '(inner bean)#b428830': Cannot resolve reference to bean 'entityManagerFactory' while setting constructor argument; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/autoconfigure/flyway/FlywayAutoConfiguration$FlywayConfiguration.class]: Invocation of init method failed; nested exception is org.flywaydb.core.api.exception.FlywayValidateException: Validate failed: Migrations have failed validation
+Detected applied migration not resolved locally: 1674026762. If you removed this migration intentionally, run repair to mark the migration as deleted.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:342)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveValueIfNecessary(BeanDefinitionValueResolver.java:113)
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveConstructorArguments(ConstructorResolver.java:693)
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:510)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1352)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1195)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:582)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveInnerBean(BeanDefinitionValueResolver.java:374)
+	... 82 common frames omitted
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/autoconfigure/flyway/FlywayAutoConfiguration$FlywayConfiguration.class]: Invocation of init method failed; nested exception is org.flywaydb.core.api.exception.FlywayValidateException: Validate failed: Migrations have failed validation
+Detected applied migration not resolved locally: 1674026762. If you removed this migration intentionally, run repair to mark the migration as deleted.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1804)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:620)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:322)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208)
+	at org.springframework.beans.factory.support.BeanDefinitionValueResolver.resolveReference(BeanDefinitionValueResolver.java:330)
+	... 90 common frames omitted
+Caused by: org.flywaydb.core.api.exception.FlywayValidateException: Validate failed: Migrations have failed validation
+Detected applied migration not resolved locally: 1674026762. If you removed this migration intentionally, run repair to mark the migration as deleted.
+Need more flexibility with validation rules? Learn more: https://rd.gt/3AbJUZE
+	at org.flywaydb.core.Flyway$1.execute(Flyway.java:131)
+	at org.flywaydb.core.Flyway$1.execute(Flyway.java:124)
+	at org.flywaydb.core.FlywayExecutor.execute(FlywayExecutor.java:214)
+	at org.flywaydb.core.Flyway.migrate(Flyway.java:124)
+	at org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer.afterPropertiesSet(FlywayMigrationInitializer.java:66)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1863)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1800)
+	... 99 common frames omitted
+2023-03-08 11:57:50,153  INFO | background-preinit | org.hibernate.validator.internal.util.Version           | HV000001: Hibernate Validator 6.2.0.Final 
+2023-03-08 11:57:50,159  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | Starting AkranessWaitListApplication using Java 18.0.2.1 on DESKTOP-H3FSNV6 with PID 3556 (C:\Users\HP\Documents\akranex\user-service\target\classes started by HP in C:\Users\HP\Documents\akranex\user-service) 
+2023-03-08 11:57:50,161  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | No active profile set, falling back to default profiles: default 
+2023-03-08 11:57:52,369  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Multiple Spring Data modules found, entering strict repository configuration mode! 
+2023-03-08 11:57:52,372  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode. 
+2023-03-08 11:57:52,637  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 255 ms. Found 3 JPA repository interfaces. 
+2023-03-08 11:57:52,661  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Multiple Spring Data modules found, entering strict repository configuration mode! 
+2023-03-08 11:57:52,663  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data Redis repositories in DEFAULT mode. 
+2023-03-08 11:57:52,690  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:57:52,690  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.repository.IUserRepository. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:57:52,691  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.repository.IWaitList. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:57:52,692  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 15 ms. Found 0 Redis repository interfaces. 
+2023-03-08 11:57:53,900  INFO | main | o.s.boot.web.embedded.tomcat.TomcatWebServer            | Tomcat initialized with port(s): 8083 (http) 
+2023-03-08 11:57:53,916  INFO | main | org.apache.coyote.http11.Http11NioProtocol              | Initializing ProtocolHandler ["http-nio-8083"] 
+2023-03-08 11:57:53,917  INFO | main | org.apache.catalina.core.StandardService                | Starting service [Tomcat] 
+2023-03-08 11:57:53,918  INFO | main | org.apache.catalina.core.StandardEngine                 | Starting Servlet engine: [Apache Tomcat/9.0.56] 
+2023-03-08 11:57:54,248  INFO | main | o.a.c.core.ContainerBase.[Tomcat].[localhost].[/user]   | Initializing Spring embedded WebApplicationContext 
+2023-03-08 11:57:54,248  INFO | main | o.s.b.w.s.context.ServletWebServerApplicationContext    | Root WebApplicationContext: initialization completed in 3966 ms 
+2023-03-08 11:57:54,822  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Starting... 
+2023-03-08 11:57:55,270  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Start completed. 
+2023-03-08 11:57:55,323  INFO | main | org.flywaydb.core.internal.license.VersionPrinter       | Flyway Community Edition 8.0.5 by Redgate 
+2023-03-08 11:57:55,324  INFO | main | o.flywaydb.core.internal.database.base.BaseDatabaseType | Database: jdbc:mysql://localhost:3306/akranex-db (MySQL 8.0) 
+2023-03-08 11:57:55,408  INFO | main | org.flywaydb.core.internal.command.DbValidate           | Successfully validated 4 migrations (execution time 00:00.035s) 
+2023-03-08 11:57:55,458  INFO | main | o.f.core.internal.schemahistory.JdbcTableSchemaHistory  | Creating Schema History table `akranex-db`.`flyway_schema_history` ... 
+2023-03-08 11:57:55,595  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Current version of schema `akranex-db`: << Empty Schema >> 
+2023-03-08 11:57:55,613  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Migrating schema `akranex-db` to version "1672775817 - create tbl waitlist" 
+2023-03-08 11:57:55,710  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Migrating schema `akranex-db` to version "1674026758 - create tbl user" 
+2023-03-08 11:57:56,012  WARN | main | o.f.core.internal.sqlscript.DefaultSqlScriptExecutor    | DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681) 
+2023-03-08 11:57:56,013  WARN | main | o.f.core.internal.sqlscript.DefaultSqlScriptExecutor    | DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681) 
+2023-03-08 11:57:56,014  WARN | main | o.f.core.internal.sqlscript.DefaultSqlScriptExecutor    | DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681) 
+2023-03-08 11:57:56,015  WARN | main | o.f.core.internal.sqlscript.DefaultSqlScriptExecutor    | DB: Integer display width is deprecated and will be removed in a future release. (SQL State: HY000 - Error Code: 1681) 
+2023-03-08 11:57:56,114  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Migrating schema `akranex-db` to version "1678110142 - alter tbl user" 
+2023-03-08 11:57:56,238  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Migrating schema `akranex-db` to version "1678110144 - create tbl sub account" 
+2023-03-08 11:57:56,403  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Successfully applied 4 migrations to schema `akranex-db`, now at version v1678110144 (execution time 00:00.821s) 
+2023-03-08 11:57:56,563  INFO | main | org.hibernate.jpa.internal.util.LogHelper               | HHH000204: Processing PersistenceUnitInfo [name: default] 
+2023-03-08 11:57:56,710  INFO | main | org.hibernate.Version                                   | HHH000412: Hibernate ORM core version 5.6.4.Final 
+2023-03-08 11:57:56,984  INFO | main | org.hibernate.annotations.common.Version                | HCANN000001: Hibernate Commons Annotations {5.1.2.Final} 
+2023-03-08 11:57:57,204  INFO | main | org.hibernate.dialect.Dialect                           | HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect 
+2023-03-08 11:57:58,214  INFO | main | o.h.e.t.jta.platform.internal.JtaPlatformInitiator      | HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] 
+2023-03-08 11:57:58,240  INFO | main | o.s.orm.jpa.LocalContainerEntityManagerFactoryBean      | Initialized JPA EntityManagerFactory for persistence unit 'default' 
+2023-03-08 11:57:59,079  WARN | main | o.s.b.a.o.jpa.JpaBaseConfiguration$JpaWebConfiguration  | spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning 
+2023-03-08 11:57:59,688  WARN | main | o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext | Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'nonAuthController' defined in file [C:\Users\HP\Documents\akranex\user-service\target\classes\com\akraness\akranesswaitlist\controller\NonAuthController.class]: Unsatisfied dependency expressed through constructor parameter 3; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.akraness.akranesswaitlist.chimoney.service.ISubAccountService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {} 
+2023-03-08 11:57:59,719  INFO | main | o.s.orm.jpa.LocalContainerEntityManagerFactoryBean      | Closing JPA EntityManagerFactory for persistence unit 'default' 
+2023-03-08 11:57:59,722  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown initiated... 
+2023-03-08 11:57:59,731  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Shutdown completed. 
+2023-03-08 11:57:59,735  INFO | main | org.apache.catalina.core.StandardService                | Stopping service [Tomcat] 
+2023-03-08 11:57:59,760  INFO | main | o.s.b.a.l.ConditionEvaluationReportLoggingListener      | 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+2023-03-08 11:57:59,785 ERROR | main | o.s.boot.diagnostics.LoggingFailureAnalysisReporter     | 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 3 of constructor in com.akraness.akranesswaitlist.controller.NonAuthController required a bean of type 'com.akraness.akranesswaitlist.chimoney.service.ISubAccountService' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.akraness.akranesswaitlist.chimoney.service.ISubAccountService' in your configuration.
+ 
+2023-03-08 11:59:47,024  INFO | background-preinit | org.hibernate.validator.internal.util.Version           | HV000001: Hibernate Validator 6.2.0.Final 
+2023-03-08 11:59:47,032  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | Starting AkranessWaitListApplication using Java 18.0.2.1 on DESKTOP-H3FSNV6 with PID 22068 (C:\Users\HP\Documents\akranex\user-service\target\classes started by HP in C:\Users\HP\Documents\akranex\user-service) 
+2023-03-08 11:59:47,034  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | No active profile set, falling back to default profiles: default 
+2023-03-08 11:59:49,112  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Multiple Spring Data modules found, entering strict repository configuration mode! 
+2023-03-08 11:59:49,114  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data JPA repositories in DEFAULT mode. 
+2023-03-08 11:59:49,355  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 231 ms. Found 3 JPA repository interfaces. 
+2023-03-08 11:59:49,376  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Multiple Spring Data modules found, entering strict repository configuration mode! 
+2023-03-08 11:59:49,378  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Bootstrapping Spring Data Redis repositories in DEFAULT mode. 
+2023-03-08 11:59:49,402  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:59:49,403  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.repository.IUserRepository. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:59:49,404  INFO | main | o.s.d.r.config.RepositoryConfigurationExtensionSupport  | Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.akraness.akranesswaitlist.repository.IWaitList. If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository. 
+2023-03-08 11:59:49,404  INFO | main | o.s.d.repository.config.RepositoryConfigurationDelegate | Finished Spring Data repository scanning in 14 ms. Found 0 Redis repository interfaces. 
+2023-03-08 11:59:50,474  INFO | main | o.s.boot.web.embedded.tomcat.TomcatWebServer            | Tomcat initialized with port(s): 8083 (http) 
+2023-03-08 11:59:50,488  INFO | main | org.apache.coyote.http11.Http11NioProtocol              | Initializing ProtocolHandler ["http-nio-8083"] 
+2023-03-08 11:59:50,488  INFO | main | org.apache.catalina.core.StandardService                | Starting service [Tomcat] 
+2023-03-08 11:59:50,489  INFO | main | org.apache.catalina.core.StandardEngine                 | Starting Servlet engine: [Apache Tomcat/9.0.56] 
+2023-03-08 11:59:50,723  INFO | main | o.a.c.core.ContainerBase.[Tomcat].[localhost].[/user]   | Initializing Spring embedded WebApplicationContext 
+2023-03-08 11:59:50,724  INFO | main | o.s.b.w.s.context.ServletWebServerApplicationContext    | Root WebApplicationContext: initialization completed in 3587 ms 
+2023-03-08 11:59:51,141  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Starting... 
+2023-03-08 11:59:51,591  INFO | main | com.zaxxer.hikari.HikariDataSource                      | HikariPool-1 - Start completed. 
+2023-03-08 11:59:51,642  INFO | main | org.flywaydb.core.internal.license.VersionPrinter       | Flyway Community Edition 8.0.5 by Redgate 
+2023-03-08 11:59:51,642  INFO | main | o.flywaydb.core.internal.database.base.BaseDatabaseType | Database: jdbc:mysql://localhost:3306/akranex-db (MySQL 8.0) 
+2023-03-08 11:59:51,713  INFO | main | org.flywaydb.core.internal.command.DbValidate           | Successfully validated 4 migrations (execution time 00:00.035s) 
+2023-03-08 11:59:51,736  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Current version of schema `akranex-db`: 1678110144 
+2023-03-08 11:59:51,738  INFO | main | org.flywaydb.core.internal.command.DbMigrate            | Schema `akranex-db` is up to date. No migration necessary. 
+2023-03-08 11:59:51,929  INFO | main | org.hibernate.jpa.internal.util.LogHelper               | HHH000204: Processing PersistenceUnitInfo [name: default] 
+2023-03-08 11:59:52,025  INFO | main | org.hibernate.Version                                   | HHH000412: Hibernate ORM core version 5.6.4.Final 
+2023-03-08 11:59:52,279  INFO | main | org.hibernate.annotations.common.Version                | HCANN000001: Hibernate Commons Annotations {5.1.2.Final} 
+2023-03-08 11:59:52,456  INFO | main | org.hibernate.dialect.Dialect                           | HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect 
+2023-03-08 11:59:53,406  INFO | main | o.h.e.t.jta.platform.internal.JtaPlatformInitiator      | HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] 
+2023-03-08 11:59:53,435  INFO | main | o.s.orm.jpa.LocalContainerEntityManagerFactoryBean      | Initialized JPA EntityManagerFactory for persistence unit 'default' 
+2023-03-08 11:59:54,295  WARN | main | o.s.b.a.o.jpa.JpaBaseConfiguration$JpaWebConfiguration  | spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning 
+2023-03-08 11:59:55,020  INFO | main | o.s.security.web.DefaultSecurityFilterChain             | Will secure any request with [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@18a9e8db, org.springframework.security.web.context.SecurityContextPersistenceFilter@1f26bd62, org.springframework.security.web.header.HeaderWriterFilter@4a3e1b5d, org.springframework.security.web.authentication.logout.LogoutFilter@5b3427c4, com.akraness.akranesswaitlist.security.JwtRequestFilter@5f5fb335, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@55448710, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@1676e501, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@24032706, org.springframework.security.web.session.SessionManagementFilter@529cd3ba, org.springframework.security.web.access.ExceptionTranslationFilter@18f493d7, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@45c73e09] 
+2023-03-08 11:59:57,217  WARN | main | o.s.b.a.freemarker.FreeMarkerAutoConfiguration          | Cannot find template location(s): [classpath:/templates/] (please add some templates, check your FreeMarker configuration, or set spring.freemarker.checkTemplateLocation=false) 
+2023-03-08 11:59:57,301  INFO | main | o.s.boot.actuate.endpoint.web.EndpointLinksResolver     | Exposing 1 endpoint(s) beneath base path '/actuator' 
+2023-03-08 11:59:57,377  INFO | main | org.apache.coyote.http11.Http11NioProtocol              | Starting ProtocolHandler ["http-nio-8083"] 
+2023-03-08 11:59:57,410  INFO | main | o.s.boot.web.embedded.tomcat.TomcatWebServer            | Tomcat started on port(s): 8083 (http) with context path '/user' 
+2023-03-08 11:59:57,444  INFO | main | c.akraness.akranesswaitlist.AkranessWaitListApplication | Started AkranessWaitListApplication in 11.158 seconds (JVM running for 12.785) 
+2023-03-08 11:59:57,779  INFO | RMI TCP Connection(1)-192.168.32.1 | o.a.c.core.ContainerBase.[Tomcat].[localhost].[/user]   | Initializing Spring DispatcherServlet 'dispatcherServlet' 
+2023-03-08 11:59:57,780  INFO | RMI TCP Connection(1)-192.168.32.1 | org.springframework.web.servlet.DispatcherServlet       | Initializing Servlet 'dispatcherServlet' 
+2023-03-08 11:59:57,785  INFO | RMI TCP Connection(1)-192.168.32.1 | org.springframework.web.servlet.DispatcherServlet       | Completed initialization in 4 ms 
+2023-03-08 12:02:34,061  WARN | http-nio-8083-exec-2 | com.akraness.akranesswaitlist.security.JwtRequestFilter | JWT Token does not begin with Bearer String 
+2023-03-08 12:02:45,295  WARN | http-nio-8083-exec-3 | com.akraness.akranesswaitlist.security.JwtRequestFilter | JWT Token does not begin with Bearer String 
+2023-03-08 12:04:46,560  WARN | http-nio-8083-exec-5 | com.akraness.akranesswaitlist.security.JwtRequestFilter | JWT Token does not begin with Bearer String 
