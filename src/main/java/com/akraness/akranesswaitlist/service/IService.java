@@ -18,4 +18,6 @@ ResponseEntity<Response> createMagicPin(MagicPinRequestDto requestDto);
 ResponseEntity<Response> createTransactionPin(TransactionPinRequestDto requestDto, Principal principal);
 ResponseEntity<Response> verifyPin(VerifyPinRequestDto requestDto);
 ResponseEntity<Response> resendPhoneOtpCode(ResendPhoneOtpRequest requestDto) throws JsonProcessingException;
+
+ResponseEntity<?> getCountries();
 }

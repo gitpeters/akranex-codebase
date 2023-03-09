@@ -88,4 +88,9 @@ public class NonAuthController {
     public ResponseEntity<?> getSubAccount(@RequestParam("id") String subAccountId) {
         return subAccountService.getSubAccount(subAccountId);
     }
+
+    @GetMapping("/get-countries")
+    public ResponseEntity<?> getCountries() {
+        return service.getCountries();
+    }
 }
