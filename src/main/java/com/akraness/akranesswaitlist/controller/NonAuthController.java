@@ -1,8 +1,10 @@
 package com.akraness.akranesswaitlist.controller;
 
-import com.akraness.akranesswaitlist.chimoney.request.SubAccountRequest;
-import com.akraness.akranesswaitlist.chimoney.service.ISubAccountService;
+import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
+import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
+import com.akraness.akranesswaitlist.plaid.dto.IdentityVerificationDto;
+import com.akraness.akranesswaitlist.plaid.service.IdentificationVericationService;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.serviceimpl.AuthenticationService;
@@ -13,9 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.security.Principal;
-
 @RestController
 @RequestMapping("/api/v1/users/no-auth")
 @RequiredArgsConstructor
@@ -24,7 +23,8 @@ public class NonAuthController {
     private final IService service;
     private final INotificationService notificationService;
     private final AuthenticationService authenticationService;
-    private final ISubAccountService subAccountService;
+    private final SubAccountService subAccountService;
+    private final IdentificationVericationService identificationVericationService;
 
     @PostMapping("/join-waitlist")
     public ResponseEntity<Response> users(@RequestBody @Validated WaitListRequestDto requestDto) {
@@ -80,7 +80,7 @@ public class NonAuthController {
     }
 
     @PostMapping("/create-sub-account")
-    public ResponseEntity<?> createSubAccount(@RequestBody @Validated SubAccountRequest request ) {
+    public ResponseEntity<?> createSubAccount(@RequestBody @Validated SubAccountRequestDto request ) {
         return subAccountService.createSubAccount(request);
     }
 
@@ -92,5 +92,15 @@ public class NonAuthController {
     @GetMapping("/get-countries")
     public ResponseEntity<?> getCountries() {
         return service.getCountries();
+    }
+
+    @PostMapping("/create-identity-verification")
+    public ResponseEntity<?> createIdentityVerification(@RequestBody IdentityVerificationDto request ) {
+        return identificationVericationService.create(request);
+    }
+
+    @PostMapping("/get-identity-verification")
+    public ResponseEntity<?> retriveIdentityVerification(@RequestBody IdentityVerificationDto request ) {
+        return identificationVericationService.get(request);
     }
 }

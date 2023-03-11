@@ -97,3 +97,10 @@ email:
 chimoney:
   base-url: https://api.chimoney.io/v0.2/
   api-key: 132ead4929662de139829dc2d8e1587fd29befa58033ec109df09f0f5349c009
+
+#plaid
+plaid:
+  template-id: idvtmp_5B3B3Q3w7mUPrE
+  client-id: 63cd6f6ca361a10012480d9d
+  secret: 580d6f4dfa42a9c51fbb7fa5224bbb
+  base-url: https://sandbox.plaid.com/
