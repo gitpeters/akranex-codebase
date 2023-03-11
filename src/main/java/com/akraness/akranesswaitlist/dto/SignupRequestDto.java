@@ -24,4 +24,6 @@ public class SignupRequestDto {
     private AccountType accountType;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
+    @NotNull(message = "gender is compulsory")
+    private String gender;
 }

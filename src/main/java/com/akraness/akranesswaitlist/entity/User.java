@@ -40,6 +40,7 @@ public class User extends BaseEntity implements UserDetails {
     private LocalDate dateOfBirth;
     private String magicPin;
     private String transactionPin;
+    private String gender;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.EMPTY_SET;
