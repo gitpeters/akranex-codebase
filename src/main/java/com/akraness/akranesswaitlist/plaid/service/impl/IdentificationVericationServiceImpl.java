@@ -51,4 +51,15 @@ public class IdentificationVericationServiceImpl implements IdentificationVerica
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, identityVerificationDto, null);
         return ResponseEntity.ok().body(response.getBody());
     }
+
+    @Override
+    public ResponseEntity<CustomResponse> retry(IdentityVerificationDto identityVerificationDto) {
+        identityVerificationDto.setTemplate_id(templateId);
+        identityVerificationDto.setClient_id(clientId);
+        identityVerificationDto.setSecret(secret);
+        String url = baseUrl + "identity_verification/retry";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, identityVerificationDto, null);
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
 }

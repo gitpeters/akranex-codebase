@@ -8,4 +8,6 @@ public interface IdentificationVericationService {
     ResponseEntity<CustomResponse> create(IdentityVerificationDto identityVerificationDto);
     ResponseEntity<CustomResponse> get(IdentityVerificationDto identityVerificationDto);
     ResponseEntity<CustomResponse> getList(IdentityVerificationDto identityVerificationDto);
+
+    ResponseEntity<CustomResponse> retry(IdentityVerificationDto identityVerificationDto);
 }

@@ -16,4 +16,5 @@ public class IdentityVerificationDto {
     private AddressDto address;
     private IdNumberDto id_number;
     private String client_user_id;
+    private String strategy;
 }

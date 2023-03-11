@@ -108,4 +108,10 @@ public class NonAuthController {
     public ResponseEntity<?> listIdentityVerification(@RequestBody IdentityVerificationDto request ) {
         return identificationVericationService.getList(request);
     }
+
+    @PostMapping("/retry-identity-verification")
+    public ResponseEntity<?> retryIdentityVerification(@RequestBody IdentityVerificationDto request ) {
+        return identificationVericationService.retry(request);
+    }
+
 }
