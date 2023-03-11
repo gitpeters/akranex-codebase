@@ -1,12 +1,11 @@
-package com.akraness.akranesswaitlist.chimoney.request;
+package com.akraness.akranesswaitlist.chimoney.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 @Data
-public class SubAccountRequest {
+public class SubAccountRequestDto {
     private Integer userId;
     @NotEmpty(message = "name is required")
     private String name;

@@ -1,4 +1,4 @@
-package com.akraness.akranesswaitlist.chimoney.dto;
+package com.akraness.akranesswaitlist.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
