@@ -33,4 +33,11 @@ public class RestTemplateService {
 
         return response;
     }
+
+    public ResponseEntity<CustomResponse> delete(String url, HttpHeaders headers) {
+        HttpEntity entity = headers == null ? null : new HttpEntity(headers);
+        ResponseEntity<CustomResponse> response = restTemplate.exchange(url, HttpMethod.DELETE, entity, CustomResponse.class);
+
+        return response;
+    }
 }

@@ -1,6 +1,8 @@
 package com.akraness.akranesswaitlist.controller;
 
+import com.akraness.akranesswaitlist.chimoney.dto.PayoutDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
+import com.akraness.akranesswaitlist.chimoney.service.PayoutService;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.plaid.dto.IdentityVerificationDto;
@@ -25,6 +27,7 @@ public class NonAuthController {
     private final AuthenticationService authenticationService;
     private final SubAccountService subAccountService;
     private final IdentificationVericationService identificationVericationService;
+    private final PayoutService payoutService;
 
     @PostMapping("/join-waitlist")
     public ResponseEntity<Response> users(@RequestBody @Validated WaitListRequestDto requestDto) {
@@ -114,4 +117,23 @@ public class NonAuthController {
         return identificationVericationService.retry(request);
     }
 
+    @DeleteMapping("/delete-sub-account")
+    public ResponseEntity<?> deleteSubAccount(@RequestParam("id") String subAccountId) {
+        return subAccountService.deleteSubAccount(subAccountId);
+    }
+
+    @PostMapping("/payout/airtime")
+    public ResponseEntity<?> payoutAirtime(@RequestBody PayoutDto payoutDto) {
+        return payoutService.payoutAirtime(payoutDto);
+    }
+
+    @PostMapping("/payout/bank")
+    public ResponseEntity<?> payoutBank(@RequestBody PayoutDto payoutDto) {
+        return payoutService.payoutBank(payoutDto);
+    }
+
+    @PostMapping("/payout/gift-card")
+    public ResponseEntity<?> payoutGifCard(@RequestBody PayoutDto payoutDto) {
+        return payoutService.payoutGiftCard(payoutDto);
+    }
 }
