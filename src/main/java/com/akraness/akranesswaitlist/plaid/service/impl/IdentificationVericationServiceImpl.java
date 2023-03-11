@@ -30,7 +30,6 @@ public class IdentificationVericationServiceImpl implements IdentificationVerica
         identityVerificationDto.setSecret(secret);
         String url = baseUrl + "identity_verification/create";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, identityVerificationDto, null);
-
         return ResponseEntity.ok().body(response.getBody());
     }
 
@@ -40,7 +39,27 @@ public class IdentificationVericationServiceImpl implements IdentificationVerica
         identityVerificationDto.setSecret(secret);
         String url = baseUrl + "identity_verification/get";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, identityVerificationDto, null);
-
         return ResponseEntity.ok().body(response.getBody());
     }
+
+    @Override
+    public ResponseEntity<CustomResponse> getList(IdentityVerificationDto identityVerificationDto) {
+        identityVerificationDto.setTemplate_id(templateId);
+        identityVerificationDto.setClient_id(clientId);
+        identityVerificationDto.setSecret(secret);
+        String url = baseUrl + "identity_verification/list";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, identityVerificationDto, null);
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> retry(IdentityVerificationDto identityVerificationDto) {
+        identityVerificationDto.setTemplate_id(templateId);
+        identityVerificationDto.setClient_id(clientId);
+        identityVerificationDto.setSecret(secret);
+        String url = baseUrl + "identity_verification/retry";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, identityVerificationDto, null);
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
 }

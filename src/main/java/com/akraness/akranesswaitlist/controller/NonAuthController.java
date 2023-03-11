@@ -107,6 +107,16 @@ public class NonAuthController {
         return identificationVericationService.get(request);
     }
 
+    @PostMapping("/list-identity-verification")
+    public ResponseEntity<?> listIdentityVerification(@RequestBody IdentityVerificationDto request ) {
+        return identificationVericationService.getList(request);
+    }
+
+    @PostMapping("/retry-identity-verification")
+    public ResponseEntity<?> retryIdentityVerification(@RequestBody IdentityVerificationDto request ) {
+        return identificationVericationService.retry(request);
+    }
+
     @DeleteMapping("/delete-sub-account")
     public ResponseEntity<?> deleteSubAccount(@RequestParam("id") String subAccountId) {
         return subAccountService.deleteSubAccount(subAccountId);
