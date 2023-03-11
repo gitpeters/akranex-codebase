@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -20,4 +22,5 @@ public class CustomResponse {
     private String id;
     private String request_id;
     private Object steps;
+    private List<Object> identity_verifications;
 }
