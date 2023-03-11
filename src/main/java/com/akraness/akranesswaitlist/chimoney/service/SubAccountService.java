@@ -7,4 +7,5 @@ import org.springframework.http.ResponseEntity;
 public interface SubAccountService {
     ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request);
     ResponseEntity<CustomResponse> getSubAccount(String subAccountId);
+    ResponseEntity<CustomResponse> deleteSubAccount(String subAccountId);
 }

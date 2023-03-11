@@ -74,6 +74,14 @@ public class SubAccountServiceImpl implements SubAccountService {
 
     }
 
+    @Override
+    public ResponseEntity<CustomResponse> deleteSubAccount(String subAccountId) {
+        String url = baseUrl + "sub-account/delete?id="+subAccountId;
+
+        ResponseEntity<CustomResponse> response = restTemplateService.delete(url, this.headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
     private HttpHeaders headers() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-API-KEY", apiKey);

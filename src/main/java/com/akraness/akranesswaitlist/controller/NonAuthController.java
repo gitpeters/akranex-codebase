@@ -103,4 +103,9 @@ public class NonAuthController {
     public ResponseEntity<?> retriveIdentityVerification(@RequestBody IdentityVerificationDto request ) {
         return identificationVericationService.get(request);
     }
+
+    @DeleteMapping("/delete-sub-account")
+    public ResponseEntity<?> deleteSubAccount(@RequestParam("id") String subAccountId) {
+        return subAccountService.deleteSubAccount(subAccountId);
+    }
 }
