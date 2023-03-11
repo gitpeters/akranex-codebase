@@ -25,9 +25,6 @@ public class NonAuthController {
     private final IService service;
     private final INotificationService notificationService;
     private final AuthenticationService authenticationService;
-    private final SubAccountService subAccountService;
-    private final IdentificationVericationService identificationVericationService;
-    private final PayoutService payoutService;
 
     @PostMapping("/join-waitlist")
     public ResponseEntity<Response> users(@RequestBody @Validated WaitListRequestDto requestDto) {
@@ -82,58 +79,8 @@ public class NonAuthController {
         return service.resendPhoneOtpCode(requestDto);
     }
 
-    @PostMapping("/create-sub-account")
-    public ResponseEntity<?> createSubAccount(@RequestBody @Validated SubAccountRequestDto request ) {
-        return subAccountService.createSubAccount(request);
-    }
-
-    @GetMapping("/get-sub-account")
-    public ResponseEntity<?> getSubAccount(@RequestParam("id") String subAccountId) {
-        return subAccountService.getSubAccount(subAccountId);
-    }
-
     @GetMapping("/get-countries")
     public ResponseEntity<?> getCountries() {
         return service.getCountries();
-    }
-
-    @PostMapping("/create-identity-verification")
-    public ResponseEntity<?> createIdentityVerification(@RequestBody IdentityVerificationDto request ) {
-        return identificationVericationService.create(request);
-    }
-
-    @PostMapping("/get-identity-verification")
-    public ResponseEntity<?> retriveIdentityVerification(@RequestBody IdentityVerificationDto request ) {
-        return identificationVericationService.get(request);
-    }
-
-    @PostMapping("/list-identity-verification")
-    public ResponseEntity<?> listIdentityVerification(@RequestBody IdentityVerificationDto request ) {
-        return identificationVericationService.getList(request);
-    }
-
-    @PostMapping("/retry-identity-verification")
-    public ResponseEntity<?> retryIdentityVerification(@RequestBody IdentityVerificationDto request ) {
-        return identificationVericationService.retry(request);
-    }
-
-    @DeleteMapping("/delete-sub-account")
-    public ResponseEntity<?> deleteSubAccount(@RequestParam("id") String subAccountId) {
-        return subAccountService.deleteSubAccount(subAccountId);
-    }
-
-    @PostMapping("/payout/airtime")
-    public ResponseEntity<?> payoutAirtime(@RequestBody PayoutDto payoutDto) {
-        return payoutService.payoutAirtime(payoutDto);
-    }
-
-    @PostMapping("/payout/bank")
-    public ResponseEntity<?> payoutBank(@RequestBody PayoutDto payoutDto) {
-        return payoutService.payoutBank(payoutDto);
-    }
-
-    @PostMapping("/payout/gift-card")
-    public ResponseEntity<?> payoutGifCard(@RequestBody PayoutDto payoutDto) {
-        return payoutService.payoutGiftCard(payoutDto);
     }
 }
