@@ -55,6 +55,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authorizeRequests()
 				.antMatchers(
 						"/api/v1/users/no-auth/**",
+						"/api/v1/chimoney/**",
+						"/api/v1/plaid/**",
 						"/api/v1/users/verify-pin",
 						"/actuator/**",
 						"/configuration/ui",

@@ -29,6 +29,15 @@ public class JwtUserDetailsService implements UserDetailsService {
 		if (!user.isActive()) {
 			throw new ApplicationAuthenticationException("Access denied, your account is currently locked. ");
 		}
+		if (!user.isMobileVerified()) {
+			throw new ApplicationAuthenticationException("Access denied, your mobile number has not been verified. ");
+		}
+		if (!user.isEmailVerified()) {
+			throw new ApplicationAuthenticationException("Access denied, your email address has not been verified. ");
+		}
+		if (user.getMagicPin() == null || user.getMagicPin().isBlank()) {
+			throw new ApplicationAuthenticationException("Access denied, your need to create your magic pin first.");
+		}
 		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
 				new ArrayList<>());
 	}

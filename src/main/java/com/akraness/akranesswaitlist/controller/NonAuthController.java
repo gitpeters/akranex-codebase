@@ -1,6 +1,12 @@
 package com.akraness.akranesswaitlist.controller;
 
+import com.akraness.akranesswaitlist.chimoney.dto.PayoutDto;
+import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
+import com.akraness.akranesswaitlist.chimoney.service.PayoutService;
+import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
+import com.akraness.akranesswaitlist.plaid.dto.IdentityVerificationDto;
+import com.akraness.akranesswaitlist.plaid.service.IdentificationVericationService;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.serviceimpl.AuthenticationService;
@@ -10,9 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/v1/users/no-auth")
@@ -74,5 +77,10 @@ public class NonAuthController {
     @PostMapping("/resend-phone-otp")
     public ResponseEntity<Response> resendPhoneOtpCode(@RequestBody @Validated ResendPhoneOtpRequest requestDto) throws JsonProcessingException {
         return service.resendPhoneOtpCode(requestDto);
+    }
+
+    @GetMapping("/get-countries")
+    public ResponseEntity<?> getCountries() {
+        return service.getCountries();
     }
 }
