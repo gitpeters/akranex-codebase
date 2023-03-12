@@ -4,6 +4,7 @@ import com.akraness.akranesswaitlist.dto.LoginRequestDto;
 import com.akraness.akranesswaitlist.dto.LoginResponseDto;
 import com.akraness.akranesswaitlist.dto.Response;
 import com.akraness.akranesswaitlist.entity.User;
+import com.akraness.akranesswaitlist.exception.ApplicationAuthenticationException;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.security.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +14,16 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +47,7 @@ public class AuthenticationService {
         final String token = jwtTokenUtil.generateToken(userDetails);
         LoginResponseDto resp_login = new LoginResponseDto(token,user.getId(), authenticationRequest.getUsername(),
                 user.getMobileNumber(),user.getFirstName(),user.getLastName(),user.getCountryCode(),
-                user.getDateOfBirth().toString(), user.getGender());
+                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified());
 
         Response resp = new Response();
         resp.setData(resp_login);
@@ -51,13 +57,14 @@ public class AuthenticationService {
     }
 
 
-    private void authenticate(String username, String password) throws Exception {
+    private ResponseEntity<?> authenticate(String username, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         } catch (DisabledException e) {
             throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
+            throw new ApplicationAuthenticationException("Invalid username or password", e);
         }
+        return null;
     }
 }

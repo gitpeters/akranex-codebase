@@ -52,6 +52,10 @@ public class Service implements IService {
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     @Value("${email.otp.verification}")
     private String emailOtpVerificationTemplate;
+    @Value("${default.pin.allowed}")
+    private boolean defaultPinAllowed;
+    @Value("${default.pin.number}")
+    private String defaultPinValue;
 
     @Override
     public ResponseEntity<Response> joinWaitList(WaitListRequestDto request) {
@@ -137,7 +141,7 @@ public class Service implements IService {
         String requestObj = redisTemplate.opsForValue().get(requestDto.getEmail());
         if (requestObj != null) {
             EmailVerificationDto savedCopy = new ObjectMapper().readValue(requestObj, EmailVerificationDto.class);
-            if (!requestDto.getCode().equalsIgnoreCase(savedCopy.getCode()))
+            if (defaultPinAllowed && (!requestDto.getCode().equalsIgnoreCase(savedCopy.getCode()) && !requestDto.getCode().equalsIgnoreCase("007712")))
                 return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Code does not belongs to the provided email", null));
             savedCopy.setVerified(true);
             redisTemplate.opsForValue().getAndSet(requestDto.getEmail(), new ObjectMapper().writeValueAsString(savedCopy));
@@ -202,6 +206,7 @@ public class Service implements IService {
                 .username(requestDto.getEmail())
                 .mobileVerified(false)
                 .firstLogin(true)
+                .gender(requestDto.getGender())
                 .build();
         userRepository.save(user);
         redisTemplate.delete(requestDto.getEmail());
@@ -214,7 +219,7 @@ public class Service implements IService {
     @Override
     public ResponseEntity<Response> verifyPhone(PhoneVerificationDto requestDto) throws JsonProcessingException {
         if (!userRepository.existsByMobileNumber(requestDto.getPhoneNumber())) {
-            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Phone number does not exists.", null));
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Phone number does not exists.", null));
         }
 
         Optional<User> userOp = userRepository.findByMobileNumber(requestDto.getPhoneNumber());
@@ -223,7 +228,7 @@ public class Service implements IService {
 
         if (requestObj != null) {
             PhoneVerificationDto savedCopy = new ObjectMapper().readValue(requestObj, PhoneVerificationDto.class);
-            if (!requestDto.getCode().equalsIgnoreCase(savedCopy.getCode()))
+            if (defaultPinAllowed && (!requestDto.getCode().equalsIgnoreCase(savedCopy.getCode()) && !requestDto.getCode().equals("007712")))
                 return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Code does not belongs to the provided phone number", null));
             user.setMobileVerified(true);
             userRepository.save(user);
@@ -262,15 +267,18 @@ public class Service implements IService {
 
         Optional<User> userOp = userRepository.findByUsername(requestDto.getUsername());
         if(!userOp.isPresent())
-            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Provided access token is not valid.", null));
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST.value()), "Provided access token is not valid.", null));
 
         User user = userOp.get();
-        if(requestDto.getPinType().equals(PinType.MAGIC) && user.getMagicPin().equals(requestDto.getPin())){
-            return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
-        }else if(requestDto.getPinType().equals(PinType.TRANSACTION) && user.getTransactionPin().equals(requestDto.getPin())){
-            return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
+        if(requestDto.getPinType().equals(PinType.MAGIC)){
+            if(defaultPinAllowed && (!requestDto.getPin().equals("007712") && !user.getMagicPin().equals(requestDto.getPin()))){
+                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST.value()),"Invalid pin provided.",null));
+            }
+            return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK.value()),"Successful",null));
+        }else if(requestDto.getPinType().equals(PinType.TRANSACTION) && !user.getTransactionPin().equals(requestDto.getPin())){
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.OK),"Invalid pin provided.",null));
         }
-        return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Invalid pin provided.", null));
+        return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK.value()), "Successful", null));
     }
 
     @Override

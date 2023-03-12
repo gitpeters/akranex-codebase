@@ -17,4 +17,6 @@ public class LoginResponseDto {
     private String country;
     private String dateOfBirth;
     private String gender;
+    private boolean emailVerified;
+    private boolean mobileVerified;
 }
