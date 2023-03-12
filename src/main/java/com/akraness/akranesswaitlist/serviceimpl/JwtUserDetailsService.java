@@ -23,15 +23,13 @@ public class JwtUserDetailsService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		Optional<com.akraness.akranesswaitlist.entity.User> user = userDao.findByUsername(username);
-		if (!user.isPresent()) {
-			throw new ApplicationAuthenticationException("User not found with username: " + username);
-		}
-		com.akraness.akranesswaitlist.entity.User user_entity = user.get();
-		if (!user_entity.isActive()) {
+		com.akraness.akranesswaitlist.entity.User user = userDao.findByUsername(username).orElseThrow(() ->
+				new ApplicationAuthenticationException("Invalid username and password combination"));
+
+		if (!user.isActive()) {
 			throw new ApplicationAuthenticationException("Access denied, your account is currently locked. ");
 		}
-		return new org.springframework.security.core.userdetails.User(user_entity.getUsername(), user_entity.getPassword(),
+		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
 				new ArrayList<>());
 	}
 }
