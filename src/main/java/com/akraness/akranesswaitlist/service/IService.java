@@ -20,4 +20,10 @@ ResponseEntity<Response> verifyPin(VerifyPinRequestDto requestDto);
 ResponseEntity<Response> resendPhoneOtpCode(ResendPhoneOtpRequest requestDto) throws JsonProcessingException;
 
 ResponseEntity<?> getCountries();
+
+ResponseEntity<?> passwordResetRequest(PasswordResetRequestDto passwordResetRequestDto) throws JsonProcessingException;
+
+ResponseEntity<Response> resetPassword(ResetPasswordDto requestDto) throws JsonProcessingException;
+
+ResponseEntity<Response> createAkranexTag(AkranexTagCreationRequestDto requestDto) throws JsonProcessingException;
 }
