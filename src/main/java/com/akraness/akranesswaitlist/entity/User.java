@@ -41,6 +41,7 @@ public class User extends BaseEntity implements UserDetails {
     private String magicPin;
     private String transactionPin;
     private String gender;
+    private String akranexTag;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.EMPTY_SET;

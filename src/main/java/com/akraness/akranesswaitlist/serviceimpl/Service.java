@@ -56,6 +56,8 @@ public class Service implements IService {
     private boolean defaultPinAllowed;
     @Value("${default.pin.number}")
     private String defaultPinValue;
+    @Value("${email.otp.reset-password}")
+    private String resetPasswordOtpTemplate;
 
     @Override
     public ResponseEntity<Response> joinWaitList(WaitListRequestDto request) {
@@ -107,30 +109,7 @@ public class Service implements IService {
 
     @Override
     public ResponseEntity<Response> preSignUp(EmailVerificationRequestDto requestDto) throws JsonProcessingException {
-        if (!utility.isInputValid(requestDto.getEmail(),emailRegexPattern)) {
-            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email is invalid.", null));
-        }
-
-        if (userRepository.existsByEmail(requestDto.getEmail())) {
-            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email exists already.", null));
-        }
-        String otp = utility.generateEmailVeirificationCode();
-        EmailVerificationDto verificationDto = EmailVerificationDto.builder()
-                .email(requestDto.getEmail())
-                .code(otp)
-                .build();
-
-        redisTemplate.opsForValue().set(requestDto.getEmail(), new ObjectMapper().writeValueAsString(verificationDto), Duration.ofMinutes(15));
-        NotificationDto notificationDto = NotificationDto.builder()
-                .message("Your verification code is " + otp)
-                .recipient(requestDto.getEmail())
-                .subject("verification")
-                .type(NotificationType.EMAIL)
-                .templateId(emailOtpVerificationTemplate)
-                .substitutions(Map.of("email",requestDto.getEmail(),"otp",verificationDto.getCode()))
-                .build();
-        notificationService.sendNotification(notificationDto);
-        return ResponseEntity.ok().body(new Response("200", "Please proceed to verifying the code sent to your email.", null));
+        return generateAndSendOtp(requestDto.getEmail(), false);
     }
 
     @Override
@@ -309,6 +288,92 @@ public class Service implements IService {
     @Override
     public ResponseEntity<?> getCountries() {
         return ResponseEntity.ok().body(countryRepository.findAll());
+    }
+
+    @Override
+    public ResponseEntity<?> passwordResetRequest(PasswordResetRequestDto requestDto) throws JsonProcessingException {
+        return generateAndSendOtp(requestDto.getEmail(), true);
+    }
+
+    @Override
+    public ResponseEntity<Response> resetPassword(ResetPasswordDto requestDto) throws JsonProcessingException {
+        if(!requestDto.getPassword().equalsIgnoreCase(requestDto.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Password do not match.", null));
+        }
+
+        String requestObj = redisTemplate.opsForValue().get(requestDto.getEmail());
+        if(requestObj == null) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email does not exist or code has expired.", null));
+        }
+
+        if (!userRepository.existsByEmail(requestDto.getEmail())) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Record with this email does not exists.", null));
+        }
+
+        User user = userRepository.findByEmail(requestDto.getEmail()).get();
+        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+
+        userRepository.save(user);
+
+        redisTemplate.opsForValue().getAndDelete(requestDto.getEmail());
+        return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
+
+    }
+
+    @Override
+    public ResponseEntity<Response> createAkranexTag(AkranexTagCreationRequestDto requestDto) throws JsonProcessingException {
+        Optional<User> userObj = userRepository.findByUsername(requestDto.getUsername());
+
+        if(!userObj.isPresent()) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "No user found with the specifed username", null));
+        }
+
+        if(userRepository.findByAkranexTag(requestDto.getAkranexTag()).isPresent()) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "Tag "+ requestDto.getAkranexTag() +" already exist for another user.", null));
+        }
+
+        User user = userObj.get();
+        user.setAkranexTag(requestDto.getAkranexTag());
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
+    }
+
+    private ResponseEntity<Response> generateAndSendOtp(String email, boolean forResetPassword) throws JsonProcessingException {
+        if (!utility.isInputValid(email, emailRegexPattern)) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email is invalid.", null));
+        }
+
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email exists already.", null));
+        }
+        String otp = utility.generateEmailVeirificationCode();
+        EmailVerificationDto verificationDto = EmailVerificationDto.builder()
+                .email(email)
+                .code(otp)
+                .build();
+
+        redisTemplate.opsForValue().set(email, new ObjectMapper().writeValueAsString(verificationDto), Duration.ofMinutes(15));
+        NotificationDto notificationDto = NotificationDto.builder()
+                .message("Your verification code is " + otp)
+                .recipient(email)
+                .subject("verification")
+                .type(NotificationType.EMAIL)
+                .templateId(emailOtpVerificationTemplate)
+                .substitutions(Map.of("email",email,"otp",verificationDto.getCode()))
+                .build();
+        if(forResetPassword) {
+            notificationDto.setMessage("Your password reset code is " + otp);
+            notificationDto.setSubject("Password reset");
+            notificationDto.setTemplateId(resetPasswordOtpTemplate);
+        }
+
+        notificationService.sendNotification(notificationDto);
+        return ResponseEntity.ok().body(new Response("200", "Please proceed to verifying the code sent to your email.", null));
+
     }
 
     private NotificationDto buildSignUpNotificationDto(SignupRequestDto requestDto) {

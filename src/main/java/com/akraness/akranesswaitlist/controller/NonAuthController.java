@@ -1,12 +1,6 @@
 package com.akraness.akranesswaitlist.controller;
 
-import com.akraness.akranesswaitlist.chimoney.dto.PayoutDto;
-import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
-import com.akraness.akranesswaitlist.chimoney.service.PayoutService;
-import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
-import com.akraness.akranesswaitlist.plaid.dto.IdentityVerificationDto;
-import com.akraness.akranesswaitlist.plaid.service.IdentificationVericationService;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.serviceimpl.AuthenticationService;
@@ -82,5 +76,25 @@ public class NonAuthController {
     @GetMapping("/get-countries")
     public ResponseEntity<?> getCountries() {
         return service.getCountries();
+    }
+
+    @PostMapping("/reset-password-request")
+    public ResponseEntity<?> resetPasswordRequest(@RequestBody @Validated PasswordResetRequestDto passwordResetRequestDto) throws JsonProcessingException {
+        return service.passwordResetRequest(passwordResetRequestDto);
+    }
+
+    @PostMapping("/verify-reset-password-otp")
+    public ResponseEntity<Response> verifyResetPasswordOtp(@RequestBody @Validated EmailVerificationDto requestDto) throws JsonProcessingException {
+        return service.verifyEmail(requestDto);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Response> resetPassword(@RequestBody @Validated ResetPasswordDto requestDto) throws JsonProcessingException {
+        return service.resetPassword(requestDto);
+    }
+
+    @PostMapping("/create-akranex-tag")
+    public ResponseEntity<Response> createAkranexTag(@RequestBody @Validated AkranexTagCreationRequestDto requestDto) throws JsonProcessingException {
+        return service.createAkranexTag(requestDto);
     }
 }
