@@ -109,3 +109,6 @@ default:
   pin:
     allowed: true
     number: 007712
+
+app:
+  firebase-configuration-file: akranex-dev-firebase-adminsdk-ho749-44e042f983.json

@@ -12,4 +12,5 @@ public class AkranessWaitListApplication {
 		SpringApplication.run(AkranessWaitListApplication.class, args);
 	}
 
+
 }

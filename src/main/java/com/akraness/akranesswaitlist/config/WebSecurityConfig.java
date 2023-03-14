@@ -58,6 +58,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 						"/api/v1/chimoney/**",
 						"/api/v1/plaid/**",
 						"/api/v1/users/verify-pin",
+						"/api/v1/firebase/**",
 						"/actuator/**",
 						"/configuration/ui",
 						"/swagger-resources/**",
