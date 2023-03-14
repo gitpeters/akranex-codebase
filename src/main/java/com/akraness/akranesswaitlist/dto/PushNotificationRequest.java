@@ -1,4 +1,4 @@
-package com.akraness.akranesswaitlist.firebaseNotification.model;
+package com.akraness.akranesswaitlist.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

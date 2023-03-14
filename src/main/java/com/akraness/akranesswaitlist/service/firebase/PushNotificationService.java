@@ -1,8 +1,8 @@
-package com.akraness.akranesswaitlist.firebaseNotification.service;
+package com.akraness.akranesswaitlist.service.firebase;
 
 import java.util.HashMap;
 import java.util.Map;
-import com.akraness.akranesswaitlist.firebaseNotification.model.PushNotificationRequest;
+import com.akraness.akranesswaitlist.dto.PushNotificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

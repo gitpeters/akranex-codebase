@@ -1,4 +1,4 @@
-package com.akraness.akranesswaitlist.firebaseNotification.service;
+package com.akraness.akranesswaitlist.service.firebase;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package com.akraness.akranesswaitlist.firebaseNotification.exception;
+package com.akraness.akranesswaitlist.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
