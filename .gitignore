@@ -33,3 +33,5 @@ build/
 .vscode/
 /logs/
 
+akranex-wait-list/logs/akranex-wait-list.log
+
