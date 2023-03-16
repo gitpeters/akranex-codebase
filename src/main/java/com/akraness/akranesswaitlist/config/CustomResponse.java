@@ -1,6 +1,8 @@
 package com.akraness.akranesswaitlist.config;
 
+import com.akraness.akranesswaitlist.identitypass.dto.BVNDataDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,4 +25,10 @@ public class CustomResponse {
     private String request_id;
     private Object steps;
     private List<Object> identity_verifications;
+
+    //IdentityPass
+    private Object detail;
+    private String response_code;
+    private BVNDataDto bvn_data;
+    private Object verification;
 }

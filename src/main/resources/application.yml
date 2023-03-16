@@ -112,3 +112,8 @@ default:
 
 app:
   firebase-configuration-file: akranex-dev-firebase-adminsdk-ho749-44e042f983.json
+
+myidentitypass:
+  api-key: gvdGz52t.dXK3O2KX6eiBeMJd4x3TXeC8aO7HW5gc
+  app-id: 72c6dfa4-fa10-41a1-b45f-40e485b1bc76
+  base-url: https://api.myidentitypay.com/api/v2/
