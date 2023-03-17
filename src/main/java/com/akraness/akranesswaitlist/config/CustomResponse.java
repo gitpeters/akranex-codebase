@@ -4,13 +4,17 @@ import com.akraness.akranesswaitlist.identitypass.data.dto.*;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomResponse {
     //Chimoney error and response
@@ -34,9 +38,10 @@ public class CustomResponse {
     private DLDataDto frsc_data;
     private NINDataDto nin_data;
     private VotersCardDataDto vc_data;
-    // Mapping ip_data to api response "data"
-//    @JsonProperty("data")
-//    private IntPassportDataDto ip_data;
     private KYCVerification verification;
     private String message;
+    public CustomResponse(String status, String error) {
+        this.status = status;
+        this.error = error;
+    }
 }

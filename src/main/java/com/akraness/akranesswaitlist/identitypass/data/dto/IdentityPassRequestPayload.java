@@ -11,4 +11,5 @@ public class IdentityPassRequestPayload {
     private String dob;
     private String last_name;
     private String state;
+    private String number_nin;
 }
