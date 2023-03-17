@@ -22,29 +22,6 @@ import java.util.Map;
 public class KYCController {
     private final IdentityPassService identityPassService;
 
-//    @PostMapping("/validate/ng/bvn")
-//    public ResponseEntity<?> validateBvn(@RequestBody IdentityPassRequestNumber request) {
-//        return identityPassService.validateBvn(request);
-//    }
-//    @PostMapping("/validate/ng/nin")
-//    public ResponseEntity<?> validateNin(@RequestBody IdentityPassRequestNumber request) {
-//        return identityPassService.validateNin(request);
-//    }
-//    @PostMapping("/validate/ng/voters_card")
-//    public ResponseEntity<?> validateVotersCard(@RequestBody IdentityPassRequestPayload request) {
-//        return identityPassService.validateVotersCard(request);
-//    }
-//
-//    @PostMapping("/validate/ng/national_passport")
-//    public ResponseEntity<?> validateVotersIntPassport(@RequestBody IdentityPassRequestPayload request) {
-//        return identityPassService.validateIntPassport(request);
-//    }
-//
-//    @PostMapping("/validate/ng/drivers_license")
-//    public ResponseEntity<?> validateVotersDriversLicense(@RequestBody IdentityPassRequestPayload request) {
-//        return identityPassService.validateDriverLicense(request);
-//    }
-
     @PostMapping("/kyc_validate")
     public ResponseEntity<?> validateRequest(@RequestBody Map<String, Object> request) throws JsonProcessingException {
         String countryCode = (String) request.get("countryCode");
@@ -84,7 +61,11 @@ public class KYCController {
                 response.put("countryValidation", countryValidation);
                 return ResponseEntity.badRequest().body(response);
             }
-        } else {
+        } else if("GH".equals(countryCode)){
+            //TODO: create logic for other countries
+            return null;
+        }
+        else {
             // Invalid countryCode
             Map<String, Object> countryValidation = new HashMap<>();
             countryValidation.put("valid", false);
