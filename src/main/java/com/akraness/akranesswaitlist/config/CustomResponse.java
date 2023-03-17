@@ -1,7 +1,7 @@
 package com.akraness.akranesswaitlist.config;
 
-import com.akraness.akranesswaitlist.identitypass.data.dto.BVNDataDto;
-import com.akraness.akranesswaitlist.identitypass.data.dto.DLDataDto;
+import com.akraness.akranesswaitlist.identitypass.data.dto.*;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -32,6 +32,11 @@ public class CustomResponse {
     private String response_code;
     private BVNDataDto bvn_data;
     private DLDataDto frsc_data;
-    private Object verification;
+    private NINDataDto nin_data;
+    private VotersCardDataDto vc_data;
+    // Mapping ip_data to api response "data"
+//    @JsonProperty("data")
+//    private IntPassportDataDto ip_data;
+    private KYCVerification verification;
     private String message;
 }
