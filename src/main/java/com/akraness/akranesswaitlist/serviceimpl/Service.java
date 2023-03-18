@@ -335,8 +335,12 @@ public class Service implements IService {
         }
 
         User user = userObj.get();
-        user.setAkranexTag(requestDto.getAkranexTag());
+        if(user.getAkranexTag() != null) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "You cannot recreate your AkranexTag", null));
+        }
 
+        user.setAkranexTag(requestDto.getAkranexTag());
         userRepository.save(user);
 
         return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));

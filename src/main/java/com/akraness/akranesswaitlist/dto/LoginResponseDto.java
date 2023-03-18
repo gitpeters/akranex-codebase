@@ -19,4 +19,5 @@ public class LoginResponseDto {
     private String gender;
     private boolean emailVerified;
     private boolean mobileVerified;
+    private String akranexTag;
 }
