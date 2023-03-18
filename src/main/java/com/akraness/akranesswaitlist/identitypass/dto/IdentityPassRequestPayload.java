@@ -15,4 +15,9 @@ public class IdentityPassRequestPayload {
     private String firstname;
     private String lastname;
     private String nationalid;
+    private String type;
+    private String customer_reference;
+    private String customer_name;
+    private String reservation_number;
+    private String reg_number;
 }

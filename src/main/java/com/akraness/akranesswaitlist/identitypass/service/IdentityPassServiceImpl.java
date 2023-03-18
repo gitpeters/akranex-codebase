@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -83,6 +84,41 @@ public class IdentityPassServiceImpl implements IdentityPassService {
     }
 
     @Override
+    public ResponseEntity<CustomResponse> validateGH_IntPassport(IdentityPassRequestPayload request) {
+        String url = dataBaseUrl + "gh/passport";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> validateGH_VotersCard(IdentityPassRequestPayload request) {
+        String url = dataBaseUrl + "gh/voters";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> validateGH_DriverLicense(IdentityPassRequestPayload request) {
+        String url = dataBaseUrl + "gh/drivers_license";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> validateUG_company(IdentityPassRequestPayload request) {
+        String url = dataBaseUrl + "ug/company";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> validateZA_nationalId(IdentityPassRequestPayload request) {
+        String url = dataBaseUrl + "sa/national_id";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
     public ResponseEntity<CustomResponse> validateNG_IntPassport(IdentityPassRequestPayload request) {
         String url = dataBaseUrl + "national_passport";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
@@ -132,11 +168,30 @@ public class IdentityPassServiceImpl implements IdentityPassService {
             }else if("voters_card".equals(dataType)){
                 return baseUrl + "v1/biometrics/merchant/data/verification/voters_card";
             }
-        } else if ("GH".equals(countryCode)) {
-            if ("ssn".equals(dataType)) {
-                return dataBaseUrl + "ssn";
-            } else if ("tin".equals(dataType)) {
-                return dataBaseUrl + "tin";
+        } else if ("KE".equals(countryCode)) {
+            if ("national_identity".equals(dataType)) {
+                return dataBaseUrl + "ke/passportK";
+            } else if ("passport".equals(dataType)) {
+                return dataBaseUrl + "ke/passportK";
+            }else if("drivers_license".equals(dataType)){
+                return dataBaseUrl + "ke/drivers_licensek";
+            }
+        }else if("GH".equals(countryCode)){
+            if ("voters_card".equals(dataType)) {
+                return dataBaseUrl + "gh/voters";
+            } else if ("national_passport".equals(dataType)) {
+                return dataBaseUrl + "gh/passport";
+            }else if("drivers_license".equals(dataType)){
+                return dataBaseUrl + "gh/drivers_license";
+            }
+        }else if("UG".equals(countryCode)){
+            if("company".equals(dataType)){
+                return dataBaseUrl + "ug/company";
+            }
+        }
+        else if("ZA".equals(countryCode)){
+            if("national_id".equals(dataType)){
+                return dataBaseUrl + "sa/national_id";
             }
         }
         return null;
@@ -161,6 +216,10 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         payload.setFirstname((String) map.get("firstname"));
         payload.setLastname((String) map.get("lastname"));
         payload.setNationalid((String) map.get("nationalid"));
+        payload.setCustomer_name((String) map.get("customer_name"));
+        payload.setCustomer_reference((String) map.get("customer_reference"));
+        payload.setReservation_number((String) map.get("reservation_number"));
+        payload.setReg_number((String) map.get("reg_number"));
         return payload;
     }
 }
