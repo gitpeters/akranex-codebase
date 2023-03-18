@@ -1,4 +1,4 @@
-package com.akraness.akranesswaitlist.identitypass.data.dto;
+package com.akraness.akranesswaitlist.identitypass.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
@@ -12,4 +12,7 @@ public class IdentityPassRequestPayload {
     private String last_name;
     private String state;
     private String number_nin;
+    private String firstname;
+    private String lastname;
+    private String nationalid;
 }
