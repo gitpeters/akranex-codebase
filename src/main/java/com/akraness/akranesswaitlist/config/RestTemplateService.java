@@ -6,6 +6,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,9 +22,9 @@ public class RestTemplateService {
     }
 
     public <T> ResponseEntity<CustomResponse> post(String url, T req, HttpHeaders headers) {
+
         HttpEntity entity = headers == null ? new HttpEntity(req) : new HttpEntity(req, headers);
         ResponseEntity<CustomResponse> response = restTemplate.exchange(url, HttpMethod.POST, entity, CustomResponse.class);
-
         return response;
     }
 

@@ -34,4 +34,4 @@ build/
 /logs/
 
 akranex-wait-list/logs/akranex-wait-list.log
-logs/akranex-wait-list.log
+/logs/akranex-wait-list.log

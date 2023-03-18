@@ -1,16 +1,20 @@
 package com.akraness.akranesswaitlist.config;
 
-import com.akraness.akranesswaitlist.identitypass.data.dto.BVNDataDto;
-import com.akraness.akranesswaitlist.identitypass.data.dto.DLDataDto;
+import com.akraness.akranesswaitlist.identitypass.data.dto.*;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomResponse {
     //Chimoney error and response
@@ -32,6 +36,12 @@ public class CustomResponse {
     private String response_code;
     private BVNDataDto bvn_data;
     private DLDataDto frsc_data;
-    private Object verification;
+    private NINDataDto nin_data;
+    private VotersCardDataDto vc_data;
+    private KYCVerification verification;
     private String message;
+    public CustomResponse(String status, String error) {
+        this.status = status;
+        this.error = error;
+    }
 }
