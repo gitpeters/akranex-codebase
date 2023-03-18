@@ -47,7 +47,7 @@ public class AuthenticationService {
         final String token = jwtTokenUtil.generateToken(userDetails);
         LoginResponseDto resp_login = new LoginResponseDto(token,user.getId(), authenticationRequest.getUsername(),
                 user.getMobileNumber(),user.getFirstName(),user.getLastName(),user.getCountryCode(),
-                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified());
+                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified(),user.getAkranexTag());
 
         Response resp = new Response();
         resp.setData(resp_login);
