@@ -26,4 +26,6 @@ ResponseEntity<?> passwordResetRequest(PasswordResetRequestDto passwordResetRequ
 ResponseEntity<Response> resetPassword(ResetPasswordDto requestDto) throws JsonProcessingException;
 
 ResponseEntity<Response> createAkranexTag(AkranexTagCreationRequestDto requestDto) throws JsonProcessingException;
+
+    //ResponseEntity<Response> UploadProfilePic( requestDto) throws JsonProcessingException;
 }
