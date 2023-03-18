@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -100,4 +101,10 @@ public class NonAuthController {
     public ResponseEntity<Response> createAkranexTag(@RequestBody @Validated AkranexTagCreationRequestDto requestDto) throws JsonProcessingException {
         return service.createAkranexTag(requestDto);
     }
+
+
+//    @PostMapping("/upload-profile-pic")
+//    public ResponseEntity<Response> uploadProfilePic(@RequestParam("file") MultipartFile file, @RequestParam("userid") Long userid ) throws JsonProcessingException {
+//        return service.
+//    }
 }
