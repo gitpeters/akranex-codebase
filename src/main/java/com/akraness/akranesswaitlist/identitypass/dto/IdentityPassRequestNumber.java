@@ -1,4 +1,4 @@
-package com.akraness.akranesswaitlist.identitypass.data.dto;
+package com.akraness.akranesswaitlist.identitypass.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

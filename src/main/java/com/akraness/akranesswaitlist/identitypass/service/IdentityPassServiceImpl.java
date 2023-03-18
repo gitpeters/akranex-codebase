@@ -1,27 +1,27 @@
-package com.akraness.akranesswaitlist.identitypass.data.service;
+package com.akraness.akranesswaitlist.identitypass.service;
 
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
-import com.akraness.akranesswaitlist.identitypass.data.dto.IdentityPassRequestNumber;
-import com.akraness.akranesswaitlist.identitypass.data.dto.IdentityPassRequestPayload;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NoArgsConstructor;
+import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequest;
+import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequestPayload;
+import com.akraness.akranesswaitlist.identitypass.repository.IdentityPassRepo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IdentityPassServiceImpl implements IdentityPassService {
     private final RestTemplateService restTemplateService;
+
+    private final IdentityPassRepo identityPassRepo;
 
     @Value("${myidentitypass.api-key}")
     private String apiKey;
@@ -33,16 +33,19 @@ public class IdentityPassServiceImpl implements IdentityPassService {
     @Value("${myidentitypass.data-base-bvn-url}")
     private String dataBaseUrl;
 
+    // Validation for Nigeria
     @Override
-    public ResponseEntity<CustomResponse> validateBvn(IdentityPassRequestPayload  request) {
+    public ResponseEntity<CustomResponse> validateNG_Bvn(IdentityPassRequestPayload  request) {
         String url = dataBaseUrl + "bvn";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-
+        if (request == null) {
+            return ResponseEntity.badRequest().body(new CustomResponse("false", "Invalid country code or data type"));
+        }
         return ResponseEntity.ok().body(response.getBody());
     }
 
     @Override
-    public ResponseEntity<CustomResponse> validateNin(IdentityPassRequestPayload  request) {
+    public ResponseEntity<CustomResponse> validateNG_Nin(IdentityPassRequestPayload  request) {
         String url = dataBaseUrl + "nin_wo_face";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
 
@@ -50,15 +53,37 @@ public class IdentityPassServiceImpl implements IdentityPassService {
     }
 
     @Override
-    public ResponseEntity<CustomResponse> validateVotersCard(IdentityPassRequestPayload request) {
+    public ResponseEntity<CustomResponse> validateNG_VotersCard(IdentityPassRequestPayload request) {
         String url = baseUrl + "v1/biometrics/merchant/data/verification/voters_card";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
 
         return ResponseEntity.ok().body(response.getBody());
     }
 
+    // Validation for Kenya
     @Override
-    public ResponseEntity<CustomResponse> validateIntPassport(IdentityPassRequestPayload request) {
+    public ResponseEntity<CustomResponse> validateKE_NationalId(IdentityPassRequestPayload request) {
+        String url = dataBaseUrl + "ke/national_id";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> validateKE_Passport(IdentityPassRequestPayload request) {
+        String url = dataBaseUrl + "ke/passportK";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> validateKE_DriversLicense(IdentityPassRequestPayload request) {
+        String url = dataBaseUrl + "ke/drivers_licensek";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> validateNG_IntPassport(IdentityPassRequestPayload request) {
         String url = dataBaseUrl + "national_passport";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
 
@@ -66,7 +91,7 @@ public class IdentityPassServiceImpl implements IdentityPassService {
     }
 
     @Override
-    public ResponseEntity<CustomResponse> validateDriverLicense(IdentityPassRequestPayload request) {
+    public ResponseEntity<CustomResponse> validateNG_DriverLicense(IdentityPassRequestPayload request) {
         String url = dataBaseUrl + "drivers_license/basic";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
 
@@ -78,6 +103,12 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         String dataType = (String) request.get("dataType");
         Object data = request.get("data");
         String url = getUrl(countryCode, dataType);
+        //Save payload and country code to db
+        IdentityPassRequest identityPass = new IdentityPassRequest();
+        identityPass.setCountryCode(countryCode);
+        identityPass.setPayload((String) data);
+        log.info("Saving {} and {} to database", countryCode, data);
+        identityPassRepo.save(identityPass);
         // checking if the url is null
         if (url == null) {
             return ResponseEntity.badRequest().body(new CustomResponse("false", "Invalid country code or data type"));
@@ -127,6 +158,9 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         payload.setState((String) map.get("state"));
         payload.setDob((String) map.get("dob"));
         payload.setNumber_nin((String) map.get("number_nin"));
+        payload.setFirstname((String) map.get("firstname"));
+        payload.setLastname((String) map.get("lastname"));
+        payload.setNationalid((String) map.get("nationalid"));
         return payload;
     }
 }

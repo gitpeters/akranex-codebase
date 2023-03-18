@@ -1,9 +1,7 @@
 package com.akraness.akranesswaitlist.config;
 
-import com.akraness.akranesswaitlist.identitypass.data.dto.*;
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.akraness.akranesswaitlist.identitypass.dto.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
