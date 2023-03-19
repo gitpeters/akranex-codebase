@@ -40,10 +40,38 @@ public class KYCController {
 
         // Countries using the application that support document verification
         Map<String, Function<IdentityPassDocumentRequestPayload, ResponseEntity<CustomResponse>>> validationMethods = new HashMap<>();
-        validationMethods.put("NG", identityPassService::validateDocument);
-        validationMethods.put("ET", identityPassService::validateDocument);
-        validationMethods.put("US", identityPassService::validateDocument);
-        validationMethods.put("CD", identityPassService::validateDocument);
+        validationMethods.put("NG", identityPassService::validateDocument);//NIGERIA
+        validationMethods.put("KE", identityPassService::validateDocument);//KENYA
+        validationMethods.put("GH", identityPassService::validateDocument);//GHANA
+        validationMethods.put("ZA", identityPassService::validateDocument);//SOUTH AFRICA
+        validationMethods.put("TZ", identityPassService::validateDocument);//TANZANIA
+        validationMethods.put("ET", identityPassService::validateDocument);//ETHIOPIA
+        validationMethods.put("CD", identityPassService::validateDocument);//CONGO
+        validationMethods.put("GA", identityPassService::validateDocument);//GABON
+        validationMethods.put("BJ", identityPassService::validateDocument);//BENIN
+        validationMethods.put("RW", identityPassService::validateDocument);//RWANDA
+        validationMethods.put("SL", identityPassService::validateDocument);//SIERRA LEONE
+        validationMethods.put("UG", identityPassService::validateDocument);//UGANDA
+        validationMethods.put("ZM", identityPassService::validateDocument);//ZAMBIA
+        validationMethods.put("US", identityPassService::validateDocument);//UNITED STATES OF AMERICA
+        validationMethods.put("CI", identityPassService::validateDocument);//COTE D'IVOIRE
+        validationMethods.put("CA", identityPassService::validateDocument);//CANADA
+        validationMethods.put("IN", identityPassService::validateDocument);//INDIA
+        validationMethods.put("GB", identityPassService::validateDocument);//UNITED KINGDOM
+        validationMethods.put("DE", identityPassService::validateDocument);//GERMANY
+        validationMethods.put("FR", identityPassService::validateDocument);//FRANCE
+        validationMethods.put("NL", identityPassService::validateDocument);//NETHERLANDS
+        validationMethods.put("IE", identityPassService::validateDocument);//IRELAND
+        validationMethods.put("ES", identityPassService::validateDocument);//SPAIN
+        validationMethods.put("SE", identityPassService::validateDocument);//SWEDEN
+        validationMethods.put("DK", identityPassService::validateDocument);//DENMARK
+        validationMethods.put("IT", identityPassService::validateDocument);//ITALY
+        validationMethods.put("PT", identityPassService::validateDocument);//PORTUGAL
+        validationMethods.put("PL", identityPassService::validateDocument);//POLAND
+        validationMethods.put("LT", identityPassService::validateDocument);//LITHUANIA
+        validationMethods.put("LV", identityPassService::validateDocument);//LATVIA
+        validationMethods.put("EE", identityPassService::validateDocument);//ESTONIA
+        validationMethods.put("NO", identityPassService::validateDocument);//NORWAY
 
         // Expected data type to be supply for document verficiation
         List<String> validDataTypes =
