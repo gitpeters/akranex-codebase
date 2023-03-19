@@ -1,6 +1,7 @@
 package com.akraness.akranesswaitlist.identitypass.service;
 
 import com.akraness.akranesswaitlist.config.CustomResponse;
+import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassDocumentRequestPayload;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequestPayload;
 import org.springframework.http.ResponseEntity;
 
@@ -24,7 +25,11 @@ public interface IdentityPassService {
 
     ResponseEntity<CustomResponse> validateUG_company(IdentityPassRequestPayload request);
 
+    ResponseEntity<CustomResponse> validateDocument(IdentityPassDocumentRequestPayload request);
+
     ResponseEntity<CustomResponse> validateZA_nationalId(IdentityPassRequestPayload request);
     ResponseEntity<CustomResponse> validateRequest(String countryCode, Map<String, Object> request);
     IdentityPassRequestPayload mapToIdentityPassRequestPayload(LinkedHashMap<String, Object> map);
+
+    IdentityPassDocumentRequestPayload mapToIdentityPassDocumentRequestPayload(LinkedHashMap<String, Object> map);
 }

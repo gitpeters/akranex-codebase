@@ -2,6 +2,7 @@ package com.akraness.akranesswaitlist.identitypass.service;
 
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
+import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassDocumentRequestPayload;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequest;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequestPayload;
 import com.akraness.akranesswaitlist.identitypass.repository.IdentityPassRepo;
@@ -12,7 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import javax.xml.bind.DatatypeConverter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -107,6 +108,13 @@ public class IdentityPassServiceImpl implements IdentityPassService {
     @Override
     public ResponseEntity<CustomResponse> validateUG_company(IdentityPassRequestPayload request) {
         String url = dataBaseUrl + "ug/company";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<CustomResponse> validateDocument(IdentityPassDocumentRequestPayload request) {
+        String url = dataBaseUrl + "document";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
         return ResponseEntity.ok().body(response.getBody());
     }
@@ -220,6 +228,14 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         payload.setCustomer_reference((String) map.get("customer_reference"));
         payload.setReservation_number((String) map.get("reservation_number"));
         payload.setReg_number((String) map.get("reg_number"));
+        return payload;
+    }
+
+    public IdentityPassDocumentRequestPayload mapToIdentityPassDocumentRequestPayload(LinkedHashMap<String, Object> map) {
+        IdentityPassDocumentRequestPayload payload = new IdentityPassDocumentRequestPayload();
+        payload.setDoc_country((String) map.get("doc_country"));
+        payload.setDoc_type((String) map.get("doc_type"));
+        payload.setDoc_image((String) map.get("doc_image"));
         return payload;
     }
 }
