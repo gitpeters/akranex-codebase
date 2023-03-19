@@ -11,16 +11,20 @@ public interface IdentityPassService {
     ResponseEntity<CustomResponse> validateNG_Bvn(IdentityPassRequestPayload  request);
     ResponseEntity<CustomResponse> validateNG_Nin(IdentityPassRequestPayload  request);
     ResponseEntity<CustomResponse> validateNG_VotersCard(IdentityPassRequestPayload request);
-
-    ResponseEntity<CustomResponse> validateKE_NationalId(IdentityPassRequestPayload request);
-
-    ResponseEntity<CustomResponse> validateKE_Passport(IdentityPassRequestPayload request);
-
-    ResponseEntity<CustomResponse> validateKE_DriversLicense(IdentityPassRequestPayload request);
     ResponseEntity<CustomResponse> validateNG_IntPassport(IdentityPassRequestPayload request);
-
     ResponseEntity<CustomResponse> validateNG_DriverLicense(IdentityPassRequestPayload request);
 
+    ResponseEntity<CustomResponse> validateKE_NationalId(IdentityPassRequestPayload request);
+    ResponseEntity<CustomResponse> validateKE_Passport(IdentityPassRequestPayload request);
+    ResponseEntity<CustomResponse> validateKE_DriversLicense(IdentityPassRequestPayload request);
+
+    ResponseEntity<CustomResponse> validateGH_IntPassport(IdentityPassRequestPayload request);
+    ResponseEntity<CustomResponse> validateGH_VotersCard(IdentityPassRequestPayload request);
+    ResponseEntity<CustomResponse> validateGH_DriverLicense(IdentityPassRequestPayload request);
+
+    ResponseEntity<CustomResponse> validateUG_company(IdentityPassRequestPayload request);
+
+    ResponseEntity<CustomResponse> validateZA_nationalId(IdentityPassRequestPayload request);
     ResponseEntity<CustomResponse> validateRequest(String countryCode, Map<String, Object> request);
-    public IdentityPassRequestPayload mapToIdentityPassRequestPayload(LinkedHashMap<String, Object> map);
+    IdentityPassRequestPayload mapToIdentityPassRequestPayload(LinkedHashMap<String, Object> map);
 }
