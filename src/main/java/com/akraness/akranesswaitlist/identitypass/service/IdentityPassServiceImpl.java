@@ -162,7 +162,7 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         return ResponseEntity.ok().body(response.getBody());
     }
 
-    // Rerouting the api url based on the country code and data type
+    // Re-routing the api url based on the country code and data type
     private String getUrl(String countryCode, String dataType) {
         if ("NG".equals(countryCode)) {
             if ("bvn".equals(dataType)) {

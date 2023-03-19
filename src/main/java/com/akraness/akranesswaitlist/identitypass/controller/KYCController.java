@@ -80,7 +80,6 @@ public class KYCController {
                         "drivers_license", "voters_card",
                         "national_identity");
 
-        // Checking for the country code
         if("data".equals(type)){
             if ("NG".equals(countryCode)) {
                 // Checking for the data type
