@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ISubAccountRepository extends JpaRepository<SubAccount, Long> {
     Optional<SubAccount> findByUserId(Integer userId);
+    Optional<SubAccount> findByUserIdAndCountryCode(Integer userId, String countryCode);
 }

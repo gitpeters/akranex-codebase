@@ -14,7 +14,7 @@ public class SubAccountController {
     private final SubAccountService subAccountService;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createSubAccount(@RequestBody @Validated SubAccountRequestDto request ) {
+    public ResponseEntity<?> createSubAccount(@RequestBody SubAccountRequestDto request ) {
         return subAccountService.createSubAccount(request);
     }
 

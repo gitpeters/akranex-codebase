@@ -1,5 +1,6 @@
 package com.akraness.akranesswaitlist.chimoney.service.impl;
 
+import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
@@ -14,6 +15,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,18 +36,21 @@ public class SubAccountServiceImpl implements SubAccountService {
         if (utility.isNullOrEmpty(request.getEmail()))
             return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("email is required.").build());
 
-        if (utility.isNullOrEmpty(request.getName()))
-            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("name is required.").build());
+        if (utility.isNullOrEmpty(request.getAkranexTag()))
+            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("akranexTag is required.").build());
+
+        if (utility.isNullOrEmpty(request.getCountryCode()))
+            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("countryCode is required.").build());
 
         if (request.getUserId() == null)
             return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("userId is required.").build());
 
-        Optional<SubAccount> subAccount = subAccountRepository.findByUserId(request.getUserId());
+        Optional<SubAccount> subAccount = subAccountRepository.findByUserIdAndCountryCode(request.getUserId(), request.getCountryCode());
         if(subAccount.isPresent())
-            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("sub account for this user already exists").build());
+            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("You already have sub account created for this region").build());
 
         Map<String, String> req = new HashMap<>();
-        req.put("name", request.getName());
+        req.put("name", request.getAkranexTag());
         req.put("email", request.getEmail());
 
         String url = baseUrl + "sub-account/create";
@@ -57,10 +62,14 @@ public class SubAccountServiceImpl implements SubAccountService {
             SubAccount subacct = SubAccount.builder()
                     .subAccountId(map.get("id"))
                     .uid(map.get("uid"))
-                    .userId(request.getUserId()).build();
+                    .userId(request.getUserId())
+                    .countryCode(request.getCountryCode())
+                    .build();
 
             subAccountRepository.save(subacct);
         }
+
+
 
         return ResponseEntity.ok().body(response.getBody());
     }
@@ -70,6 +79,26 @@ public class SubAccountServiceImpl implements SubAccountService {
         String url = baseUrl + "sub-account/get?id="+subAccountId;
 
         ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
+
+        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
+            ObjectMapper oMapper = new ObjectMapper();
+            Map<String, Object> map = oMapper.convertValue(response.getBody().getData(), Map.class);
+            List<Object> wallets = (List<Object>) map.get("wallets");
+
+            for(Object walletObj: wallets) {
+                Map<String, Object> walletData = oMapper.convertValue(walletObj, Map.class);
+                String walletType = (String) walletData.get("type");
+
+                if(!walletType.equalsIgnoreCase("chi")) continue;
+
+                List aaa = (List) walletData.get("transactions");
+
+                //BalanceDto balance = oMapper.convertValue(aaa.get(0), BalanceDto.class);
+
+
+                String s = "hey";
+            }
+        }
         return ResponseEntity.ok().body(response.getBody());
 
     }

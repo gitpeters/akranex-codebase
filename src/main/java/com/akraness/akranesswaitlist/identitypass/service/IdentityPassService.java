@@ -25,11 +25,9 @@ public interface IdentityPassService {
 
     ResponseEntity<CustomResponse> validateUG_company(IdentityPassRequestPayload request);
 
-    ResponseEntity<CustomResponse> validateDocument(IdentityPassDocumentRequestPayload request);
+    ResponseEntity<CustomResponse> validateDocument(Map<String, Object> request);
 
     ResponseEntity<CustomResponse> validateZA_nationalId(IdentityPassRequestPayload request);
-    ResponseEntity<CustomResponse> validateRequest(String countryCode, Map<String, Object> request);
-    IdentityPassRequestPayload mapToIdentityPassRequestPayload(LinkedHashMap<String, Object> map);
+    ResponseEntity<CustomResponse> validateRequest(Map<String, Object> request);
 
-    IdentityPassDocumentRequestPayload mapToIdentityPassDocumentRequestPayload(LinkedHashMap<String, Object> map);
 }
