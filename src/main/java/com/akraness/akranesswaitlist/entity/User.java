@@ -42,8 +42,8 @@ public class User extends BaseEntity implements UserDetails {
     private String transactionPin;
     private String gender;
     private String akranexTag;
-    private String kycVerificationStatus;
-    private String kycVerificationMessage;
+    private String kycStatus;
+    private String kycStatusMessage;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.EMPTY_SET;

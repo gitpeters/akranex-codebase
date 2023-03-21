@@ -21,7 +21,7 @@ import java.util.function.Function;
 public class KYCController {
     private final IdentityPassService identityPassService;
 
-    @PostMapping("/kyc_validate")
+    @PostMapping("/kyc-validate")
     public ResponseEntity<?> validateRequest(@RequestBody Map<String, Object> request) throws JsonProcessingException {
         Object data = request.get("data");
 

@@ -6,6 +6,7 @@ import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassDocumentRequestPayload;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequest;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequestPayload;
+import com.akraness.akranesswaitlist.identitypass.dto.KYCVerification;
 import com.akraness.akranesswaitlist.identitypass.repository.IdentityPassRepo;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.util.KYCVericationStatus;
@@ -28,8 +29,6 @@ import java.util.function.Function;
 public class IdentityPassServiceImpl implements IdentityPassService {
     private final RestTemplateService restTemplateService;
 
-    private final IdentityPassRepo identityPassRepo;
-
     @Value("${myidentitypass.api-key}")
     private String apiKey;
     @Value("${myidentitypass.app-id}")
@@ -42,83 +41,78 @@ public class IdentityPassServiceImpl implements IdentityPassService {
 
     private final IUserRepository userRepository;
 
-    // Validation for Nigeria
     @Override
-    public ResponseEntity<CustomResponse> validateNG_Bvn(IdentityPassRequestPayload  request) {
-        String url = dataBaseUrl + "bvn";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        if (request == null) {
-            return ResponseEntity.badRequest().body(new CustomResponse("false", "Invalid country code or data type"));
+    public ResponseEntity<CustomResponse> validateRequest(Map<String, Object> request) {
+        String type = (String) request.get("type");
+        String dataType = (String) request.get("dataType");
+
+        Optional <User> userObj = userRepository.findById(1l);
+        if(!userObj.isPresent()) {
+            //return user not found
+            return ResponseEntity.badRequest().body(new CustomResponse("Failed", "User not found"));
         }
+        User user = userObj.get();
+        user.setKycStatus(KYCVericationStatus.PENDING.name());
+        userRepository.save(user);
+
+        //background process with Kafka
+        ResponseEntity<CustomResponse> response = null;
+
+        if (type.equalsIgnoreCase("document")) {
+            response = validateDocument(request);
+
+        } else {
+            response = processDataVerification(request);
+        }
+
+        if (response.getStatusCodeValue() == HttpStatus.OK.value()) {
+            Map<String, Object> data = null;
+            if(dataType.equalsIgnoreCase("bvn")){
+                data = (Map<String, Object>) response.getBody().getBvn_data();
+            }else if(dataType.equalsIgnoreCase("nin")) {
+                //TODO: for other data type
+            }
+            else{
+                data = (Map<String, Object>) response.getBody().getData();
+            }
+
+            KYCVerification verification = response.getBody().getVerification();
+
+            if(verification.getStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
+
+                String fname = data.containsKey("firstname") ? (String)data.get("firstname")
+                        : (data.containsKey("first_name") ? (String)data.get("first_name") : (String)data.get("firstName"));
+                String lname = data.containsKey("lastname") ? (String)data.get("lastname")
+                        : (data.containsKey("last_name") ? (String)data.get("last_name") : (String)data.get("lastName"));
+
+                if((user.getFirstName().equalsIgnoreCase(fname) && user.getLastName().equalsIgnoreCase(lname)) || (user.getLastName().equalsIgnoreCase(fname) && user.getFirstName().equalsIgnoreCase(lname))) {
+                    user.setKycStatus(KYCVericationStatus.VERIFIED.name());
+                    user.setKycStatusMessage("Successfully verified");
+                }
+                else {
+                    user.setKycStatus(KYCVericationStatus.FAILED.name());
+                    user.setKycStatusMessage("Failed");
+                }
+                userRepository.save(user);
+            }else {
+                user.setKycStatus(KYCVericationStatus.FAILED.name());
+                user.setKycStatusMessage("Verification failed");
+                userRepository.save(user);
+            }
+
+        }else {
+            user.setKycStatus(KYCVericationStatus.FAILED.name());
+            user.setKycStatusMessage("Something went wrong");
+            userRepository.save(user);
+        }
+
         return ResponseEntity.ok().body(response.getBody());
+
     }
 
-    @Override
-    public ResponseEntity<CustomResponse> validateNG_Nin(IdentityPassRequestPayload  request) {
-        String url = dataBaseUrl + "nin_wo_face";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
 
-        return ResponseEntity.ok().body(response.getBody());
-    }
 
-    @Override
-    public ResponseEntity<CustomResponse> validateNG_VotersCard(IdentityPassRequestPayload request) {
-        String url = baseUrl + "v1/biometrics/merchant/data/verification/voters_card";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    // Validation for Kenya
-    @Override
-    public ResponseEntity<CustomResponse> validateKE_NationalId(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "ke/national_id";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> validateKE_Passport(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "ke/passportK";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> validateKE_DriversLicense(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "ke/drivers_licensek";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> validateGH_IntPassport(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "gh/passport";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> validateGH_VotersCard(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "gh/voters";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> validateGH_DriverLicense(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "gh/drivers_license";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> validateUG_company(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "ug/company";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
+    // document validation
     @Override
     public ResponseEntity<CustomResponse> validateDocument(Map<String, Object> request) {
         String url = dataBaseUrl + "document";
@@ -132,101 +126,10 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         return ResponseEntity.ok().body(response.getBody());
     }
 
-    @Override
-    public ResponseEntity<CustomResponse> validateZA_nationalId(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "sa/national_id";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-        return ResponseEntity.ok().body(response.getBody());
-    }
+    // data validation
 
     @Override
-    public ResponseEntity<CustomResponse> validateNG_IntPassport(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "national_passport";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> validateNG_DriverLicense(IdentityPassRequestPayload request) {
-        String url = dataBaseUrl + "drivers_license/basic";
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, request, headers());
-
-        return ResponseEntity.ok().body(response.getBody());
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> validateRequest(Map<String, Object> request) {
-        String type = (String) request.get("type");
-        String countryCode = (String) request.get("countryCode");
-
-        Optional <User> userObj = userRepository.findById((Long) request.get("userId"));
-        if(!userObj.isPresent()) {
-            //return user not found
-        }
-
-
-
-        User user = userObj.get();
-        user.setKycVerificationStatus(KYCVericationStatus.PENDING.name());
-        userRepository.save(user);
-
-        //background process with Kafka
-        ResponseEntity<CustomResponse> response = null;
-
-        if(type.equalsIgnoreCase("document")) {
-            response = validateDocument(request);
-
-        }else {
-            response = processDataVerification(request);
-        }
-
-        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
-            Map<String, Object> data = null;
-            Map<String, String> dataObj = (Map<String, String>) response.getBody();
-            if(dataObj.containsKey("vc_data")) {
-                data = (Map<String, Object>) response.getBody().getVc_data();
-            }else if(dataObj.containsKey("nin_data")) {
-                data = (Map<String, Object>) response.getBody().getNin_data();
-            }else {
-                data = (Map<String, Object>) response.getBody().getData();
-            }
-
-            String fname = "";
-            if(data.containsKey("firstname")) {
-                fname = (String) data.get("firstname");
-            }
-            if(data.containsKey("first_name")) {
-                fname = (String) data.get("first_name");
-            }
-
-            if((user.getFirstName().equalsIgnoreCase(fname) && user.getLastName() == "") || ) {
-                user.setKycVerificationStatus(KYCVericationStatus.VERIFIED.name());
-                user.setKycVerificationMessage("Name ");
-
-            }else {
-                user.setKycVerificationStatus(KYCVericationStatus.FAILED.name());
-                user.setKycVerificationMessage("Name does not match");
-            }
-
-            userRepository.save(user);
-
-        }else {
-            user.setKycVerificationStatus(KYCVericationStatus.FAILED.name());
-            user.setKycVerificationMessage("Something went wrong");
-            userRepository.save(user);
-        }
-
-
-
-
-
-        return response;
-
-
-    }
-
-    private ResponseEntity<CustomResponse> processDataVerification(Map<String, Object> request) {
+    public ResponseEntity<CustomResponse> processDataVerification(Map<String, Object> request) {
         String countryCode = (String) request.get("countryCode");
         ResponseEntity<CustomResponse> response = null;
         switch(countryCode) {
@@ -236,43 +139,145 @@ public class IdentityPassServiceImpl implements IdentityPassService {
             case "UG":
                 response = validateUgandaData(request);
                 break;
+            case "GH":
+                response = validateGhana(request);
+                break;
+            case "KE":
+                response = validateKenya(request);
+                break;
+            case "ZA":
+                response = validateSouthAfrica(request);
+                break;
+            case "SL":
+                response = validateSierraLeone(request);
             default:
-
+                break;
         }
-
         return response;
     }
 
+    private ResponseEntity<CustomResponse> validateSierraLeone(Map<String, Object> request) {
+        validateDataRequest((String) request.get("countryCode"), (String)request.get("dataType"));
+        String dataType = (String) request.get("dataType");
+        String url = dataBaseUrl;
+        if(dataType.equalsIgnoreCase("voters_card")){
+            url += "sl/voters";
+        }
+        if(dataType.equalsIgnoreCase("drivers_license")){
+            url += "sl/drivers_license";
+        }
+        return restTemplateService.post(url, setPayload((Map<String, Object>) request.get("data")), headers());
+    }
+
+    private ResponseEntity<CustomResponse> validateSouthAfrica(Map<String, Object> request) {
+        validateDataRequest((String) request.get("countryCode"), (String)request.get("dataType"));
+        String dataType = (String) request.get("dataType");
+        String url = dataBaseUrl;
+        if(dataType.equalsIgnoreCase("national_id")){
+            url += "sa/national_id";
+        }
+        if(dataType.equalsIgnoreCase("company")){
+            url += "sa/company";
+        }
+        return restTemplateService.post(url, setPayload((Map<String, Object>) request.get("data")), headers());
+    }
+    private ResponseEntity<CustomResponse> validateKenya(Map<String, Object> request) {
+        validateDataRequest((String) request.get("countryCode"), (String)request.get("dataType"));
+        String dataType = (String) request.get("dataType");
+        String url = dataBaseUrl;
+        if(dataType.equalsIgnoreCase("passport")){
+            url += "ke/passportK";
+        }
+        if(dataType.equalsIgnoreCase("drivers_license")){
+            url += "ke/drivers_licenseK";
+        }
+        if(dataType.equalsIgnoreCase("national_identity")){
+            url += "ke/national_id";
+        }
+        return restTemplateService.post(url, setPayload((Map<String, Object>) request.get("data")), headers());
+    }
+
+    private ResponseEntity<CustomResponse> validateGhana(Map<String, Object> request) {
+        validateDataRequest((String) request.get("countryCode"), (String)request.get("dataType"));
+        String dataType = (String) request.get("dataType");
+        String url = dataBaseUrl;
+        if(dataType.equalsIgnoreCase("passport")){
+            url += "gh/passport";
+        }
+        if(dataType.equalsIgnoreCase("drivers_license")){
+            url += "gh/drivers_license";
+        }
+        if(dataType.equalsIgnoreCase("voters_card")){
+            url += "gh/voters";
+        }
+        return restTemplateService.post(url, setPayload((Map<String, Object>) request.get("data")), headers());
+    }
+
     private ResponseEntity<CustomResponse> validateUgandaData(Map<String, Object> request) {
-        return null;
+        validateDataRequest((String) request.get("countryCode"), (String)request.get("dataType"));
+        String dataType = (String) request.get("dataType");
+        String url = dataBaseUrl;
+        if(dataType.equalsIgnoreCase("company")){
+            url += "ug/company";
+        }
+        return restTemplateService.post(url, setPayload((Map<String, Object>) request.get("data")), headers());
     }
 
     private ResponseEntity<CustomResponse> validateNigeriaData(Map<String, Object> request) {
-        validateDataRequest((String) request.get("countryCode"), "");
+        validateDataRequest((String) request.get("countryCode"), (String)request.get("dataType"));
         String dataType = (String) request.get("dataType");
         String url = dataBaseUrl;
-        if(dataType.equalsIgnoreCase("nin")) {
-            url += "nin";
-        }
+        //Object data = request.get("data");
 
+
+        if(dataType.equalsIgnoreCase("nin")) {
+            url += "nin_wo_face";
+        }
         if(dataType.equalsIgnoreCase("bvn")) {
             url += "bvn";
         }
-
-        return restTemplateService.post(url, request.get("data"), headers());
+        if(dataType.equalsIgnoreCase("voters_card")) {
+            url += "v1/biometrics/merchant/data/verification/voters_card";
+        }
+        if(dataType.equalsIgnoreCase("national_passport")) {
+            url += "national_passport";
+        }
+        if(dataType.equalsIgnoreCase("driver_license")) {
+            url += "drivers_license/basic";
+        }
+        return restTemplateService.post(url, setPayload((Map<String, Object>) request.get("data")), headers());
     }
 
     private ResponseEntity<?> validateDataRequest(String countryCode, String dataType) {
-        List<String> nigeria = Arrays.asList("nin", "");
-        if(countryCode.equalsIgnoreCase("NG") && !nigeria.contains(dataType)) {
-            //return ResponseEntity.badRequest().body(new CustomResponse("false", "Invalid country code or data type"));
-        }
+        List<String> nigeriaSupportedData =  Arrays.asList("bvn", "national_id",
+                "national_passport", "nin", "passport", "company",
+                "drivers_license", "voters_card",
+                "national_identity");
+        List<String> kenyaSupportedData =  Arrays.asList("passport", "drivers_license","national_identity");
 
+        List<String> ghanaSupportedData =  Arrays.asList("passport", "drivers_license","voters_card");
+
+        List<String> ugandaSupportedData =  Arrays.asList("company");
+
+        List<String> south_africaSupportedData =  Arrays.asList("company", "national_id");
+
+        List<String> sierra_leoneSupportedData =  Arrays.asList("voters_card", "drivers_license");
+
+        if(countryCode.equalsIgnoreCase("NG") && !nigeriaSupportedData.contains(dataType)) {
+            return ResponseEntity.badRequest().body(new CustomResponse("failed", "Invalid data type for Nigeria"));
+        }else if(countryCode.equalsIgnoreCase("KE") && kenyaSupportedData.contains(dataType)){
+            return ResponseEntity.badRequest().body(new CustomResponse("failed", "Invalid data type for Kenya"));
+        }else if(countryCode.equalsIgnoreCase("GH") && ghanaSupportedData.contains(dataType)){
+            return ResponseEntity.badRequest().body(new CustomResponse("failed", "Invalid data type for Ghana"));
+        }else if(countryCode.equalsIgnoreCase("ZA") && south_africaSupportedData.contains(dataType)) {
+            return ResponseEntity.badRequest().body(new CustomResponse("failed", "Invalid data type for South Africa"));
+        }else if(countryCode.equalsIgnoreCase("UG") && ugandaSupportedData.contains(dataType)) {
+            return ResponseEntity.badRequest().body(new CustomResponse("failed", "Invalid data type for Uganda"));
+        }else if(countryCode.equalsIgnoreCase("SL") && sierra_leoneSupportedData.contains(dataType)) {
+            return ResponseEntity.badRequest().body(new CustomResponse("failed", "Invalid data type for Sierra Leone"));
+        }
         return null;
     }
-
-    // Re-routing the api url based on the country code and data type
-
     private HttpHeaders headers() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-API-KEY", apiKey);
@@ -281,21 +286,23 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         return headers;
     }
 
-    public IdentityPassRequestPayload mapToIdentityPassRequestPayload(LinkedHashMap<String, Object> map) {
-        IdentityPassRequestPayload payload = new IdentityPassRequestPayload();
-        payload.setNumber((String) map.get("number"));
-        payload.setFirst_name((String) map.get("first_name"));
-        payload.setLast_name((String) map.get("last_name"));
-        payload.setState((String) map.get("state"));
-        payload.setDob((String) map.get("dob"));
-        payload.setNumber_nin((String) map.get("number_nin"));
-        payload.setFirstname((String) map.get("firstname"));
-        payload.setLastname((String) map.get("lastname"));
-        payload.setNationalid((String) map.get("nationalid"));
-        payload.setCustomer_name((String) map.get("customer_name"));
-        payload.setCustomer_reference((String) map.get("customer_reference"));
-        payload.setReservation_number((String) map.get("reservation_number"));
-        payload.setReg_number((String) map.get("reg_number"));
+    private IdentityPassRequestPayload setPayload(Map<String, Object> request){
+        IdentityPassRequestPayload payload = IdentityPassRequestPayload.builder()
+                .first_name((String) request.get("first_name"))
+                .last_name((String) request.get("last_name"))
+                .customer_name((String) request.get("customer_name"))
+                .dob((String) request.get("dob"))
+                .nationalid((String) request.get("national_id"))
+                .customer_reference((String) request.get("customer_reference"))
+                .firstname((String) request.get("firstname"))
+                .lastname((String) request.get("lastname"))
+                .number((String) request.get("number"))
+                .number_nin((String) request.get("number_nin"))
+                .reg_number((String) request.get("reg_number"))
+                .reservation_number((String) request.get("reservation_number"))
+                .state((String) request.get("state"))
+                .type((String) request.get("type"))
+                .build();
         return payload;
     }
 }
