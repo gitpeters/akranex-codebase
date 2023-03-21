@@ -5,15 +5,14 @@ import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.serviceimpl.AuthenticationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users/no-auth")
@@ -23,6 +22,8 @@ public class NonAuthController {
     private final IService service;
     private final INotificationService notificationService;
     private final AuthenticationService authenticationService;
+
+
 
     @PostMapping("/join-waitlist")
     public ResponseEntity<Response> users(@RequestBody @Validated WaitListRequestDto requestDto) {
@@ -37,6 +38,7 @@ public class NonAuthController {
     public ResponseEntity<Response> getAllCountries() {
         return service.getAllCountries();
     }
+
 //    @PostMapping("/kafka")
 //    public ResponseEntity<Response> users(@RequestBody NotificationDto requestDto) throws JsonProcessingException {
 //        notificationService.sendNotification(requestDto);
@@ -102,9 +104,14 @@ public class NonAuthController {
         return service.createAkranexTag(requestDto);
     }
 
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadToContainer(@RequestParam(value = "file", required = true) MultipartFile file, @RequestParam(value = "userid", required = true) Long userId)
+            throws Exception {
+        return service.uploadUserProfilePic(file, userId);
 
-//    @PostMapping("/upload-profile-pic")
-//    public ResponseEntity<Response> uploadProfilePic(@RequestParam("file") MultipartFile file, @RequestParam("userid") Long userid ) throws JsonProcessingException {
-//        return service.
-//    }
+    }
+
+
+
+
 }

@@ -12,6 +12,11 @@ import com.akraness.akranesswaitlist.repository.IWaitList;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobClientBuilder;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.sas.BlobSasPermission;
+import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +28,16 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
 import org.webjars.NotFoundException;
+import reactor.core.Exceptions;
 
 import java.io.IOException;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 @Slf4j
@@ -42,8 +50,11 @@ public class Service implements IService {
     private final Utility utility;
     private final BCryptPasswordEncoder passwordEncoder;
     private final ICountryRepository countryRepository;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    private final BlobContainerClient blobContainerClient;
     private static final String ALLOWED_COUNTRIES = "allowed-countries";
     @Value("${regex.email}")
     private String emailRegexPattern;
@@ -346,6 +357,47 @@ public class Service implements IService {
         return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
     }
 
+    @Override
+    public ResponseEntity<Response> uploadUserProfilePic(MultipartFile file, Long userId) throws Exception {
+
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "You must upload a file", null));
+        }
+
+        if (file.getSize() > 1048576) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "You cannot upload a file that is more than 1mb", null));
+        }
+
+        Optional<User> userObj = userRepository.findById(userId);
+        if(!userObj.isPresent()) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "User id is not found", null));
+        }
+
+        String filename = userId + "_" + file.getOriginalFilename();
+        if (!filename.endsWith(".svg") && !filename.endsWith(".jpg") && !filename.endsWith(".png")
+                && !filename.endsWith(".jpeg")) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "Wrong image extension, image must be svg", null));
+        }
+
+
+
+        BlobClient blobClient = blobContainerClient.getBlobClient(filename);
+        blobClient.upload(file.getInputStream(), file.getSize(), true);
+        String path = generateSas(blobClient);
+        User user = userObj.get();
+        user.setImagePath(path);
+
+        userRepository.save(user);
+        return ResponseEntity.ok().body(new Response("200", "Image uploaded successfully.", null));
+
+
+    }
+
+
     private ResponseEntity<Response> generateAndSendOtp(String email, boolean forResetPassword) throws JsonProcessingException {
         if (!utility.isInputValid(email, emailRegexPattern)) {
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email is invalid.", null));
@@ -388,4 +440,17 @@ public class Service implements IService {
                 .type(NotificationType.EMAIL)
                 .build();
     }
+
+    private String generateSas(BlobClient blobClient) {
+        OffsetDateTime expiryTime = OffsetDateTime.now().plusYears(10);
+        BlobSasPermission blobSasPermission = new BlobSasPermission().setReadPermission(true);
+        BlobServiceSasSignatureValues serviceSasValues = new BlobServiceSasSignatureValues(expiryTime, blobSasPermission);
+
+        String sas = blobClient.generateSas(serviceSasValues);
+        String blobUrl = blobClient.getBlobUrl();
+        return blobUrl + "?" + sas;
+    }
+
+
+
 }
