@@ -22,4 +22,5 @@ public class IdentityPassRequestPayload {
     private String customer_name;
     private String reservation_number;
     private String reg_number;
+    private String countryCode;
 }

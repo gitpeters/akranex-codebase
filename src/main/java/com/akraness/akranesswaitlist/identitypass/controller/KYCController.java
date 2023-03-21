@@ -7,10 +7,7 @@ import com.akraness.akranesswaitlist.identitypass.service.IdentityPassService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.function.Function;
@@ -33,7 +30,19 @@ public class KYCController {
             return ResponseEntity.badRequest().body(response);
         }
 
-        return identityPassService.validateRequest(request);
+        return identityPassService.validateAndProccessVerification(request);
 
+    }
+
+    @PostMapping("/create-country-verification-payload")
+    public String createPayLoad(@RequestBody Map<String, Object> payload) throws JsonProcessingException {
+        identityPassService.createPayload(payload);
+
+        return "";
+    }
+
+    @GetMapping("/get-country-data-payload")
+    public ResponseEntity<?> getCountryDataPayload(@RequestParam("countryCode") String CountryCode) throws JsonProcessingException {
+        return identityPassService.getCountryDataPayload(CountryCode);
     }
 }

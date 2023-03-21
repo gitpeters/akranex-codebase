@@ -93,6 +93,8 @@ email:
   otp:
     verification: d-ccd5124343c343a4afa05a201dd190f2
     reset-password: d-23dc36aa7f884d138dd4e1e30fb2e431
+  kyc:
+    approval-id: d-b2f28b5fa58d4a438743d5178d75d380
 
 #chimoney
 chimoney:
