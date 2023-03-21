@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
@@ -43,19 +44,24 @@ public class IdentityPassServiceImpl implements IdentityPassService {
 
     @Override
     public ResponseEntity<CustomResponse> validateRequest(Map<String, Object> request) {
-        String type = (String) request.get("type");
-        String dataType = (String) request.get("dataType");
-
         Optional <User> userObj = userRepository.findById(1l);
         if(!userObj.isPresent()) {
-            //return user not found
             return ResponseEntity.badRequest().body(new CustomResponse("Failed", "User not found"));
         }
-        User user = userObj.get();
-        user.setKycStatus(KYCVericationStatus.PENDING.name());
-        userRepository.save(user);
 
-        //background process with Kafka
+        //check if type is not doc or data, then return error
+
+        //Run proccess asynchronously
+        processKYCVerification(userObj.get(), request);
+
+        return ResponseEntity.ok().body(new CustomResponse("Verification in progress"));
+
+    }
+
+    @Async
+    public void processKYCVerification(User user, Map<String, Object> request) {
+        String type = (String) request.get("type");
+        String dataType = (String) request.get("dataType");
         ResponseEntity<CustomResponse> response = null;
 
         if (type.equalsIgnoreCase("document")) {
@@ -64,6 +70,7 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         } else {
             response = processDataVerification(request);
         }
+
 
         if (response.getStatusCodeValue() == HttpStatus.OK.value()) {
             Map<String, Object> data = null;
@@ -106,10 +113,7 @@ public class IdentityPassServiceImpl implements IdentityPassService {
             userRepository.save(user);
         }
 
-        return ResponseEntity.ok().body(response.getBody());
-
     }
-
 
 
     // document validation

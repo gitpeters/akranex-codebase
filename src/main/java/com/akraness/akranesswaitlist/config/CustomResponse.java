@@ -44,4 +44,8 @@ public class CustomResponse {
         this.status = status;
         this.error = error;
     }
+
+    public CustomResponse(String message) {
+        this.message = message;
+    }
 }
