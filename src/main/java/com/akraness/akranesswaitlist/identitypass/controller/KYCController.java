@@ -34,12 +34,12 @@ public class KYCController {
 
     }
 
-    @PostMapping("/create-country-verification-payload")
-    public String createPayLoad(@RequestBody Map<String, Object> payload) throws JsonProcessingException {
-        identityPassService.createPayload(payload);
-
-        return "";
-    }
+//    @PostMapping("/create-country-verification-payload")
+//    public String createPayLoad(@RequestBody Map<String, Object> payload) throws JsonProcessingException {
+//        identityPassService.createPayload(payload);
+//
+//        return "";
+//    }
 
     @GetMapping("/get-country-data-payload")
     public ResponseEntity<?> getCountryDataPayload(@RequestParam("countryCode") String CountryCode) throws JsonProcessingException {

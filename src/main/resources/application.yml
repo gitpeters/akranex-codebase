@@ -16,9 +16,9 @@ jwt:
 
 #jdbc variables
 jdbc:
-  url: jdbc:mysql://localhost:3306/akraness?createDatabaseIfNotExist=true&autoReconnect=true
-  user: root
-  password: root
+  url: jdbc:mysql://akranex-dev-database.mysql.database.azure.com:3306/akraness?createDatabaseIfNotExist=true&autoReconnect=true
+  user: akranex_admin@akranex-dev-database
+  password: P@ssw0rd123#
   driver: com.mysql.cj.jdbc.Driver
 
 #spring
