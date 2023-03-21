@@ -32,14 +32,20 @@ public class CustomResponse {
     //IdentityPass
     private Object detail;
     private String response_code;
-    private BVNDataDto bvn_data;
+//    private BVNDataDto bvn_data;
+    private Object bvn_data;
     private DLDataDto frsc_data;
     private NINDataDto nin_data;
     private VotersCardDataDto vc_data;
     private KYCVerification verification;
+    private DriverLicenseData driver_license;
     private String message;
     public CustomResponse(String status, String error) {
         this.status = status;
         this.error = error;
+    }
+
+    public CustomResponse(String message) {
+        this.message = message;
     }
 }
