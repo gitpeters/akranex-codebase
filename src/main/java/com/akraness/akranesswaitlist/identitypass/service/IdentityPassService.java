@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public interface IdentityPassService {
-    ResponseEntity<CustomResponse> validateAndProccessVerification(Map<String, Object> request);
+    ResponseEntity<CustomResponse> validateAndProccessVerification(Map<String, Object> request) throws JsonProcessingException;
 
     void createPayload(Map<String, Object> payload) throws JsonProcessingException;
 

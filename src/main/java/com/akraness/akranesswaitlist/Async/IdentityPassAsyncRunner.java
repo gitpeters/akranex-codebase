@@ -1,4 +1,4 @@
-package com.akraness.akranesswaitlist.Async;
+package com.akraness.akranesswaitlist.async;
 
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
@@ -11,6 +11,7 @@ import com.akraness.akranesswaitlist.identitypass.dto.KYCVerification;
 import com.akraness.akranesswaitlist.identitypass.entity.DataSupportedCountry;
 import com.akraness.akranesswaitlist.identitypass.repository.DataSupportedCountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
+import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.util.KYCVericationStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,8 +50,10 @@ public class IdentityPassAsyncRunner {
     private final IUserRepository userRepository;
     private final RestTemplateService restTemplateService;
     private final DataSupportedCountryRepository dataSupportedCountryRepository;
+
+    private final INotificationService notificationService;
     @Async
-    public void processKYCVerification(User user, Map<String, Object> request) {
+    public void processKYCVerification(User user, Map<String, Object> request) throws JsonProcessingException {
         String type = (String) request.get("type");
         String dataType = (String) request.get("dataType");
         ResponseEntity<CustomResponse> response = processVerification(type, request);
@@ -75,7 +78,7 @@ public class IdentityPassAsyncRunner {
                     userRepository.save(user);
 
                     //Send verification email
-                    sendKyCVerificationMail(user.getEmail());
+                    //sendKyCVerificationMail(user.getEmail());
 
                     //Send push notification
 
@@ -105,13 +108,14 @@ public class IdentityPassAsyncRunner {
 
     }
 
-    private void sendKyCVerificationMail(String email) {
+    private void sendKyCVerificationMail(String email) throws JsonProcessingException {
         NotificationDto notificationDto = NotificationDto.builder()
                 .recipient(email)
                 .subject("KYC verification")
                 .type(NotificationType.EMAIL)
                 .templateId(approvalTemplateId)
                 .build();
+        notificationService.sendNotification(notificationDto);
     }
 
     private Map<String, Object> getDataBody(String dataType, ResponseEntity<CustomResponse> response) {
