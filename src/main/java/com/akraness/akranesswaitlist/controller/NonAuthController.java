@@ -102,9 +102,9 @@ public class NonAuthController {
         return service.createAkranexTag(requestDto);
     }
 
+    @GetMapping("/check-akranex-tag")
+    public ResponseEntity<Response> checkAkranexTag(@RequestParam("akranexTag") String akranexTag) throws JsonProcessingException {
+        return service.checkAkranexTag(akranexTag);
+    }
 
-//    @PostMapping("/upload-profile-pic")
-//    public ResponseEntity<Response> uploadProfilePic(@RequestParam("file") MultipartFile file, @RequestParam("userid") Long userid ) throws JsonProcessingException {
-//        return service.
-//    }
 }

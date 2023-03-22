@@ -346,6 +346,19 @@ public class Service implements IService {
         return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
     }
 
+    @Override
+    public ResponseEntity<Response> checkAkranexTag(String akranexTag) throws JsonProcessingException {
+        Response response = new Response();
+        response.setStatus(false);
+
+        if(userRepository.findByAkranexTag(akranexTag).isPresent()) {
+            response.setStatus(true);
+        }
+
+        response.setCode(String.valueOf(HttpStatus.OK));
+        return ResponseEntity.ok().body(response);
+    }
+
     private ResponseEntity<Response> generateAndSendOtp(String email, boolean forResetPassword) throws JsonProcessingException {
         if (!utility.isInputValid(email, emailRegexPattern)) {
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email is invalid.", null));
