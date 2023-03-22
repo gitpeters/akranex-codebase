@@ -67,8 +67,7 @@ public class AuthenticationService {
         resp.setCode("200");
         return ResponseEntity.ok(resp);
     }
-
-
+    
     private ResponseEntity<?> authenticate(String username, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
