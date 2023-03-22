@@ -7,20 +7,16 @@ import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
-import com.akraness.akranesswaitlist.dto.EmailVerificationDto;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.services.storage.model.ObjectAccessControl;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -35,8 +31,7 @@ public class SubAccountServiceImpl implements SubAccountService {
     @Value("${chimoney.base-url}")
     private String baseUrl;
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     public ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request) {
@@ -82,7 +77,7 @@ public class SubAccountServiceImpl implements SubAccountService {
     }
 
     @Override
-    public ResponseEntity<?> getSubAccount(String subAccountId, String countryCode) throws JsonProcessingException {
+    public BalanceDto getSubAccount(String subAccountId) throws JsonProcessingException {
         String url = baseUrl + "sub-account/get?id="+subAccountId;
         BalanceDto balance = null;
         ObjectMapper oMapper = new ObjectMapper();
@@ -91,10 +86,7 @@ public class SubAccountServiceImpl implements SubAccountService {
         if (subAccountData != null) {
             balance = oMapper.readValue(subAccountData, BalanceDto.class);
 
-            double amountInLocalCurrency = getBalanceInLocalCurrency(balance.getAmount(), countryCode);
-            balance.setAmountInLocalCurrency(amountInLocalCurrency);
-
-            return ResponseEntity.ok().body(balance);
+            return balance;
         }
 
         ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
@@ -124,21 +116,38 @@ public class SubAccountServiceImpl implements SubAccountService {
 
                 redisTemplate.opsForValue().set(subAccountId, oMapper.writeValueAsString(balance));
 
-                double amountInLocalCurrency = getBalanceInLocalCurrency(balance.getAmount(), countryCode);
-                balance.setAmountInLocalCurrency(amountInLocalCurrency);
-
             }
         }
 
-        return ResponseEntity.ok().body(balance);
+        return balance;
 
     }
 
-    private double getBalanceInLocalCurrency(double amount, String countryCode) {
-        String url = baseUrl + "info/usd-amount-in-local?destinationCurrency="+countryCode+"&amountInUSD="+amount;
+    public BalanceDto getBalanceInLocalCurrency(String subAccountId, String currencyCode) throws JsonProcessingException {
+        BalanceDto balance = null;
+        ObjectMapper oMapper = new ObjectMapper();
+
+        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
+        if (subAccountData != null) {
+            balance = oMapper.readValue(subAccountData, BalanceDto.class);
+        }else {
+            balance = getSubAccount(subAccountId);
+        }
+
+        if(balance.getAmount() <= 0) {
+            return balance;
+        }
+
+        String url = baseUrl + "info/usd-amount-in-local?destinationCurrency="+currencyCode+"&amountInUSD="+balance.getAmount();
         ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
 
-        return 0.0;
+        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
+            Map<String, Object> data = oMapper.convertValue(response.getBody().getData(), Map.class);
+            String convertedAmount = String.valueOf(data.get("amountInDestinationCurrency"));
+            balance.setAmountInLocalCurrency(Double.parseDouble(convertedAmount));
+        }
+
+        return balance;
     }
 
     @Override
