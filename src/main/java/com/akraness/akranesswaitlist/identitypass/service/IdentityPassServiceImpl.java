@@ -41,7 +41,6 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         if(user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
             return ResponseEntity.badRequest().body(new CustomResponse("User already verified"));
         }
-        //check if type is not doc or data, then return error
         identityPassAsyncRunner.processKYCVerification(userObj.get(), request);
         return ResponseEntity.ok().body(new CustomResponse("Verification in progress"));
 
@@ -53,17 +52,16 @@ public class IdentityPassServiceImpl implements IdentityPassService {
     }
 
     @Override
-    public ResponseEntity<?> getCountryDataPayload(String countryCode) throws JsonProcessingException {
+    public Map<String, Object> getCountryDataPayload(String countryCode) throws JsonProcessingException {
+        Map<String, Object> payload = null;
         Optional<DataSupportedCountry> dscObj = dataSupportedCountryRepository.findByCountryCode(countryCode);
-        if(!dscObj.isPresent()) {
-            return ResponseEntity.badRequest().body(new CustomResponse("Failed", "Country not found"));
+        if(dscObj.isPresent()) {
+            DataSupportedCountry dsc = dscObj.get();
+            payload = new ObjectMapper().readValue(dsc.getPayload(), Map.class);
         }
 
-        DataSupportedCountry dsc = dscObj.get();
 
-        Map<String, Object> payload = new ObjectMapper().readValue(dsc.getPayload(), Map.class);
-
-        return ResponseEntity.ok().body(payload);
+        return payload;
     }
 
 }

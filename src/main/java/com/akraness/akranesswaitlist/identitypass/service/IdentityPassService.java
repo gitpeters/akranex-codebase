@@ -14,5 +14,5 @@ public interface IdentityPassService {
 
     void createPayload(Map<String, Object> payload) throws JsonProcessingException;
 
-    ResponseEntity<?> getCountryDataPayload(String countryCode) throws JsonProcessingException;
+    Map<String, Object> getCountryDataPayload(String countryCode) throws JsonProcessingException;
 }

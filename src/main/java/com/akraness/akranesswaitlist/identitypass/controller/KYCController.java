@@ -42,7 +42,8 @@ public class KYCController {
 //    }
 
     @GetMapping("/get-country-data-payload")
-    public ResponseEntity<?> getCountryDataPayload(@RequestParam("countryCode") String CountryCode) throws JsonProcessingException {
+    public Map<String, Object> getCountryDataPayload(@RequestParam("countryCode") String CountryCode) throws JsonProcessingException {
         return identityPassService.getCountryDataPayload(CountryCode);
+
     }
 }

@@ -7,17 +7,21 @@ import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
+import com.akraness.akranesswaitlist.dto.EmailVerificationDto;
 import com.akraness.akranesswaitlist.util.Utility;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.services.storage.model.ObjectAccessControl;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Duration;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,9 @@ public class SubAccountServiceImpl implements SubAccountService {
 
     @Value("${chimoney.base-url}")
     private String baseUrl;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request) {
@@ -75,13 +82,25 @@ public class SubAccountServiceImpl implements SubAccountService {
     }
 
     @Override
-    public ResponseEntity<CustomResponse> getSubAccount(String subAccountId) {
+    public ResponseEntity<?> getSubAccount(String subAccountId, String countryCode) throws JsonProcessingException {
         String url = baseUrl + "sub-account/get?id="+subAccountId;
+        BalanceDto balance = null;
+        ObjectMapper oMapper = new ObjectMapper();
+
+        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
+        if (subAccountData != null) {
+            balance = oMapper.readValue(subAccountData, BalanceDto.class);
+
+            double amountInLocalCurrency = getBalanceInLocalCurrency(balance.getAmount(), countryCode);
+            balance.setAmountInLocalCurrency(amountInLocalCurrency);
+
+            return ResponseEntity.ok().body(balance);
+        }
 
         ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
 
         if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
-            ObjectMapper oMapper = new ObjectMapper();
+
             Map<String, Object> map = oMapper.convertValue(response.getBody().getData(), Map.class);
             List<Object> wallets = (List<Object>) map.get("wallets");
 
@@ -91,16 +110,35 @@ public class SubAccountServiceImpl implements SubAccountService {
 
                 if(!walletType.equalsIgnoreCase("chi")) continue;
 
-                List aaa = (List) walletData.get("transactions");
+                List transactions = (List) walletData.get("transactions");
 
-                //BalanceDto balance = oMapper.convertValue(aaa.get(0), BalanceDto.class);
+                Map<String, Object> transMap = oMapper.convertValue(transactions.get(0), Map.class);
 
+                String stringToConvert = String.valueOf(transMap.get("amount"));
+                Double amount = Double.parseDouble(stringToConvert);
 
-                String s = "hey";
+                balance = BalanceDto.builder()
+                        .subAccountId(subAccountId)
+                        .amount(amount)
+                        .build();
+
+                redisTemplate.opsForValue().set(subAccountId, oMapper.writeValueAsString(balance));
+
+                double amountInLocalCurrency = getBalanceInLocalCurrency(balance.getAmount(), countryCode);
+                balance.setAmountInLocalCurrency(amountInLocalCurrency);
+
             }
         }
-        return ResponseEntity.ok().body(response.getBody());
 
+        return ResponseEntity.ok().body(balance);
+
+    }
+
+    private double getBalanceInLocalCurrency(double amount, String countryCode) {
+        String url = baseUrl + "info/usd-amount-in-local?destinationCurrency="+countryCode+"&amountInUSD="+amount;
+        ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
+
+        return 0.0;
     }
 
     @Override
