@@ -38,12 +38,15 @@ public class IdentityPassServiceImpl implements IdentityPassService {
             return ResponseEntity.badRequest().body(new CustomResponse("Failed", "User not found"));
         }
 
-        if(user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
-            return ResponseEntity.badRequest().body(new CustomResponse("User already verified"));
+//        if(user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
+//            return ResponseEntity.badRequest().body(new CustomResponse("User already verified"));
+//        }
+        if(!user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
+            identityPassAsyncRunner.processKYCVerification(userObj.get(), request);
+            return ResponseEntity.ok().body(new CustomResponse("Verification in progress"));
         }
-        identityPassAsyncRunner.processKYCVerification(userObj.get(), request);
-        return ResponseEntity.ok().body(new CustomResponse("Verification in progress"));
 
+        return ResponseEntity.ok().body(new CustomResponse("Warning", "User already verified"));
     }
 
     @Override
