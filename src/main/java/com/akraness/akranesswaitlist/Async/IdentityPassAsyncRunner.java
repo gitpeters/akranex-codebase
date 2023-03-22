@@ -258,7 +258,6 @@ public class IdentityPassAsyncRunner {
         validateDataRequest((String) request.get("countryCode"), (String)request.get("dataType"));
         String dataType = (String) request.get("dataType");
         String url = dataBaseUrl;
-        //Object data = request.get("data");
 
 
         if(dataType.equalsIgnoreCase("nin")) {
