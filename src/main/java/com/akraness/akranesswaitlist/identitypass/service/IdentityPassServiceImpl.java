@@ -41,7 +41,6 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         if(user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
             return ResponseEntity.badRequest().body(new CustomResponse("User already verified"));
         }
-        //check if type is not doc or data, then return error
         identityPassAsyncRunner.processKYCVerification(userObj.get(), request);
         return ResponseEntity.ok().body(new CustomResponse("Verification in progress"));
 
