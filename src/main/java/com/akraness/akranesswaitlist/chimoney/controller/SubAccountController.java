@@ -2,6 +2,7 @@ package com.akraness.akranesswaitlist.chimoney.controller;
 
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,8 +20,8 @@ public class SubAccountController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> getSubAccount(@RequestParam("id") String subAccountId) {
-        return subAccountService.getSubAccount(subAccountId);
+    public ResponseEntity<?> getSubAccount(@RequestParam("id") String subAccountId, @RequestParam("countryCode") String countryCode) throws JsonProcessingException {
+        return subAccountService.getSubAccount(subAccountId, countryCode);
     }
 
     @DeleteMapping("/delete")

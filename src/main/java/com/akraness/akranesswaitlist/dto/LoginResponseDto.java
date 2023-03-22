@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,4 +22,7 @@ public class LoginResponseDto {
     private boolean emailVerified;
     private boolean mobileVerified;
     private String akranexTag;
+    private String kycStatus;
+    private String kycStatusMessage;
+    private Map<String, Object> kycDataVerificationPayload;
 }
