@@ -80,7 +80,7 @@ public class IdentityPassAsyncRunner {
                     userRepository.save(user);
 
                     //Send verification email
-                    //sendKyCVerificationMail(user.getEmail());
+                    sendKyCVerificationMail(user.getEmail());
 
                     //Send push notification
 
@@ -89,7 +89,8 @@ public class IdentityPassAsyncRunner {
                     user.setKycStatus(KYCVericationStatus.FAILED.name());
                     user.setKycStatusMessage("Failed");
                     userRepository.save(user);
-
+                    //Send verification email
+                    sendKyCVerificationMail(user.getEmail());
                     //send push notification
 
                 }
@@ -104,7 +105,8 @@ public class IdentityPassAsyncRunner {
             user.setKycStatus(KYCVericationStatus.FAILED.name());
             user.setKycStatusMessage("Something went wrong");
             userRepository.save(user);
-
+            //Send verification email
+            sendKyCVerificationMail(user.getEmail());
             //Send push notification
         }
 
