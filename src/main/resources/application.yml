@@ -55,6 +55,10 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       group-id: notification
+  # Request size
+  servlet:
+    multipart:
+      max-request-size: 50MB
 topic:
   name:
     producer: notifications
