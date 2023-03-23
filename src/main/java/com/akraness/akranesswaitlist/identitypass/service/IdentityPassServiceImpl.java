@@ -10,6 +10,7 @@ import com.akraness.akranesswaitlist.identitypass.entity.DataSupportedCountry;
 import com.akraness.akranesswaitlist.identitypass.repository.DataSupportedCountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.util.KYCVericationStatus;
+import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,26 +29,25 @@ public class IdentityPassServiceImpl implements IdentityPassService {
     private final IUserRepository userRepository;
     private final DataSupportedCountryRepository dataSupportedCountryRepository;
 
+    private final Utility utility;
+
     @Override
     public ResponseEntity<CustomResponse> validateAndProccessVerification(Map<String, Object> request) throws JsonProcessingException {
         String convertUserIdToString = String.valueOf(request.get("userId"));
         Long userId = Long.parseLong(convertUserIdToString);
-        Optional <User> userObj = userRepository.findById(userId);
-        User user = userObj.get();
-        if(!userObj.isPresent()) {
+        Optional<User> userObj = userRepository.findById(userId);
+        if (!userObj.isPresent()) {
             return ResponseEntity.badRequest().body(new CustomResponse("Failed", "User not found"));
         }
+        User user = userObj.get();
 
-//        if(user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
-//            return ResponseEntity.badRequest().body(new CustomResponse("User already verified"));
-//        }
-        if(!user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
-            identityPassAsyncRunner.processKYCVerification(userObj.get(), request);
+        if (user.getKycStatus() == null || !user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())) {
+            identityPassAsyncRunner.processKYCVerification(user, request);
             return ResponseEntity.ok().body(new CustomResponse("Verification in progress"));
+        }else {
+            return ResponseEntity.badRequest().body(new CustomResponse("User already verified"));
         }
-
-        return ResponseEntity.ok().body(new CustomResponse("Warning", "User already verified"));
-    }
+}
 
     @Override
     public void createPayload(Map<String, Object> payload) throws JsonProcessingException {

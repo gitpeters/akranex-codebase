@@ -67,7 +67,7 @@ public class IdentityPassAsyncRunner {
 
 
 
-            if(verification.getStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
+            if(verification != null && verification.getStatus() != null && verification.getStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
 
                 String fname = data.containsKey("firstname") ? (String)data.get("firstname")
                         : (data.containsKey("first_name") ? (String)data.get("first_name") : (String)data.get("firstName"));
