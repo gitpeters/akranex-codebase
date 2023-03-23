@@ -58,7 +58,7 @@ spring:
   # Request size
   servlet:
     multipart:
-      max-request-size: 100MB
+      max-request-size: 800MB
 topic:
   name:
     producer: notifications
