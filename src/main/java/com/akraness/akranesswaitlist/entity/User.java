@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
-@Table(name = "user")
 @Entity
+@Table(name = "user")
 @Data
 @Builder
 @AllArgsConstructor
@@ -44,6 +44,8 @@ public class User extends BaseEntity implements UserDetails {
     private String akranexTag;
     private String kycStatus;
     private String kycStatusMessage;
+    private String imagePath;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.EMPTY_SET;

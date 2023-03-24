@@ -1,8 +1,10 @@
 package com.akraness.akranesswaitlist.service;
 
 import com.akraness.akranesswaitlist.dto.*;
+import com.akraness.akranesswaitlist.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 
@@ -24,8 +26,7 @@ ResponseEntity<?> getCountries();
 ResponseEntity<?> passwordResetRequest(PasswordResetRequestDto passwordResetRequestDto) throws JsonProcessingException;
 
 ResponseEntity<Response> resetPassword(ResetPasswordDto requestDto) throws JsonProcessingException;
-
 ResponseEntity<Response> createAkranexTag(AkranexTagCreationRequestDto requestDto) throws JsonProcessingException;
-
 ResponseEntity<Response> checkAkranexTag(String akranexTag) throws JsonProcessingException;
+ResponseEntity<Response> uploadUserProfilePic(MultipartFile file, Long userId) throws Exception;
 }

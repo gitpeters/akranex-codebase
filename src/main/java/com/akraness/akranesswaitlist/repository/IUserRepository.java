@@ -13,8 +13,7 @@ public interface IUserRepository extends JpaRepository<User, Long> {
     boolean existsByMobileNumber(String mobileNumber);
     Optional<User> findByUsername(String username);
     Optional<User> findByMobileNumber(String mobileNumber);
-
     Optional<User> findByEmail(String email);
-
     Optional<User> findByAkranexTag(String akranexTag);
+    Optional<User> findById(Long userdId);
 }
