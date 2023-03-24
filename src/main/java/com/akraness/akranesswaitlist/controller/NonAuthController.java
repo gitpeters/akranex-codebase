@@ -109,8 +109,8 @@ public class NonAuthController {
         return service.checkAkranexTag(akranexTag);
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<?> uploadToContainer(@RequestParam(value = "file", required = true) MultipartFile file, @RequestParam(value = "userId", required = true) Long userId)
+    @PostMapping("/upload-profile-pic")
+    public ResponseEntity<?> uploadUserProfilePic(@RequestParam(value = "file", required = true) MultipartFile file, @RequestParam(value = "userId", required = true) Long userId)
             throws Exception {
         return service.uploadUserProfilePic(file, userId);
 

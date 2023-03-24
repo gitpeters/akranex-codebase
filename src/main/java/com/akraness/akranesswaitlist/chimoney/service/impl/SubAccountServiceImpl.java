@@ -1,6 +1,7 @@
 package com.akraness.akranesswaitlist.chimoney.service.impl;
 
 import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
+import com.akraness.akranesswaitlist.chimoney.dto.TransferDto;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
@@ -70,8 +71,6 @@ public class SubAccountServiceImpl implements SubAccountService {
 
             subAccountRepository.save(subacct);
         }
-
-
 
         return ResponseEntity.ok().body(response.getBody());
     }
@@ -148,6 +147,20 @@ public class SubAccountServiceImpl implements SubAccountService {
         }
 
         return balance;
+    }
+
+    @Override
+    public ResponseEntity<?> transfer(TransferDto transferDto) throws JsonProcessingException {
+        Map<String, String> req = new HashMap<>();
+        req.put("subAccount", transferDto.getSenderSubAccountId());
+        req.put("receiver", transferDto.getReceiverSubAccountId());
+        req.put("amount", transferDto.getAmount());
+        req.put("wallet", transferDto.getWalletType());
+
+        String url = baseUrl + "accounts/transfer";
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, req, this.headers());
+
+        return ResponseEntity.ok().body(response.getBody());
     }
 
     @Override
