@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -26,5 +23,10 @@ public class MainController {
     @PostMapping("/verify-pin")
     public ResponseEntity<Response> verifyPin(@RequestBody @Validated VerifyPinRequestDto requestDto) {
         return service.verifyPin(requestDto);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Response> getUser(@PathVariable("id") long userId) {
+        return service.getUser(userId);
     }
 }

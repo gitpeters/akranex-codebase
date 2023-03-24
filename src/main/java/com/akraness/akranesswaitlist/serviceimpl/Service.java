@@ -445,10 +445,31 @@ public class Service implements IService {
         User user = userObj.get();
         user.setImagePath(path);
 
-        userRepository.save(user);
-        return ResponseEntity.ok().body(new Response("200", "Image uploaded successfully.", null));
+        User updatedUser = userRepository.save(user);
+        Response response = new Response();
+        response.setCode(HttpStatus.OK.name());
+        response.setDescription("profile image uploaded successfully");
+        response.setData(updatedUser);
 
+        return ResponseEntity.ok().body(response);
 
+    }
+
+    @Override
+    public ResponseEntity<Response> getUser(long userId) throws JsonProcessingException {
+        Optional<User> userObj = userRepository.findById(userId);
+
+        if (!userObj.isPresent()) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "User not found", null));
+        }
+
+        Response response = new Response();
+        response.setCode(HttpStatus.OK.name());
+        response.setDescription("Retrieve user information");
+        response.setData(userObj.get());
+
+        return ResponseEntity.ok().body(response);
     }
 
     private String generateSas(BlobClient blobClient) {
