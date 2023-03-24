@@ -383,8 +383,6 @@ public class Service implements IService {
                     "Wrong image extension, image must be svg", null));
         }
 
-
-
         BlobClient blobClient = blobContainerClient.getBlobClient(filename);
         blobClient.upload(file.getInputStream(), file.getSize(), true);
         String path = generateSas(blobClient);

@@ -105,7 +105,7 @@ public class NonAuthController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadToContainer(@RequestParam(value = "file", required = true) MultipartFile file, @RequestParam(value = "userid", required = true) Long userId)
+    public ResponseEntity<?> uploadToContainer(@RequestParam(value = "file", required = true) MultipartFile file, @RequestParam(value = "userId", required = true) Long userId)
             throws Exception {
         return service.uploadUserProfilePic(file, userId);
 

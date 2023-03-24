@@ -34,7 +34,7 @@ public class BeanConfig {
                 .connectionString(connectionString)
                 .containerName(containerName)
                 .buildClient();
-
+        containerClient.createIfNotExists();
         return containerClient;
     }
 }
