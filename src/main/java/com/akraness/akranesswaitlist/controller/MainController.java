@@ -5,6 +5,7 @@ import com.akraness.akranesswaitlist.dto.Response;
 import com.akraness.akranesswaitlist.dto.VerifyPinRequestDto;
 import com.akraness.akranesswaitlist.dto.WaitListRequestDto;
 import com.akraness.akranesswaitlist.service.IService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class MainController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response> getUser(@PathVariable("id") long userId) {
+    public ResponseEntity<Response> getUser(@PathVariable("id") long userId) throws JsonProcessingException {
         return service.getUser(userId);
     }
 }
