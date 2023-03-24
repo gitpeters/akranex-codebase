@@ -5,6 +5,7 @@ import com.akraness.akranesswaitlist.dto.LoginResponseDto;
 import com.akraness.akranesswaitlist.dto.Response;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.exception.ApplicationAuthenticationException;
+import com.akraness.akranesswaitlist.identitypass.service.IdentityPassService;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.security.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,7 @@ public class AuthenticationService {
 
     private final JwtUserDetailsService userDetailsService;
     private final IUserRepository userDao;
+    private final IdentityPassService identityPassService;
 
     public ResponseEntity<Response> createAuthenticationToken(LoginRequestDto authenticationRequest) throws Exception {
 
@@ -45,9 +49,17 @@ public class AuthenticationService {
         User user = user_op.get();
 
         final String token = jwtTokenUtil.generateToken(userDetails);
+
+        //call identitypass service
+        List<String> dataVerificationCountries = Arrays.asList("NG", "ZA", "UG", "GH", "SL", "KE");
+        Map<String, Object> payload = null;
+        if(dataVerificationCountries.contains(user.getCountryCode())) {
+            payload = identityPassService.getCountryDataPayload(user.getCountryCode());
+        }
+
         LoginResponseDto resp_login = new LoginResponseDto(token,user.getId(), authenticationRequest.getUsername(),
                 user.getMobileNumber(),user.getFirstName(),user.getLastName(),user.getCountryCode(),
-                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified(),user.getAkranexTag());
+                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified(),user.getAkranexTag(), user.getKycStatus(), user.getKycStatusMessage(), payload);
 
         Response resp = new Response();
         resp.setData(resp_login);
@@ -55,8 +67,7 @@ public class AuthenticationService {
         resp.setCode("200");
         return ResponseEntity.ok(resp);
     }
-
-
+    
     private ResponseEntity<?> authenticate(String username, String password) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));

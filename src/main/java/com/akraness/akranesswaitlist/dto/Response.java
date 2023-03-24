@@ -1,5 +1,6 @@
 package com.akraness.akranesswaitlist.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,11 +12,13 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Response {
     private String code;
     private String description;
     private List<Error> errors;
     private Object data;
+    private boolean status;
 
     public Response(String code, String description, @Nullable List<Error> errors) {
         this.code = code;

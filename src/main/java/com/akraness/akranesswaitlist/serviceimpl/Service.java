@@ -358,43 +358,17 @@ public class Service implements IService {
     }
 
     @Override
-    public ResponseEntity<Response> uploadUserProfilePic(MultipartFile file, Long userId) throws Exception {
+    public ResponseEntity<Response> checkAkranexTag(String akranexTag) throws JsonProcessingException {
+        Response response = new Response();
+        response.setStatus(false);
 
-        if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
-                    "You must upload a file", null));
+        if(userRepository.findByAkranexTag(akranexTag).isPresent()) {
+            response.setStatus(true);
         }
 
-        if (file.getSize() > 1048576) {
-            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
-                    "You cannot upload a file that is more than 1mb", null));
-        }
-
-        Optional<User> userObj = userRepository.findById(userId);
-        if(!userObj.isPresent()) {
-            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
-                    "User id is not found", null));
-        }
-
-        String filename = userId + "_" + file.getOriginalFilename();
-        if (!filename.endsWith(".svg") && !filename.endsWith(".jpg") && !filename.endsWith(".png")
-                && !filename.endsWith(".jpeg")) {
-            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
-                    "Wrong image extension, image must be svg", null));
-        }
-
-        BlobClient blobClient = blobContainerClient.getBlobClient(filename);
-        blobClient.upload(file.getInputStream(), file.getSize(), true);
-        String path = generateSas(blobClient);
-        User user = userObj.get();
-        user.setImagePath(path);
-
-        userRepository.save(user);
-        return ResponseEntity.ok().body(new Response("200", "Image uploaded successfully.", null));
-
-
+        response.setCode(String.valueOf(HttpStatus.OK));
+        return ResponseEntity.ok().body(response);
     }
-
 
     private ResponseEntity<Response> generateAndSendOtp(String email, boolean forResetPassword) throws JsonProcessingException {
         if (!utility.isInputValid(email, emailRegexPattern)) {
@@ -439,6 +413,44 @@ public class Service implements IService {
                 .build();
     }
 
+    @Override
+    public ResponseEntity<Response> uploadUserProfilePic(MultipartFile file, Long userId) throws Exception {
+
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "You must upload a file", null));
+        }
+
+        if (file.getSize() > 1048576) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "You cannot upload a file that is more than 1mb", null));
+        }
+
+        Optional<User> userObj = userRepository.findById(userId);
+        if(!userObj.isPresent()) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "User id is not found", null));
+        }
+
+        String filename = userId + "_" + file.getOriginalFilename();
+        if (!filename.endsWith(".svg") && !filename.endsWith(".jpg") && !filename.endsWith(".png")
+                && !filename.endsWith(".jpeg")) {
+            return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),
+                    "Wrong image extension, image must be svg", null));
+        }
+
+        BlobClient blobClient = blobContainerClient.getBlobClient(filename);
+        blobClient.upload(file.getInputStream(), file.getSize(), true);
+        String path = generateSas(blobClient);
+        User user = userObj.get();
+        user.setImagePath(path);
+
+        userRepository.save(user);
+        return ResponseEntity.ok().body(new Response("200", "Image uploaded successfully.", null));
+
+
+    }
+
     private String generateSas(BlobClient blobClient) {
         OffsetDateTime expiryTime = OffsetDateTime.now().plusYears(10);
         BlobSasPermission blobSasPermission = new BlobSasPermission().setReadPermission(true);
@@ -448,7 +460,4 @@ public class Service implements IService {
         String blobUrl = blobClient.getBlobUrl();
         return blobUrl + "?" + sas;
     }
-
-
-
 }

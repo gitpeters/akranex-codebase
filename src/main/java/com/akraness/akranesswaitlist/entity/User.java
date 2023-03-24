@@ -42,6 +42,8 @@ public class User extends BaseEntity implements UserDetails {
     private String transactionPin;
     private String gender;
     private String akranexTag;
+    private String kycStatus;
+    private String kycStatusMessage;
     private String imagePath;
 
     @Override
