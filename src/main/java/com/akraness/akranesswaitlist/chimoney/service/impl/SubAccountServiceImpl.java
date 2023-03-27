@@ -164,6 +164,12 @@ public class SubAccountServiceImpl implements SubAccountService {
     }
 
     @Override
+    public List<SubAccount> getUserSubAccounts(Long userId) {
+        List<SubAccount> subAccountList = subAccountRepository.findByUserId(userId);
+        return subAccountList;
+    }
+
+    @Override
     public ResponseEntity<CustomResponse> deleteSubAccount(String subAccountId) {
         String url = baseUrl + "sub-account/delete?id="+subAccountId;
 

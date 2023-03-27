@@ -1,5 +1,7 @@
 package com.akraness.akranesswaitlist.serviceimpl;
 
+import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
+import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.LoginRequestDto;
 import com.akraness.akranesswaitlist.dto.LoginResponseDto;
 import com.akraness.akranesswaitlist.dto.Response;
@@ -38,6 +40,7 @@ public class AuthenticationService {
     private final JwtUserDetailsService userDetailsService;
     private final IUserRepository userDao;
     private final IdentityPassService identityPassService;
+    private final SubAccountService subAccountService;
 
     public ResponseEntity<Response> createAuthenticationToken(LoginRequestDto authenticationRequest) throws Exception {
 
@@ -57,9 +60,11 @@ public class AuthenticationService {
             payload = identityPassService.getCountryDataPayload(user.getCountryCode());
         }
 
+        List<SubAccount> subAccountList = subAccountService.getUserSubAccounts(user.getId());
+
         LoginResponseDto resp_login = new LoginResponseDto(token,user.getId(), authenticationRequest.getUsername(),
                 user.getMobileNumber(),user.getFirstName(),user.getLastName(),user.getCountryCode(),
-                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified(),user.getAkranexTag(), user.getKycStatus(), user.getKycStatusMessage(), payload);
+                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified(),user.getAkranexTag(), user.getKycStatus(), user.getKycStatusMessage(), payload, subAccountList);
 
         Response resp = new Response();
         resp.setData(resp_login);

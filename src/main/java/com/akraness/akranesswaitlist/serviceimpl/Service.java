@@ -1,5 +1,8 @@
 package com.akraness.akranesswaitlist.serviceimpl;
 
+import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
+import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
+import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.entity.WaitList;
@@ -50,6 +53,7 @@ public class Service implements IService {
     private final Utility utility;
     private final BCryptPasswordEncoder passwordEncoder;
     private final ICountryRepository countryRepository;
+    private final SubAccountService subAccountService;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -354,6 +358,14 @@ public class Service implements IService {
         user.setAkranexTag(requestDto.getAkranexTag());
         userRepository.save(user);
 
+        SubAccountRequestDto subAccountRequestDto = SubAccountRequestDto.builder()
+                .userId(user.getId())
+                .akranexTag(user.getAkranexTag())
+                .countryCode(user.getCountryCode())
+                .email(user.getEmail())
+                .build();
+        subAccountService.createSubAccount(subAccountRequestDto);
+
         return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
     }
 
@@ -464,10 +476,17 @@ public class Service implements IService {
                     "User not found", null));
         }
 
+        User user = userObj.get();
+        List<SubAccount> subAccountList = subAccountService.getUserSubAccounts(user.getId());
+
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("userDetails", user);
+        userData.put("userSubAccounts", subAccountList);
+
         Response response = new Response();
         response.setCode(HttpStatus.OK.name());
         response.setDescription("Retrieve user information");
-        response.setData(userObj.get());
+        response.setData(userData);
 
         return ResponseEntity.ok().body(response);
     }

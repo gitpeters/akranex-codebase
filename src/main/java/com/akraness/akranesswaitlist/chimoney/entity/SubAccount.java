@@ -18,6 +18,6 @@ import javax.persistence.Table;
 public class SubAccount extends BaseEntity {
     private String subAccountId;
     private String uid;
-    private Integer userId;
+    private Long userId;
     private String countryCode;
 }
