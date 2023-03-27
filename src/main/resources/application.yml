@@ -20,6 +20,12 @@ jdbc:
   user: akranex_admin@akranex-dev-database
   password: P@ssw0rd123#
   driver: com.mysql.cj.jdbc.Driver
+#  url: jdbc:mysql://localhost:3306/akraness?createDatabaseIfNotExist=true&autoReconnect=true
+#  user: root
+#  password: Ab@230596
+#  driver: com.mysql.cj.jdbc.Driver
+
+
 
 #spring
 spring:
