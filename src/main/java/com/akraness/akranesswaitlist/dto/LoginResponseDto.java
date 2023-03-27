@@ -1,9 +1,11 @@
 package com.akraness.akranesswaitlist.dto;
 
+import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -25,4 +27,5 @@ public class LoginResponseDto {
     private String kycStatus;
     private String kycStatusMessage;
     private Map<String, Object> kycDataVerificationPayload;
+    private List<SubAccount> subAccountList;
 }
