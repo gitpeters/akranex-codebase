@@ -77,10 +77,8 @@ public class IdentityPassAsyncRunner {
                 if((user.getFirstName().equalsIgnoreCase(fname) && user.getLastName().equalsIgnoreCase(lname)) || (user.getLastName().equalsIgnoreCase(fname) && user.getFirstName().equalsIgnoreCase(lname))) {
                     user.setKycStatus(KYCVericationStatus.VERIFIED.name());
                     user.setKycStatusMessage("Successfully verified");
-                    userRepository.save(user);
 
                     //Send verification email
-                    sendKyCVerificationMail(user.getEmail());
 
                     //Send push notification
 
@@ -88,12 +86,12 @@ public class IdentityPassAsyncRunner {
                 else {
                     user.setKycStatus(KYCVericationStatus.FAILED.name());
                     user.setKycStatusMessage("Failed");
-                    userRepository.save(user);
                     //Send verification email
-                    sendKyCVerificationMail(user.getEmail());
                     //send push notification
 
                 }
+                userRepository.save(user);
+                sendKyCVerificationMail(user.getEmail());
 
             }else {
                 user.setKycStatus(KYCVericationStatus.FAILED.name());
@@ -103,7 +101,7 @@ public class IdentityPassAsyncRunner {
 
         }else {
             user.setKycStatus(KYCVericationStatus.FAILED.name());
-            user.setKycStatusMessage("Something went wrong");
+            user.setKycStatusMessage("Verification failed");
             userRepository.save(user);
             //Send verification email
             sendKyCVerificationMail(user.getEmail());

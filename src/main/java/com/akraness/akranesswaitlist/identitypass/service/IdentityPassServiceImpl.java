@@ -44,9 +44,11 @@ public class IdentityPassServiceImpl implements IdentityPassService {
         if (user.getKycStatus() == null || !user.getKycStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())) {
             identityPassAsyncRunner.processKYCVerification(user, request);
             return ResponseEntity.ok().body(new CustomResponse("Verification in progress"));
-        }else {
+        }
+        if(user.getKycStatus().equalsIgnoreCase("VERIFIED")){
             return ResponseEntity.badRequest().body(new CustomResponse("User already verified"));
         }
+        return null;
 }
 
     @Override
