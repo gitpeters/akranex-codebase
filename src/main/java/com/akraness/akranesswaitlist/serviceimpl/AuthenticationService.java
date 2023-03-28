@@ -1,6 +1,7 @@
 package com.akraness.akranesswaitlist.serviceimpl;
 
 import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
+import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.LoginRequestDto;
@@ -61,9 +62,8 @@ public class AuthenticationService {
             payload = identityPassService.getCountryDataPayload(user.getCountryCode());
         }
 
-        List<SubAccount> subAccountList = subAccountService.getUserSubAccounts(user.getId());
+        List<SubAccountDto> subAccountList = subAccountService.getUserSubAccountsAndBalance(user.getId());
 
-        List<BalanceDto> balanceDtos = subAccountService.getUserBalances(subAccountList);
         LoginResponseDto resp_login = new LoginResponseDto(token,user.getId(), authenticationRequest.getUsername(),
                 user.getMobileNumber(),user.getFirstName(),user.getLastName(),user.getCountryCode(),
                 user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified(),user.getAkranexTag(), user.getKycStatus(), user.getKycStatusMessage(), payload, subAccountList);

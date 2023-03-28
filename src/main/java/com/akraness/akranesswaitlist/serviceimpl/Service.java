@@ -1,6 +1,7 @@
 package com.akraness.akranesswaitlist.serviceimpl;
 
 import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
+import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
@@ -478,13 +479,11 @@ public class Service implements IService {
         }
 
         User user = userObj.get();
-        List<SubAccount> subAccountList = subAccountService.getUserSubAccounts(user.getId());
-        List<BalanceDto> balanceDtos = subAccountService.getUserBalances(subAccountList);
+        List<SubAccountDto> subAccountDtos = subAccountService.getUserSubAccountsAndBalance(user.getId());
 
         Map<String, Object> userData = new HashMap<>();
         userData.put("userDetails", user);
-        userData.put("userSubAccounts", subAccountList);
-        userData.put("balances", balanceDtos);
+        userData.put("subAccountList", subAccountDtos);
 
         Response response = new Response();
         response.setCode(HttpStatus.OK.name());

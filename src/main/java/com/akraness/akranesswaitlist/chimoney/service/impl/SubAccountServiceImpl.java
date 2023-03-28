@@ -1,6 +1,7 @@
 package com.akraness.akranesswaitlist.chimoney.service.impl;
 
 import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
+import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.dto.TransferDto;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.config.CustomResponse;
@@ -190,6 +191,24 @@ public class SubAccountServiceImpl implements SubAccountService {
         });
 
         return balanceDtos;
+    }
+
+    @Override
+    public List<SubAccountDto> getUserSubAccountsAndBalance(Long userId) {
+        List<SubAccount> subAccountList = getUserSubAccounts(userId);
+        List<BalanceDto> balanceDtos = getUserBalances(subAccountList);
+        List<SubAccountDto> subAccountDtos = new ArrayList<>();
+
+        subAccountList.parallelStream().forEach(s -> {
+            SubAccountDto subAccountDto = new ObjectMapper().convertValue(s, SubAccountDto.class);
+            Optional<BalanceDto> balanceDto = balanceDtos.stream().filter(b -> b.getSubAccountId().equalsIgnoreCase(s.getSubAccountId()))
+                    .findFirst();
+            subAccountDto.setBalance(balanceDto.get());
+
+            subAccountDtos.add(subAccountDto);
+        });
+
+        return subAccountDtos;
     }
 
     private HttpHeaders headers() {
