@@ -29,4 +29,5 @@ public class LoginResponseDto {
     private String kycStatusMessage;
     private Map<String, Object> kycDataVerificationPayload;
     private List<SubAccountDto> subAccountList;
+    private String imagePath;
 }
