@@ -1,5 +1,6 @@
 package com.akraness.akranesswaitlist.dto;
 
+import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,5 +28,5 @@ public class LoginResponseDto {
     private String kycStatus;
     private String kycStatusMessage;
     private Map<String, Object> kycDataVerificationPayload;
-    private List<SubAccount> subAccountList;
+    private List<SubAccountDto> subAccountList;
 }
