@@ -8,6 +8,7 @@ import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.ResponseEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface SubAccountService {
@@ -19,4 +20,6 @@ public interface SubAccountService {
 
     ResponseEntity<?> transfer(TransferDto transferDto) throws JsonProcessingException;
     List<SubAccount> getUserSubAccounts(Long userId);
+    List<BalanceDto> getUserBalances(List<SubAccount> subAccountList);
+
 }

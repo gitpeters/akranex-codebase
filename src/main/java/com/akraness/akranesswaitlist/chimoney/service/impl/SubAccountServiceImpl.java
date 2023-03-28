@@ -81,12 +81,12 @@ public class SubAccountServiceImpl implements SubAccountService {
         BalanceDto balance = null;
         ObjectMapper oMapper = new ObjectMapper();
 
-        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
-        if (subAccountData != null) {
-            balance = oMapper.readValue(subAccountData, BalanceDto.class);
-
-            return balance;
-        }
+//        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
+//        if (subAccountData != null) {
+//            balance = oMapper.readValue(subAccountData, BalanceDto.class);
+//
+//            return balance;
+//        }
 
         ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
 
@@ -101,11 +101,11 @@ public class SubAccountServiceImpl implements SubAccountService {
 
                 if(!walletType.equalsIgnoreCase("chi")) continue;
 
-                List transactions = (List) walletData.get("transactions");
+//                List transactions = (List) walletData.get("transactions");
+//
+//                Map<String, Object> transMap = oMapper.convertValue(transactions.get(0), Map.class);
 
-                Map<String, Object> transMap = oMapper.convertValue(transactions.get(0), Map.class);
-
-                String stringToConvert = String.valueOf(transMap.get("amount"));
+                String stringToConvert = String.valueOf(walletData.get("balance"));
                 Double amount = Double.parseDouble(stringToConvert);
 
                 balance = BalanceDto.builder()
@@ -175,6 +175,21 @@ public class SubAccountServiceImpl implements SubAccountService {
 
         ResponseEntity<CustomResponse> response = restTemplateService.delete(url, this.headers());
         return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public List<BalanceDto> getUserBalances(List<SubAccount> subAccountList) {
+        List<BalanceDto> balanceDtos = new ArrayList<>();
+
+        subAccountList.parallelStream().forEach(s -> {
+            try {
+                balanceDtos.add(getSubAccount(s.getSubAccountId()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return balanceDtos;
     }
 
     private HttpHeaders headers() {
