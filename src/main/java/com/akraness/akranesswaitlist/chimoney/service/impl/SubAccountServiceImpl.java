@@ -79,15 +79,15 @@ public class SubAccountServiceImpl implements SubAccountService {
     @Override
     public BalanceDto getSubAccount(String subAccountId) throws JsonProcessingException {
         String url = baseUrl + "sub-account/get?id="+subAccountId;
-        BalanceDto balance = null;
+        BalanceDto balance = new BalanceDto();
         ObjectMapper oMapper = new ObjectMapper();
 
-//        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
-//        if (subAccountData != null) {
-//            balance = oMapper.readValue(subAccountData, BalanceDto.class);
-//
-//            return balance;
-//        }
+        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
+        if (subAccountData != null) {
+            balance = oMapper.readValue(subAccountData, BalanceDto.class);
+
+            return balance;
+        }
 
         ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
 
@@ -182,7 +182,7 @@ public class SubAccountServiceImpl implements SubAccountService {
     public List<BalanceDto> getUserBalances(List<SubAccount> subAccountList) {
         List<BalanceDto> balanceDtos = new ArrayList<>();
 
-        subAccountList.parallelStream().forEach(s -> {
+        subAccountList.stream().forEach(s -> {
             try {
                 balanceDtos.add(getSubAccount(s.getSubAccountId()));
             } catch (JsonProcessingException e) {
@@ -199,12 +199,16 @@ public class SubAccountServiceImpl implements SubAccountService {
         List<BalanceDto> balanceDtos = getUserBalances(subAccountList);
         List<SubAccountDto> subAccountDtos = new ArrayList<>();
 
-        subAccountList.parallelStream().forEach(s -> {
-            SubAccountDto subAccountDto = new ObjectMapper().convertValue(s, SubAccountDto.class);
+        subAccountList.stream().forEach(s -> {
             Optional<BalanceDto> balanceDto = balanceDtos.stream().filter(b -> b.getSubAccountId().equalsIgnoreCase(s.getSubAccountId()))
                     .findFirst();
-            subAccountDto.setBalance(balanceDto.get());
-
+            SubAccountDto subAccountDto = SubAccountDto.builder()
+                    .subAccountId(s.getSubAccountId())
+                    .uid(s.getUid())
+                    .userId(s.getUserId())
+                    .countryCode(s.getCountryCode())
+                    .balance(balanceDto.get())
+                    .build();
             subAccountDtos.add(subAccountDto);
         });
 
