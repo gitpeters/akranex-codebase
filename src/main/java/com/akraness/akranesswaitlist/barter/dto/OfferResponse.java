@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -18,4 +20,12 @@ public class OfferResponse {
     private String receivingCurrency;
     private String akranexTag;
     private String username;
+    private List<BidResponse> bids;
+    private boolean offerStatus;
+    private String offerMessage;
+
+    public OfferResponse(boolean offerStatus, String offerMessage) {
+        this.offerStatus = offerStatus;
+        this.offerMessage = offerMessage;
+    }
 }
