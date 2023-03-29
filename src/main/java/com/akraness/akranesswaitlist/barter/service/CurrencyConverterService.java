@@ -45,6 +45,7 @@ public class CurrencyConverterService {
             Map<String, Object> data = oMapper.convertValue(response.getBody().getData(), Map.class);
             String convertedAmount = String.valueOf(data.get("amountInDestinationCurrency"));
             convertRequest.setRate(Double.parseDouble(convertedAmount));
+            convertRequest.setDestinationCurrency((String)data.get("destinationCurrency"));
         }
 
         return convertRequest;
