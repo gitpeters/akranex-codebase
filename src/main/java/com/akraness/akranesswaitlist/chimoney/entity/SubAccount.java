@@ -20,4 +20,5 @@ public class SubAccount extends BaseEntity {
     private String uid;
     private Long userId;
     private String countryCode;
+    private String currencyCode;
 }

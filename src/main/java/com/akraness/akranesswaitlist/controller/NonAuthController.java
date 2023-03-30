@@ -124,9 +124,9 @@ public class NonAuthController {
 
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Response> getUser(@PathVariable("id") long userId) throws JsonProcessingException {
-//        return service.getUser(userId);
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Response> getUser(@PathVariable("id") long userId) throws JsonProcessingException {
+        return service.getUser(userId);
+    }
 
 }

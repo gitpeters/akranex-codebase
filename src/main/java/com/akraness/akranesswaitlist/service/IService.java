@@ -32,6 +32,4 @@ ResponseEntity<Response> createAkranexTag(AkranexTagCreationRequestDto requestDt
 ResponseEntity<Response> checkAkranexTag(String akranexTag) throws JsonProcessingException;
 ResponseEntity<Response> uploadUserProfilePic(MultipartFile file, Long userId) throws Exception;
 ResponseEntity<Response> getUser(long userId) throws JsonProcessingException;
-
-String getCurrencyCode(String countryCode);
 }

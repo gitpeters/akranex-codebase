@@ -14,14 +14,15 @@ import java.util.List;
 
 public interface SubAccountService {
     ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request);
-    BalanceDto getSubAccount(String subAccountId) throws JsonProcessingException;
+    BalanceDto getSubAccount(String subAccountId, String currencyCode) throws JsonProcessingException;
     ResponseEntity<CustomResponse> deleteSubAccount(String subAccountId);
 
-    BalanceDto getBalanceInLocalCurrency(String subAccountId, String currencyCode) throws JsonProcessingException;
+    //BalanceDto getBalanceInLocalCurrency(String subAccountId, String currencyCode) throws JsonProcessingException;
 
     ResponseEntity<?> transfer(TransferDto transferDto) throws JsonProcessingException;
     List<SubAccount> getUserSubAccounts(Long userId);
-    List<BalanceDto> getUserBalances(List<SubAccount> subAccountList);
-    List<SubAccountDto> getUserSubAccountsAndBalance(Long userId);
-
+   // List<BalanceDto> getUserBalances(List<SubAccount> subAccountList);
+    List<SubAccountDto> getUserSubAccountsAndBalance(Long userId) throws JsonProcessingException;
+    double getAmountInLocalCurrency(double amount, String currencyCode) throws JsonProcessingException;
+    String getCurrencyCode(String countryCode);
 }

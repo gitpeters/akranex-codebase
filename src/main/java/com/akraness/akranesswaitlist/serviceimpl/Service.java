@@ -513,22 +513,6 @@ public class Service implements IService {
         return ResponseEntity.ok().body(response);
     }
 
-    @Override
-    public String getCurrencyCode(String countryCode) {
-        String currencyCode = redisTemplate.opsForValue().get(countryCode);
-        if (currencyCode != null) {
-            return currencyCode;
-        }
-
-        Optional<Country> countryObj = countryRepository.findByCode(countryCode);
-        if(countryObj.isPresent()) {
-            redisTemplate.opsForValue().set(countryCode, countryObj.get().getCurrencyCode());
-            return countryObj.get().getCurrencyCode();
-        }
-
-        return null;
-    }
-
     private String generateSas(BlobClient blobClient) {
         OffsetDateTime expiryTime = OffsetDateTime.now().plusYears(10);
         BlobSasPermission blobSasPermission = new BlobSasPermission().setReadPermission(true);
