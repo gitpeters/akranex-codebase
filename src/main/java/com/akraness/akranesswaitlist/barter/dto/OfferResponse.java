@@ -20,6 +20,7 @@ public class OfferResponse {
     private String receivingCurrency;
     private String akranexTag;
     private String username;
+    private double transactionFee;
     private List<BidResponse> bids;
     private boolean offerStatus;
     private String offerMessage;

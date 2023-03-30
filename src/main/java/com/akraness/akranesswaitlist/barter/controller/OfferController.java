@@ -61,4 +61,10 @@ public class OfferController {
     public ResponseEntity<?> getBidding(@RequestParam("offerId") Long offerId){
         return ResponseEntity.ok().body(offerService.getBids(offerId));
     }
+
+    @PutMapping("/edit/{offerId}")
+    public ResponseEntity<?> editOffer(@PathVariable("offerId") Long offerId, @RequestBody OfferRequest request){
+        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/barter/edit").toUriString());
+        return ResponseEntity.created(uri).body(offerService.editOffer(offerId, request));
+    }
 }

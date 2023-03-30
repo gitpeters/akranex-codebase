@@ -33,6 +33,7 @@ public class OfferServiceImpl implements OfferService{
 
     @Override
     public ResponseEntity<OfferResponse> createOffer(OfferRequest request) {
+        double transactionFee = request.getAmountToBePaid()*0.6/100;
         Offer offer = Offer.builder()
                 .amountToBePaid(request.getAmountToBePaid())
                 .amountToBeReceived(request.getAmountToBeReceived())
@@ -40,6 +41,7 @@ public class OfferServiceImpl implements OfferService{
                 .receivingCurrency(request.getReceivingCurrency())
                 .tradingCurrency(request.getTradingCurrency())
                 .rate(request.getRate())
+                .transactionFee(transactionFee)
                 .offerStatus(String.valueOf(OfferStatus.PENDING))
                 .build();
         offerRepository.save(offer);
@@ -77,6 +79,7 @@ public class OfferServiceImpl implements OfferService{
                     .tradingCurrency(offer.getTradingCurrency())
                     .receivingCurrency(offer.getReceivingCurrency())
                     .rate(offer.getRate())
+                    .transactionFee(offer.getTransactionFee())
                     .amountToBeReceived(offer.getAmountToBeReceived())
                     .build();
         }
@@ -143,11 +146,45 @@ public class OfferServiceImpl implements OfferService{
         return ResponseEntity.ok().body(offerResponse);
     }
 
+    @Override
+    public ResponseEntity<OfferResponse> editOffer(Long offerId, OfferRequest offerRequest) {
+        Optional<Offer> offerObj = offerRepository.findById(offerId);
+        if (!offerObj.isPresent()) {
+            return ResponseEntity.badRequest().body(new OfferResponse(false, "Offer not found"));
+        }
+        Offer offer = offerObj.get();
+        if (!offer.getAkranexTag().equals(offerRequest.getAkranexTag())) {
+            return ResponseEntity.badRequest().body(new OfferResponse(false, "You are not authorized to update this offer"));
+        }
+        offer.setAmountToBePaid(offerRequest.getAmountToBePaid());
+        offer.setAmountToBeReceived(offerRequest.getAmountToBeReceived());
+        offer.setRate(offerRequest.getRate());
+        offer.setTradingCurrency(offerRequest.getTradingCurrency());
+        offer.setReceivingCurrency(offerRequest.getReceivingCurrency());
+
+        Offer savedOffer = offerRepository.save(offer);
+
+        // Build and return a response with the updated offer details
+        OfferResponse offerResponse = OfferResponse.builder()
+                .amountToBePaid(savedOffer.getAmountToBePaid())
+                .amountToBeReceived(savedOffer.getAmountToBeReceived())
+                .rate(savedOffer.getRate())
+                .tradingCurrency(savedOffer.getTradingCurrency())
+                .receivingCurrency(savedOffer.getReceivingCurrency())
+                .akranexTag(savedOffer.getAkranexTag())
+                .username(savedOffer.getAkranexTag())
+                .offerStatus(true)
+                .offerMessage("Successfully updated offer")
+                .build();
+        return ResponseEntity.ok().body(offerResponse);
+    }
+
     private OfferResponse mapToOfferResponse(Offer offer) {
         return OfferResponse.builder()
                 .amountToBePaid(offer.getAmountToBePaid())
                 .amountToBeReceived(offer.getAmountToBeReceived())
                 .rate(offer.getRate())
+                .transactionFee(offer.getTransactionFee())
                 .receivingCurrency(offer.getReceivingCurrency())
                 .tradingCurrency(offer.getTradingCurrency())
                 .akranexTag(offer.getAkranexTag())

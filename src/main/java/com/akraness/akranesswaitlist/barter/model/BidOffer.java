@@ -1,5 +1,6 @@
 package com.akraness.akranesswaitlist.barter.model;
 
+import com.akraness.akranesswaitlist.entity.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(name="bid_offer_tbl")
-public class BidOffer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+public class BidOffer extends BaseEntity {
     @Column(name = "offer_id")
     private Long offerId;
     @Column(name = "amount_to_be_paid")
