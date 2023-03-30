@@ -65,8 +65,6 @@ public class IdentityPassAsyncRunner {
 
             KYCVerification verification = response.getBody().getVerification();
 
-
-
             if(verification != null && verification.getStatus() != null && verification.getStatus().equalsIgnoreCase(KYCVericationStatus.VERIFIED.name())){
 
                 String fname = data.containsKey("firstname") ? (String)data.get("firstname")
@@ -77,8 +75,10 @@ public class IdentityPassAsyncRunner {
                 if((user.getFirstName().equalsIgnoreCase(fname) && user.getLastName().equalsIgnoreCase(lname)) || (user.getLastName().equalsIgnoreCase(fname) && user.getFirstName().equalsIgnoreCase(lname))) {
                     user.setKycStatus(KYCVericationStatus.VERIFIED.name());
                     user.setKycStatusMessage("Successfully verified");
+                    userRepository.save(user);
 
                     //Send verification email
+                    sendKyCVerificationMail(user.getEmail());
 
                     //Send push notification
 
@@ -86,25 +86,24 @@ public class IdentityPassAsyncRunner {
                 else {
                     user.setKycStatus(KYCVericationStatus.FAILED.name());
                     user.setKycStatusMessage("Failed");
-                    //Send verification email
+                    userRepository.save(user);
+
                     //send push notification
 
                 }
-                userRepository.save(user);
-                sendKyCVerificationMail(user.getEmail());
-
             }else {
                 user.setKycStatus(KYCVericationStatus.FAILED.name());
                 user.setKycStatusMessage("Verification failed");
                 userRepository.save(user);
+
+                //send push notification
             }
 
         }else {
             user.setKycStatus(KYCVericationStatus.FAILED.name());
             user.setKycStatusMessage("Verification failed");
             userRepository.save(user);
-            //Send verification email
-            sendKyCVerificationMail(user.getEmail());
+
             //Send push notification
         }
 

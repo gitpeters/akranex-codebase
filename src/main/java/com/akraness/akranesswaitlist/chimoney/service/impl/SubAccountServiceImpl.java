@@ -9,8 +9,12 @@ import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
+import com.akraness.akranesswaitlist.entity.Country;
+import com.akraness.akranesswaitlist.repository.ICountryRepository;
+import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -34,6 +39,8 @@ public class SubAccountServiceImpl implements SubAccountService {
     private String baseUrl;
 
     private final StringRedisTemplate redisTemplate;
+    private final ICountryRepository countryRepository;
+    private static final String USER_BALANCE = "user_balance";
 
     @Override
     public ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request) {
@@ -49,6 +56,10 @@ public class SubAccountServiceImpl implements SubAccountService {
         if (request.getUserId() == null)
             return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("userId is required.").build());
 
+        String currencyCode = getCurrencyCode(request.getCountryCode());
+        if (currencyCode == null)
+            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("There is no currency code associated with this country code.").build());
+
         Optional<SubAccount> subAccount = subAccountRepository.findByUserIdAndCountryCode(request.getUserId(), request.getCountryCode());
         if(subAccount.isPresent())
             return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("You already have sub account created for this region").build());
@@ -63,11 +74,13 @@ public class SubAccountServiceImpl implements SubAccountService {
         if(response.getStatusCodeValue() == HttpStatus.OK.value()){
             ObjectMapper oMapper = new ObjectMapper();
             Map<String, String> map = oMapper.convertValue(response.getBody().getData(), Map.class);
+
             SubAccount subacct = SubAccount.builder()
                     .subAccountId(map.get("id"))
                     .uid(map.get("uid"))
                     .userId(request.getUserId())
                     .countryCode(request.getCountryCode())
+                    .currencyCode(currencyCode)
                     .build();
 
             subAccountRepository.save(subacct);
@@ -77,17 +90,17 @@ public class SubAccountServiceImpl implements SubAccountService {
     }
 
     @Override
-    public BalanceDto getSubAccount(String subAccountId) throws JsonProcessingException {
+    public BalanceDto getSubAccount(String subAccountId, String currencyCode) throws JsonProcessingException {
         String url = baseUrl + "sub-account/get?id="+subAccountId;
         BalanceDto balance = new BalanceDto();
         ObjectMapper oMapper = new ObjectMapper();
 
-        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
-        if (subAccountData != null) {
-            balance = oMapper.readValue(subAccountData, BalanceDto.class);
-
-            return balance;
-        }
+//        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
+//        if (subAccountData != null) {
+//            balance = oMapper.readValue(subAccountData, BalanceDto.class);
+//
+//            return balance;
+//        }
 
         ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
 
@@ -102,19 +115,19 @@ public class SubAccountServiceImpl implements SubAccountService {
 
                 if(!walletType.equalsIgnoreCase("chi")) continue;
 
-//                List transactions = (List) walletData.get("transactions");
-//
-//                Map<String, Object> transMap = oMapper.convertValue(transactions.get(0), Map.class);
-
                 String stringToConvert = String.valueOf(walletData.get("balance"));
                 Double amount = Double.parseDouble(stringToConvert);
+
+                //get amount in local currency
+                double localAmount = getAmountInLocalCurrency(amount, currencyCode);
 
                 balance = BalanceDto.builder()
                         .subAccountId(subAccountId)
                         .amount(amount)
+                        .amountInLocalCurrency(localAmount)
                         .build();
 
-                redisTemplate.opsForValue().set(subAccountId, oMapper.writeValueAsString(balance));
+                //redisTemplate.opsForValue().set(subAccountId, oMapper.writeValueAsString(balance));
 
             }
         }
@@ -123,32 +136,32 @@ public class SubAccountServiceImpl implements SubAccountService {
 
     }
 
-    public BalanceDto getBalanceInLocalCurrency(String subAccountId, String currencyCode) throws JsonProcessingException {
-        BalanceDto balance = null;
-        ObjectMapper oMapper = new ObjectMapper();
-
-        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
-        if (subAccountData != null) {
-            balance = oMapper.readValue(subAccountData, BalanceDto.class);
-        }else {
-            balance = getSubAccount(subAccountId);
-        }
-
-        if(balance.getAmount() <= 0) {
-            return balance;
-        }
-
-        String url = baseUrl + "info/usd-amount-in-local?destinationCurrency="+currencyCode+"&amountInUSD="+balance.getAmount();
-        ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
-
-        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
-            Map<String, Object> data = oMapper.convertValue(response.getBody().getData(), Map.class);
-            String convertedAmount = String.valueOf(data.get("amountInDestinationCurrency"));
-            balance.setAmountInLocalCurrency(Double.parseDouble(convertedAmount));
-        }
-
-        return balance;
-    }
+//    public BalanceDto getBalanceInLocalCurrency(String subAccountId, String currencyCode) throws JsonProcessingException {
+//        BalanceDto balance = null;
+//        ObjectMapper oMapper = new ObjectMapper();
+//
+//        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
+//        if (subAccountData != null) {
+//            balance = oMapper.readValue(subAccountData, BalanceDto.class);
+//        }else {
+//            balance = getSubAccount(subAccountId);
+//        }
+//
+//        if(balance.getAmount() <= 0) {
+//            return balance;
+//        }
+//
+//        String url = baseUrl + "info/usd-amount-in-local?destinationCurrency="+currencyCode+"&amountInUSD="+balance.getAmount();
+//        ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
+//
+//        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
+//            Map<String, Object> data = oMapper.convertValue(response.getBody().getData(), Map.class);
+//            String convertedAmount = String.valueOf(data.get("amountInDestinationCurrency"));
+//            balance.setAmountInLocalCurrency(Double.parseDouble(convertedAmount));
+//        }
+//
+//        return balance;
+//    }
 
     @Override
     public ResponseEntity<?> transfer(TransferDto transferDto) throws JsonProcessingException {
@@ -179,24 +192,9 @@ public class SubAccountServiceImpl implements SubAccountService {
     }
 
     @Override
-    public List<BalanceDto> getUserBalances(List<SubAccount> subAccountList) {
-        List<BalanceDto> balanceDtos = new ArrayList<>();
-
-        subAccountList.stream().forEach(s -> {
-            try {
-                balanceDtos.add(getSubAccount(s.getSubAccountId()));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        return balanceDtos;
-    }
-
-    @Override
-    public List<SubAccountDto> getUserSubAccountsAndBalance(Long userId) {
+    public List<SubAccountDto> getUserSubAccountsAndBalance(Long userId) throws JsonProcessingException {
         List<SubAccount> subAccountList = getUserSubAccounts(userId);
-        List<BalanceDto> balanceDtos = getUserBalances(subAccountList);
+        List<BalanceDto> balanceDtos = getUserBalances(userId, subAccountList);
         List<SubAccountDto> subAccountDtos = new ArrayList<>();
 
         subAccountList.stream().forEach(s -> {
@@ -207,12 +205,71 @@ public class SubAccountServiceImpl implements SubAccountService {
                     .uid(s.getUid())
                     .userId(s.getUserId())
                     .countryCode(s.getCountryCode())
+                    .currencyCode(s.getCurrencyCode())
                     .balance(balanceDto.get())
                     .build();
             subAccountDtos.add(subAccountDto);
         });
 
         return subAccountDtos;
+    }
+
+    @Override
+    public double getAmountInLocalCurrency(double amount, String currencyCode) throws JsonProcessingException {
+        double amountInLocal = 0L;
+        if(amount <= 0) {
+            return amountInLocal;
+        }
+
+        String url = baseUrl + "info/usd-amount-in-local?destinationCurrency="+currencyCode+"&amountInUSD="+amount;
+        ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
+
+        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
+            Map<String, Object> data = new ObjectMapper().convertValue(response.getBody().getData(), Map.class);
+            String convertedAmount = String.valueOf(data.get("amountInDestinationCurrency"));
+            amountInLocal = Double.parseDouble(convertedAmount);
+        }
+
+        return amountInLocal;
+    }
+
+    @Override
+    public String getCurrencyCode(String countryCode) {
+        String currencyCode = redisTemplate.opsForValue().get(countryCode);
+        if (currencyCode != null) {
+            return currencyCode;
+        }
+
+        Optional<Country> countryObj = countryRepository.findByCode(countryCode);
+        if(countryObj.isPresent()) {
+            redisTemplate.opsForValue().set(countryCode, countryObj.get().getCurrencyCode());
+            return countryObj.get().getCurrencyCode();
+        }
+
+        return null;
+    }
+
+    private List<BalanceDto> getUserBalances(long userId, List<SubAccount> subAccountList) throws JsonProcessingException {
+        List<BalanceDto> balanceDtos = new ArrayList<>();
+        ObjectMapper om = new ObjectMapper();
+        String balanceData = redisTemplate.opsForValue().get(userId+USER_BALANCE);
+        if(Objects.nonNull(balanceData)) {
+           balanceDtos = om.readValue(balanceData, new TypeReference<List<BalanceDto>>(){});
+           return balanceDtos;
+        }
+
+        List<BalanceDto> finalBalanceDtos = balanceDtos;
+        subAccountList.stream().forEach(s -> {
+            try {
+                finalBalanceDtos.add(getSubAccount(s.getSubAccountId(), s.getCurrencyCode()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        redisTemplate.opsForValue().set(userId+USER_BALANCE, om.writeValueAsString(balanceDtos), Duration.ofDays(5));
+
+        return balanceDtos;
     }
 
     private HttpHeaders headers() {

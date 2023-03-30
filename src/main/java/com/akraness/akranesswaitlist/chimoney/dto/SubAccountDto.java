@@ -10,5 +10,6 @@ public class SubAccountDto {
     private String uid;
     private Long userId;
     private String countryCode;
+    private String currencyCode;
     private BalanceDto balance;
 }
