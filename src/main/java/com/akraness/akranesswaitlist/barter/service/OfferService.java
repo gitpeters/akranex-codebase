@@ -16,4 +16,5 @@ public interface OfferService {
 
     ResponseEntity<?> bidOffer(Long offerId, BidRequest request);
     ResponseEntity<?> getBids(Long offerId);
+    ResponseEntity<OfferResponse> editOffer(Long offerId, OfferRequest offerRequest);
 }
