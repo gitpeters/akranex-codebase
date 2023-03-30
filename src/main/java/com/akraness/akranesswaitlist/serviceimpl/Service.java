@@ -178,7 +178,7 @@ public class Service implements IService {
 
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email verification code does not exist or has expired", null));
         }
-        //Referral Code
+
         if(requestDto.getReferralCode() != null && !requestDto.getReferralCode().isEmpty()) {
             Optional<User> referralUserObj = userRepository.findByAkranexTag(requestDto.getReferralCode());
             if(!referralUserObj.isPresent()) {
