@@ -1,8 +1,10 @@
 package com.akraness.akranesswaitlist.barter.controller;
 
+import com.akraness.akranesswaitlist.barter.dto.BidRequest;
 import com.akraness.akranesswaitlist.barter.dto.CurrencyConvertRequest;
 import com.akraness.akranesswaitlist.barter.dto.OfferRequest;
 import com.akraness.akranesswaitlist.barter.dto.OfferResponse;
+import com.akraness.akranesswaitlist.barter.model.Offer;
 import com.akraness.akranesswaitlist.barter.service.CurrencyConverterService;
 import com.akraness.akranesswaitlist.barter.service.OfferService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,10 +25,10 @@ public class OfferController {
     private final CurrencyConverterService converterService;
 
     @PostMapping("/create")
-    public ResponseEntity createOffer(@RequestBody OfferRequest request){
+    public ResponseEntity<?> createOffer(@RequestBody OfferRequest request){
         offerService.createOffer(request);
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/barter/create").toUriString());
-         return ResponseEntity.created(uri).build();
+         return ResponseEntity.created(uri).body(new OfferResponse(true, "Successfully created offer"));
     }
 
     @GetMapping("/offers")
@@ -48,5 +50,15 @@ public class OfferController {
     public ResponseEntity<?> convertCurrency(@RequestParam("destinationCurrency") String currencyCode, @RequestParam("amountInUSD") double amount) throws JsonProcessingException {
         CurrencyConvertRequest convertRequest = converterService.getBalanceInLocalCurrency(currencyCode, amount);
         return ResponseEntity.ok().body(convertRequest);
+    }
+
+    @PostMapping("/offer/{offerId}/bids")
+    public ResponseEntity<?> bidOffer(@PathVariable("") Long offerId, @RequestBody BidRequest request){
+        return ResponseEntity.ok().body(offerService.bidOffer(offerId, request));
+    }
+
+    @GetMapping("/get-bidding")
+    public ResponseEntity<?> getBidding(@RequestParam("offerId") Long offerId){
+        return ResponseEntity.ok().body(offerService.getBids(offerId));
     }
 }
