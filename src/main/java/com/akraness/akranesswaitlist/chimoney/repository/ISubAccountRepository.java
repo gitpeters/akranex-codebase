@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface ISubAccountRepository extends JpaRepository<SubAccount, Long> {
     List<SubAccount> findByUserId(Long userId);
     Optional<SubAccount> findByUserIdAndCountryCode(Long userId, String countryCode);
+
+    Optional<SubAccount> findBySubAccountId(String subAccount);
 }
