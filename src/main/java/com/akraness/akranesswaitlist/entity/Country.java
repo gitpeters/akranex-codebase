@@ -20,4 +20,5 @@ public class Country {
     private String name;
     private String code;
     private String phoneCode;
+    private String currencyCode;
 }

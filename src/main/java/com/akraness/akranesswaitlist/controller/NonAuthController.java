@@ -1,6 +1,7 @@
 package com.akraness.akranesswaitlist.controller;
 
 import com.akraness.akranesswaitlist.dto.*;
+import com.akraness.akranesswaitlist.entity.Country;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.serviceimpl.AuthenticationService;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @RestController
@@ -81,7 +84,12 @@ public class NonAuthController {
 
     @GetMapping("/get-countries")
     public ResponseEntity<?> getCountries() {
-        return service.getCountries();
+        List<Country> countries = service.getCountries();
+
+        Response resp = new Response("200", "Successful", null);
+        resp.setData(countries);
+
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping("/reset-password-request")

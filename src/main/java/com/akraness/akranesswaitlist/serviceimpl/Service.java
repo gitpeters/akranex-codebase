@@ -6,6 +6,7 @@ import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
+import com.akraness.akranesswaitlist.entity.Country;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.entity.WaitList;
 import com.akraness.akranesswaitlist.enums.NotificationType;
@@ -23,6 +24,7 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.sas.BlobSasPermission;
 import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,6 +77,8 @@ public class Service implements IService {
     private String defaultPinValue;
     @Value("${email.otp.reset-password}")
     private String resetPasswordOtpTemplate;
+
+    private static final String SUPPORTED_COUNTRIES = "supported-countries";
 
     @Override
     public ResponseEntity<Response> joinWaitList(WaitListRequestDto request) {
@@ -303,8 +307,24 @@ public class Service implements IService {
     }
 
     @Override
-    public ResponseEntity<?> getCountries() {
-        return ResponseEntity.ok().body(countryRepository.findAll());
+    public List<Country> getCountries() {
+        try {
+            List<Country> countries = new ArrayList<>();
+
+            ObjectMapper om = new ObjectMapper();
+            String countryData = redisTemplate.opsForValue().get(SUPPORTED_COUNTRIES);
+            if (Objects.nonNull(countryData)) {
+                return om.readValue(countryData, new TypeReference<List<Country>>(){});
+            }
+
+            countries = countryRepository.findAll();
+            redisTemplate.opsForValue().set(SUPPORTED_COUNTRIES, om.writeValueAsString(countries));
+
+            return countries;
+
+        } catch (IOException ex) {
+            throw new NotFoundException("Error occurred while retrieving countries list, please contact admin.");
+        }
     }
 
     @Override
@@ -491,6 +511,22 @@ public class Service implements IService {
         response.setData(userData);
 
         return ResponseEntity.ok().body(response);
+    }
+
+    @Override
+    public String getCurrencyCode(String countryCode) {
+        String currencyCode = redisTemplate.opsForValue().get(countryCode);
+        if (currencyCode != null) {
+            return currencyCode;
+        }
+
+        Optional<Country> countryObj = countryRepository.findByCode(countryCode);
+        if(countryObj.isPresent()) {
+            redisTemplate.opsForValue().set(countryCode, countryObj.get().getCurrencyCode());
+            return countryObj.get().getCurrencyCode();
+        }
+
+        return null;
     }
 
     private String generateSas(BlobClient blobClient) {
