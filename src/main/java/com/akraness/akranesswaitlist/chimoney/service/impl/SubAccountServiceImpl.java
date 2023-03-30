@@ -102,10 +102,6 @@ public class SubAccountServiceImpl implements SubAccountService {
 
                 if(!walletType.equalsIgnoreCase("chi")) continue;
 
-//                List transactions = (List) walletData.get("transactions");
-//
-//                Map<String, Object> transMap = oMapper.convertValue(transactions.get(0), Map.class);
-
                 String stringToConvert = String.valueOf(walletData.get("balance"));
                 Double amount = Double.parseDouble(stringToConvert);
 
