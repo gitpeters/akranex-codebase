@@ -5,10 +5,12 @@ import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.entity.Country;
+import com.akraness.akranesswaitlist.entity.Referral;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.entity.WaitList;
 import com.akraness.akranesswaitlist.enums.NotificationType;
 import com.akraness.akranesswaitlist.enums.PinType;
+import com.akraness.akranesswaitlist.enums.ReferralStatus;
 import com.akraness.akranesswaitlist.exception.DuplicateException;
 import com.akraness.akranesswaitlist.repository.ICountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
@@ -172,6 +174,14 @@ public class Service implements IService {
 
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email verification code does not exist or has expired", null));
         }
+        if(requestDto.getReferralCode()!=null && !requestDto.getReferralCode().isEmpty()){
+            Optional<User> referralUserObj = userRepository.findByAkranexTag(requestDto.getReferralCode());
+            if(!referralUserObj.isPresent()){
+                return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),"Cannot find this user", null));
+            }
+            User referralUser = referralUserObj.get();
+            saveReferralDetailsToDb(referralUser.getId(), requestDto);
+        }
 
         String otp = utility.generateEmailVeirificationCode();
         PhoneVerificationDto verificationDto = PhoneVerificationDto.builder()
@@ -189,6 +199,26 @@ public class Service implements IService {
                 .build();
         notificationService.sendNotification(notificationDto_sms);
 
+        saveUser(requestDto);
+        redisTemplate.delete(requestDto.getEmail());
+        log.info("Successfully deleted user email {} from redis store.",requestDto.getEmail());
+        NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
+        notificationService.sendNotification(notificationDto);
+        return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
+    }
+
+    private ResponseEntity<?> saveReferralDetailsToDb(Long referralUserId, SignupRequestDto requestDto) {
+        Referral referral = Referral.builder()
+                .referralUserId(referralUserId)
+                .newUserId(saveUser(requestDto).getId())
+                .referralRewardAmount(0.0)
+                .newUserFundedAmount(0.0)
+                .referralRewardStatus(String.valueOf(ReferralStatus.PENDING))
+                .build();
+        return ResponseEntity.ok().body(referral);
+    }
+
+    private User saveUser(SignupRequestDto requestDto) {
         var user  = User.builder()
                 .countryCode(requestDto.getCountryCode())
                 .accountType(requestDto.getAccountType())
@@ -207,14 +237,10 @@ public class Service implements IService {
                 .gender(requestDto.getGender())
                 .build();
         userRepository.save(user);
-        redisTemplate.delete(requestDto.getEmail());
-        log.info("Successfully deleted user email {} from redis store.",requestDto.getEmail());
-        NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
-        notificationService.sendNotification(notificationDto);
-        return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
+        return user;
     }
 
-     @Override
+    @Override
     public ResponseEntity<Response> verifyPhone(PhoneVerificationDto requestDto) throws JsonProcessingException {
         if (!userRepository.existsByMobileNumber(requestDto.getPhoneNumber())) {
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Phone number does not exists.", null));
