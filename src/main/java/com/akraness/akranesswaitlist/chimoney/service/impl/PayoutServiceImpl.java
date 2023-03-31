@@ -1,21 +1,30 @@
 package com.akraness.akranesswaitlist.chimoney.service.impl;
 
 import com.akraness.akranesswaitlist.chimoney.dto.PayoutDto;
+import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
+import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
 import com.akraness.akranesswaitlist.chimoney.service.PayoutService;
+import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
 import com.akraness.akranesswaitlist.util.Utility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PayoutServiceImpl implements PayoutService {
     private final RestTemplateService restTemplateService;
-    private final Utility utility;
+    private final ISubAccountRepository subAccountRepository;
+    private final StringRedisTemplate redisTemplate;
+    private static final String USER_BALANCE = "user_balance";
 
     @Value("${chimoney.api-key}")
     private String apiKey;
@@ -42,6 +51,13 @@ public class PayoutServiceImpl implements PayoutService {
 
     private ResponseEntity<CustomResponse> post(PayoutDto req, String url) {
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, req, this.headers());
+        if(response.getStatusCodeValue() == HttpStatus.OK.value() && response.getBody().getStatus().equalsIgnoreCase("success")) {
+            //remove balance from redis
+            Optional<SubAccount> subAccount = subAccountRepository.findBySubAccountId(req.getSubAccount());
+            if(subAccount.isPresent()) {
+                redisTemplate.opsForValue().getAndDelete(subAccount.get().getUserId()+USER_BALANCE);
+            }
+        }
         return ResponseEntity.ok().body(response.getBody());
     }
 
