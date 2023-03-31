@@ -26,5 +26,4 @@ public class SignupRequestDto {
     private LocalDate dateOfBirth;
     @NotNull(message = "gender is compulsory")
     private String gender;
-    private String referralCode;
 }

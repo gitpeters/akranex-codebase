@@ -1,18 +1,14 @@
 package com.akraness.akranesswaitlist.serviceimpl;
 
-import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
-import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.entity.Country;
 import com.akraness.akranesswaitlist.entity.User;
-import com.akraness.akranesswaitlist.entity.UserReferral;
 import com.akraness.akranesswaitlist.entity.WaitList;
 import com.akraness.akranesswaitlist.enums.NotificationType;
 import com.akraness.akranesswaitlist.enums.PinType;
-import com.akraness.akranesswaitlist.enums.UserReferralStatus;
 import com.akraness.akranesswaitlist.exception.DuplicateException;
 import com.akraness.akranesswaitlist.repository.ICountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
@@ -21,7 +17,6 @@ import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.azure.storage.blob.BlobClient;
-import com.azure.storage.blob.BlobClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.sas.BlobSasPermission;
 import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
@@ -39,7 +34,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 import org.webjars.NotFoundException;
-import reactor.core.Exceptions;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -179,16 +173,6 @@ public class Service implements IService {
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email verification code does not exist or has expired", null));
         }
 
-        if(requestDto.getReferralCode() != null && !requestDto.getReferralCode().isEmpty()) {
-            Optional<User> referralUserObj = userRepository.findByAkranexTag(requestDto.getReferralCode());
-            if(!referralUserObj.isPresent()) {
-                return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "bad request", null));
-            }
-            User referralUser = referralUserObj.get();
-            saveReferralDetails(referralUser.getId(), requestDto);
-        }
-
-
         String otp = utility.generateEmailVeirificationCode();
         PhoneVerificationDto verificationDto = PhoneVerificationDto.builder()
                 .phoneNumber(requestDto.getMobileNumber())
@@ -205,25 +189,6 @@ public class Service implements IService {
                 .build();
         notificationService.sendNotification(notificationDto_sms);
 
-        saveUser(requestDto);
-        redisTemplate.delete(requestDto.getEmail());
-        log.info("Successfully deleted user email {} from redis store.",requestDto.getEmail());
-        NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
-        notificationService.sendNotification(notificationDto);
-        return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
-    }
-
-    private ResponseEntity<UserReferral> saveReferralDetails(Long referralUserId, SignupRequestDto requestDto) {
-        UserReferral userReferral = UserReferral.builder()
-                .referral_user_id(referralUserId)
-                .new_user_id(saveUser(requestDto).getId())
-                .referred_reward_status(String.valueOf(UserReferralStatus.PENDING))
-                .new_user_funded_amount(0.0)
-                .build();
-        return ResponseEntity.ok().body(userReferral);
-    }
-
-    private User saveUser(SignupRequestDto requestDto) {
         var user  = User.builder()
                 .countryCode(requestDto.getCountryCode())
                 .accountType(requestDto.getAccountType())
@@ -242,11 +207,14 @@ public class Service implements IService {
                 .gender(requestDto.getGender())
                 .build();
         userRepository.save(user);
-        return user;
+        redisTemplate.delete(requestDto.getEmail());
+        log.info("Successfully deleted user email {} from redis store.",requestDto.getEmail());
+        NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
+        notificationService.sendNotification(notificationDto);
+        return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
     }
 
-
-    @Override
+     @Override
     public ResponseEntity<Response> verifyPhone(PhoneVerificationDto requestDto) throws JsonProcessingException {
         if (!userRepository.existsByMobileNumber(requestDto.getPhoneNumber())) {
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Phone number does not exists.", null));
