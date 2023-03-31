@@ -1,9 +1,7 @@
 package com.akraness.akranesswaitlist.serviceimpl;
 
-import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
-import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.entity.Country;
@@ -19,7 +17,6 @@ import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.azure.storage.blob.BlobClient;
-import com.azure.storage.blob.BlobClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.sas.BlobSasPermission;
 import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
@@ -37,7 +34,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 import org.webjars.NotFoundException;
-import reactor.core.Exceptions;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -164,6 +160,7 @@ public class Service implements IService {
         if (userRepository.existsByMobileNumber(requestDto.getMobileNumber())) {
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Mobile number exists already.", null));
         }
+
         String requestObj = redisTemplate.opsForValue().get(requestDto.getEmail());
         if (requestObj != null) {
             EmailVerificationDto savedCopy = new ObjectMapper().readValue(requestObj, EmailVerificationDto.class);
@@ -172,6 +169,7 @@ public class Service implements IService {
                 return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email has not been verified.", null));
             }
         } else {
+
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email verification code does not exist or has expired", null));
         }
 
@@ -216,7 +214,7 @@ public class Service implements IService {
         return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
     }
 
-    @Override
+     @Override
     public ResponseEntity<Response> verifyPhone(PhoneVerificationDto requestDto) throws JsonProcessingException {
         if (!userRepository.existsByMobileNumber(requestDto.getPhoneNumber())) {
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Phone number does not exists.", null));
