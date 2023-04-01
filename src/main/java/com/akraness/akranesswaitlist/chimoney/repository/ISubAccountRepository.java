@@ -1,7 +1,10 @@
 package com.akraness.akranesswaitlist.chimoney.repository;
 
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
+import com.akraness.akranesswaitlist.entity.Country;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,4 +16,6 @@ public interface ISubAccountRepository extends JpaRepository<SubAccount, Long> {
     Optional<SubAccount> findByUserIdAndCountryCode(Long userId, String countryCode);
 
     Optional<SubAccount> findBySubAccountId(String subAccount);
+    @Query( "select s from SubAccount s where s.subAccountId in :ids" )
+    List<SubAccount> getSubAccountUsers(@Param("ids") List<String> ids);
 }

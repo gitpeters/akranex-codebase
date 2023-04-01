@@ -1,5 +1,6 @@
 package com.akraness.akranesswaitlist.chimoney.service.impl;
 
+import com.akraness.akranesswaitlist.chimoney.async.AsyncRunner;
 import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.dto.TransferDto;
@@ -32,6 +33,7 @@ public class SubAccountServiceImpl implements SubAccountService {
     private final RestTemplateService restTemplateService;
     private final ISubAccountRepository subAccountRepository;
     private final Utility utility;
+    private final AsyncRunner asyncRunner;
     @Value("${chimoney.api-key}")
     private String apiKey;
 
@@ -95,13 +97,6 @@ public class SubAccountServiceImpl implements SubAccountService {
         BalanceDto balance = new BalanceDto();
         ObjectMapper oMapper = new ObjectMapper();
 
-//        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
-//        if (subAccountData != null) {
-//            balance = oMapper.readValue(subAccountData, BalanceDto.class);
-//
-//            return balance;
-//        }
-
         ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
 
         if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
@@ -126,42 +121,12 @@ public class SubAccountServiceImpl implements SubAccountService {
                         .amount(amount)
                         .amountInLocalCurrency(localAmount)
                         .build();
-
-                //redisTemplate.opsForValue().set(subAccountId, oMapper.writeValueAsString(balance));
-
             }
         }
 
         return balance;
 
     }
-
-//    public BalanceDto getBalanceInLocalCurrency(String subAccountId, String currencyCode) throws JsonProcessingException {
-//        BalanceDto balance = null;
-//        ObjectMapper oMapper = new ObjectMapper();
-//
-//        String subAccountData = redisTemplate.opsForValue().get(subAccountId);
-//        if (subAccountData != null) {
-//            balance = oMapper.readValue(subAccountData, BalanceDto.class);
-//        }else {
-//            balance = getSubAccount(subAccountId);
-//        }
-//
-//        if(balance.getAmount() <= 0) {
-//            return balance;
-//        }
-//
-//        String url = baseUrl + "info/usd-amount-in-local?destinationCurrency="+currencyCode+"&amountInUSD="+balance.getAmount();
-//        ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
-//
-//        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
-//            Map<String, Object> data = oMapper.convertValue(response.getBody().getData(), Map.class);
-//            String convertedAmount = String.valueOf(data.get("amountInDestinationCurrency"));
-//            balance.setAmountInLocalCurrency(Double.parseDouble(convertedAmount));
-//        }
-//
-//        return balance;
-//    }
 
     @Override
     public ResponseEntity<?> transfer(TransferDto transferDto) throws JsonProcessingException {
@@ -172,9 +137,15 @@ public class SubAccountServiceImpl implements SubAccountService {
         req.put("wallet", transferDto.getWalletType());
 
         String url = baseUrl + "accounts/transfer";
+
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, req, this.headers());
+        if(response.getStatusCodeValue() == HttpStatus.OK.value() && response.getBody().getStatus().equalsIgnoreCase("success")) {
+            //remove balance from redis
+            asyncRunner.removeBalanceFromRedis(Arrays.asList(transferDto.getSenderSubAccountId(), transferDto.getReceiverSubAccountId()));
+        }
 
         return ResponseEntity.ok().body(response.getBody());
+
     }
 
     @Override
@@ -188,6 +159,9 @@ public class SubAccountServiceImpl implements SubAccountService {
         String url = baseUrl + "sub-account/delete?id="+subAccountId;
 
         ResponseEntity<CustomResponse> response = restTemplateService.delete(url, this.headers());
+        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
+            asyncRunner.removeBalanceFromRedis(Arrays.asList(subAccountId));
+        }
         return ResponseEntity.ok().body(response.getBody());
     }
 
