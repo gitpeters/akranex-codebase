@@ -116,7 +116,7 @@ email:
 #chimoney
 chimoney:
   base-url: https://api.chimoney.io/v0.2/
-  api-key: 132ead4929662de139829dc2d8e1587fd29befa58033ec109df09f0f5349c009
+  api-key: 67483a429061214cd62365279b4b043df041da41a01f1ed6d518a14816d5c0a4
 
 #plaid
 plaid:
