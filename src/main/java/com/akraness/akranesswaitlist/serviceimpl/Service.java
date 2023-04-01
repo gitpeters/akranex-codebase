@@ -15,6 +15,7 @@ import com.akraness.akranesswaitlist.exception.DuplicateException;
 import com.akraness.akranesswaitlist.repository.ICountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.repository.IWaitList;
+import com.akraness.akranesswaitlist.repository.ReferralRepository;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
@@ -56,6 +57,7 @@ public class Service implements IService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final ICountryRepository countryRepository;
     private final SubAccountService subAccountService;
+    private final ReferralRepository referralRepository;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -208,13 +210,18 @@ public class Service implements IService {
     }
 
     private ResponseEntity<?> saveReferralDetailsToDb(Long referralUserId, SignupRequestDto requestDto) {
+        User newUser = saveUser(requestDto);
+        if (newUser == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save user");
+        }
         Referral referral = Referral.builder()
                 .referralUserId(referralUserId)
-                .newUserId(saveUser(requestDto).getId())
+                .newUserId(newUser.getId())
                 .referralRewardAmount(0.0)
                 .newUserFundedAmount(0.0)
                 .referralRewardStatus(String.valueOf(ReferralStatus.PENDING))
                 .build();
+        referralRepository.save(referral);
         return ResponseEntity.ok().body(referral);
     }
 
