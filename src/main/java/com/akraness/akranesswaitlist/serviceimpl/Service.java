@@ -176,13 +176,14 @@ public class Service implements IService {
 
             return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(), "Email verification code does not exist or has expired", null));
         }
+        User referralUser = null;
+        // checking referral code
         if(requestDto.getReferralCode()!=null && !requestDto.getReferralCode().isEmpty()){
             Optional<User> referralUserObj = userRepository.findByAkranexTag(requestDto.getReferralCode());
             if(!referralUserObj.isPresent()){
-                return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),"Cannot find this user", null));
+                return ResponseEntity.badRequest().body(new Response(HttpStatus.BAD_REQUEST.name(),"Referral code not valid", null));
             }
-            User referralUser = referralUserObj.get();
-            saveReferralDetailsToDb(referralUser.getId(), requestDto);
+            referralUser = referralUserObj.get();
         }
 
         String otp = utility.generateEmailVeirificationCode();
@@ -200,8 +201,9 @@ public class Service implements IService {
                 .type(NotificationType.SMS)
                 .build();
         notificationService.sendNotification(notificationDto_sms);
-
-        saveUser(requestDto);
+//
+        User newUser = saveUser(requestDto);
+        saveReferralDetailsToDb(newUser.getId(), referralUser);
         redisTemplate.delete(requestDto.getEmail());
         log.info("Successfully deleted user email {} from redis store.",requestDto.getEmail());
         NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
@@ -209,20 +211,20 @@ public class Service implements IService {
         return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
     }
 
-    private ResponseEntity<?> saveReferralDetailsToDb(Long referralUserId, SignupRequestDto requestDto) {
-        User newUser = saveUser(requestDto);
-        if (newUser == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save user");
-        }
+    private void saveReferralDetailsToDb(Long newUserId, User referralUser) {
+//        User newUser = saveUser(requestDto);
+//        if (newUser == null) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save user");
+//        }
+        if(referralUser==null) return;
         Referral referral = Referral.builder()
-                .referralUserId(referralUserId)
-                .newUserId(newUser.getId())
-                .referralRewardAmount(0.0)
+                .referralUserId(referralUser.getId())
+                .newUserId(newUserId)
+                .referralRewardAmount(5.0)
                 .newUserFundedAmount(0.0)
                 .referralRewardStatus(String.valueOf(ReferralStatus.PENDING))
                 .build();
         referralRepository.save(referral);
-        return ResponseEntity.ok().body(referral);
     }
 
     private User saveUser(SignupRequestDto requestDto) {
