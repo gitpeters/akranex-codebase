@@ -6,9 +6,8 @@ import lombok.Data;
 
 @Data
 @Builder
-public class TransferDto {
-    private String senderSubAccountId;
-    private String receiverSubAccountId;
-    private String amount;
-    private String walletType;
+public class FundAccountRequestDto {
+    private String receiver;
+    private double amount;
+    private String wallet;
 }
