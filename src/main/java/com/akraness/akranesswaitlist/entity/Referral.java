@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -19,5 +20,6 @@ public class Referral extends BaseEntity{
     private Long newUserId;
     private String referralRewardStatus;
     private double referralRewardAmount;
+    @Column(name = "new_user_founded_amount")
     private double newUserFundedAmount;
 }
