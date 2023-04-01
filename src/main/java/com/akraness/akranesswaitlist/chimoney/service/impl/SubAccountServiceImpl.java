@@ -1,17 +1,16 @@
 package com.akraness.akranesswaitlist.chimoney.service.impl;
 
 import com.akraness.akranesswaitlist.chimoney.async.AsyncRunner;
-import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
-import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
-import com.akraness.akranesswaitlist.chimoney.dto.TransferDto;
+import com.akraness.akranesswaitlist.chimoney.dto.*;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
-import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
 import com.akraness.akranesswaitlist.entity.Country;
+import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.repository.ICountryRepository;
+import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -43,6 +42,7 @@ public class SubAccountServiceImpl implements SubAccountService {
     private final StringRedisTemplate redisTemplate;
     private final ICountryRepository countryRepository;
     private static final String USER_BALANCE = "user_balance";
+    private final IUserRepository userRepository;
 
     @Override
     public ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request) {
@@ -131,8 +131,22 @@ public class SubAccountServiceImpl implements SubAccountService {
     @Override
     public ResponseEntity<?> transfer(TransferDto transferDto) throws JsonProcessingException {
         Map<String, String> req = new HashMap<>();
+        if(!utility.isNullOrEmpty(transferDto.getAkranexTag())) {
+            Optional<User> userObj = userRepository.findByAkranexTag(transferDto.getAkranexTag());
+            if(!userObj.isPresent()){
+                return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("The Akranex Tag: "+transferDto.getAkranexTag() +" is invalid").build());
+            }
+
+            User user = userObj.get();
+            Optional<SubAccount> subAccountObj = subAccountRepository.findByUserIdAndCountryCode(user.getId(), user.getCountryCode());
+            if(subAccountObj.isPresent()) {
+                req.put("receiver", subAccountObj.get().getSubAccountId());
+            }
+        }else {
+            req.put("receiver", transferDto.getReceiverSubAccountId());
+        }
+
         req.put("subAccount", transferDto.getSenderSubAccountId());
-        req.put("receiver", transferDto.getReceiverSubAccountId());
         req.put("amount", transferDto.getAmount());
         req.put("wallet", transferDto.getWalletType());
 
