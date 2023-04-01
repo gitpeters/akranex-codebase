@@ -139,9 +139,10 @@ public class SubAccountServiceImpl implements SubAccountService {
 
             User user = userObj.get();
             Optional<SubAccount> subAccountObj = subAccountRepository.findByUserIdAndCountryCode(user.getId(), user.getCountryCode());
-            if(subAccountObj.isPresent()) {
-                req.put("receiver", subAccountObj.get().getSubAccountId());
+            if(!subAccountObj.isPresent()) {
+                return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Primary wallet attached to "+transferDto.getAkranexTag() +" is not found").build());
             }
+            req.put("receiver", subAccountObj.get().getSubAccountId());
         }else {
             req.put("receiver", transferDto.getReceiverSubAccountId());
         }
