@@ -186,17 +186,23 @@ public class SubAccountServiceImpl implements SubAccountService {
         List<SubAccountDto> subAccountDtos = new ArrayList<>();
 
         subAccountList.stream().forEach(s -> {
-            Optional<BalanceDto> balanceDto = balanceDtos.stream().filter(b -> b.getSubAccountId().equalsIgnoreCase(s.getSubAccountId()))
+            Optional<BalanceDto> balanceDto = balanceDtos.stream()
+                    .filter(b -> {
+                        String subAccountId = b.getSubAccountId();
+                        return subAccountId != null && subAccountId.equalsIgnoreCase(s.getSubAccountId());
+                    })
                     .findFirst();
-            SubAccountDto subAccountDto = SubAccountDto.builder()
-                    .subAccountId(s.getSubAccountId())
-                    .uid(s.getUid())
-                    .userId(s.getUserId())
-                    .countryCode(s.getCountryCode())
-                    .currencyCode(s.getCurrencyCode())
-                    .balance(balanceDto.get())
-                    .build();
-            subAccountDtos.add(subAccountDto);
+            if (balanceDto.isPresent()) {
+                SubAccountDto subAccountDto = SubAccountDto.builder()
+                        .subAccountId(s.getSubAccountId())
+                        .uid(s.getUid())
+                        .userId(s.getUserId())
+                        .countryCode(s.getCountryCode())
+                        .currencyCode(s.getCurrencyCode())
+                        .balance(balanceDto.get())
+                        .build();
+                subAccountDtos.add(subAccountDto);
+            }
         });
 
         return subAccountDtos;
