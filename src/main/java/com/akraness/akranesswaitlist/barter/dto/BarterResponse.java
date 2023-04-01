@@ -11,14 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BidResponse {
-    private double bidAmount;
-    private double receivingAmount;
-    private Long offerId;
-    private double rate;
-    private String bidCurrency;
-    private String receivingCurrency;
-    private String akranexTag;
-    private String bidStatus;
-    private String bidMessage;
+public class BarterResponse {
+    private boolean offerStatus;
+    private String offerMessage;
 }

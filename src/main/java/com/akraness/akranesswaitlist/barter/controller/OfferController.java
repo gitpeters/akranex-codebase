@@ -26,9 +26,7 @@ public class OfferController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createOffer(@RequestBody OfferRequest request){
-        offerService.createOffer(request);
-        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/barter/create").toUriString());
-         return ResponseEntity.created(uri).body(new OfferResponse(true, "Successfully created offer"));
+        return ResponseEntity.ok().body(offerService.createOffer(request));
     }
 
     @GetMapping("/offers")
@@ -66,5 +64,17 @@ public class OfferController {
     public ResponseEntity<?> editOffer(@PathVariable("offerId") Long offerId, @RequestBody OfferRequest request){
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/barter/edit").toUriString());
         return ResponseEntity.created(uri).body(offerService.editOffer(offerId, request));
+    }
+
+    @PutMapping("/bid-offers/{bidId}/approve")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<?> approveBidOffer(@PathVariable("bidId") Long bidId){
+        return ResponseEntity.ok().body(offerService.approveBid(bidId));
+    }
+
+    @PutMapping("/bid-offers/{bidId}/decline")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<?> declineBidOffer(@PathVariable("bidId") Long bidId){
+        return ResponseEntity.ok().body(offerService.declineBid(bidId));
     }
 }

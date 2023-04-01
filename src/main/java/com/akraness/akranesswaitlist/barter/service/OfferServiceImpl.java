@@ -1,9 +1,6 @@
 package com.akraness.akranesswaitlist.barter.service;
 
-import com.akraness.akranesswaitlist.barter.dto.BidRequest;
-import com.akraness.akranesswaitlist.barter.dto.BidResponse;
-import com.akraness.akranesswaitlist.barter.dto.OfferRequest;
-import com.akraness.akranesswaitlist.barter.dto.OfferResponse;
+import com.akraness.akranesswaitlist.barter.dto.*;
 import com.akraness.akranesswaitlist.barter.model.BidOffer;
 import com.akraness.akranesswaitlist.barter.model.BidStatus;
 import com.akraness.akranesswaitlist.barter.model.Offer;
@@ -14,6 +11,7 @@ import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +30,15 @@ public class OfferServiceImpl implements OfferService{
     private final BidOfferRepository bidRepository;
 
     @Override
-    public ResponseEntity<OfferResponse> createOffer(OfferRequest request) {
+    public ResponseEntity<?> createOffer(OfferRequest request) {
+        Optional<User> userOpt = userRepository.findByAkranexTag(request.getAkranexTag());
+        if(!userOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found"));
+        }
+        User user = userOpt.get();
+        if (!request.getAkranexTag().equals(user.getAkranexTag())) {
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "You are not authorized to create offer"));
+        }
         double transactionFee = request.getAmountToBePaid()*0.6/100;
         Offer offer = Offer.builder()
                 .amountToBePaid(request.getAmountToBePaid())
@@ -46,7 +52,7 @@ public class OfferServiceImpl implements OfferService{
                 .build();
         offerRepository.save(offer);
         log.info("Offer {} successfully created", offer.getId());
-        return ResponseEntity.ok().body(new OfferResponse(true, "Successfully created offer"));
+        return ResponseEntity.ok().body(new BarterResponse(true, "Successfully created offer"));
     }
 
     @Override
@@ -90,15 +96,15 @@ public class OfferServiceImpl implements OfferService{
     public ResponseEntity<?> bidOffer(Long offerId, BidRequest request) {
         Optional<Offer> offerObj = offerRepository.findById(offerId);
         if (!offerObj.isPresent()) {
-            return ResponseEntity.badRequest().body(new BidResponse(String.valueOf(BidStatus.DECLINED), "Offer not found"));
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Offer not found"));
         }
         Offer offer = offerObj.get();
         if (request.getBidAmount()==0) {
-            return ResponseEntity.badRequest().body(new BidResponse(String.valueOf(BidStatus.DECLINED), "Bid amount cannot be 0.00"));
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid amount cannot be 0.00"));
         }
 
         if(request.getBidAmount()> offer.getAmountToBePaid()){
-            return ResponseEntity.badRequest().body(new BidResponse(String.valueOf(BidStatus.DECLINED), "Bid amount cannot more than offer amount"));
+            return ResponseEntity.badRequest().body(new BarterResponse(false,"Bid amount cannot more than offer amount"));
         }
            BidOffer bidOffer = BidOffer.builder()
                 .offerId(offer.getId())
@@ -119,22 +125,37 @@ public class OfferServiceImpl implements OfferService{
     public ResponseEntity<?> getBids(Long offerId) {
         Optional<Offer> offerObj = offerRepository.findById(offerId);
         if (!offerObj.isPresent()) {
-            return ResponseEntity.badRequest().body(new BidResponse(String.valueOf(BidStatus.DECLINED), "Offer not found"));
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Offer not found"));
         }
         Offer offer = offerObj.get();
         List<BidOffer> bids = bidRepository.findByOfferId(offerId);
-        List<BidResponse> bidResponses = bids.stream().map(bid ->
-                BidResponse.builder()
-                        .bidAmount(bid.getAmountToBePaid())
-                        .receivingAmount(bid.getAmountToBeReceived())
-                        .rate(bid.getRate())
-                        .offerId(bid.getOfferId())
-                        .bidCurrency(bid.getTradingCurrency())
-                        .receivingCurrency(bid.getReceivingCurrency())
-                        .bidStatus(bid.getBidStatus())
-                        .akranexTag(bid.getAkranexTag())
-                        .build()
-        ).collect(Collectors.toList());
+
+        if(bids.isEmpty()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No record found"));
+        }
+        Optional<BidOffer> bidOfferOpt = bidRepository.findById(offer.getId());
+        if(!bidOfferOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid not found"));
+        }
+        List<BidResponse> bidResponses = bids.stream()
+                .filter(bid -> bid.getBidStatus().equalsIgnoreCase(String.valueOf(BidStatus.PENDING)))
+                .map(bid ->
+                        BidResponse.builder()
+                                .bidAmount(bid.getAmountToBePaid())
+                                .receivingAmount(bid.getAmountToBeReceived())
+                                .rate(bid.getRate())
+                                .offerId(bid.getOfferId())
+                                .bidCurrency(bid.getTradingCurrency())
+                                .receivingCurrency(bid.getReceivingCurrency())
+                                .bidStatus(bid.getBidStatus())
+                                .akranexTag(bid.getAkranexTag())
+                                .build()
+                ).collect(Collectors.toList());
+
+        if (bidResponses.isEmpty()) {
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No pending bids found"));
+        }
+
         OfferResponse offerResponse = OfferResponse.builder()
                 .amountToBePaid(offer.getAmountToBePaid())
                 .amountToBeReceived(offer.getAmountToBeReceived())
@@ -143,18 +164,67 @@ public class OfferServiceImpl implements OfferService{
                 .rate(offer.getRate())
                 .bids(bidResponses)
                 .build();
+
         return ResponseEntity.ok().body(offerResponse);
     }
 
     @Override
-    public ResponseEntity<OfferResponse> editOffer(Long offerId, OfferRequest offerRequest) {
+    public ResponseEntity<?> approveBid(Long bidId) {
+        Optional<BidOffer> bidOfferOpt = bidRepository.findById(bidId);
+        if(!bidOfferOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false,"Bid offer not found"));
+        }
+        BidOffer bidOffer = bidOfferOpt.get();
+        Optional<User> userOpt = userRepository.findByAkranexTag(bidOffer.getAkranexTag());
+        if(!userOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found for this bid"));
+        }
+        User user = userOpt.get();
+        if(!bidOffer.getAkranexTag().equalsIgnoreCase(user.getAkranexTag())){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new BarterResponse(false,"You are not authorized to approve this bid offer"));
+        }
+        if(!bidOffer.getBidStatus().equalsIgnoreCase(String.valueOf(BidStatus.PENDING))){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "It is either this bid as been accepted or declined"));
+        }
+        bidOffer.setBidStatus(String.valueOf(BidStatus.ACCEPTED));
+        bidRepository.save(bidOffer);
+        return ResponseEntity.ok().body(new BarterResponse(true, "Successfully accepted bid offer"));
+    }
+
+    @Override
+    public ResponseEntity<?> declineBid(Long bidId) {
+        Optional<BidOffer> bidOfferOpt = bidRepository.findById(bidId);
+        if(!bidOfferOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false,"Bid offer not found"));
+        }
+        BidOffer bidOffer = bidOfferOpt.get();
+        Optional<User> userOpt = userRepository.findByAkranexTag(bidOffer.getAkranexTag());
+        if(!userOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found for this bid"));
+        }
+        User user = userOpt.get();
+        if(!bidOffer.getAkranexTag().equalsIgnoreCase(user.getAkranexTag())){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new BarterResponse(false,"You are not authorized to decline this bid offer"));
+        }
+        if(!bidOffer.getBidStatus().equalsIgnoreCase(String.valueOf(BidStatus.PENDING))){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "It is either this bid as been accepted or declined"));
+        }
+        bidOffer.setBidStatus(String.valueOf(BidStatus.DECLINED));
+        bidRepository.save(bidOffer);
+        return ResponseEntity.ok().body(new BarterResponse(true, "Successfully declined bid offer"));
+    }
+
+    @Override
+    public ResponseEntity<?> editOffer(Long offerId, OfferRequest offerRequest) {
         Optional<Offer> offerObj = offerRepository.findById(offerId);
         if (!offerObj.isPresent()) {
-            return ResponseEntity.badRequest().body(new OfferResponse(false, "Offer not found"));
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Offer not found"));
         }
         Offer offer = offerObj.get();
         if (!offer.getAkranexTag().equals(offerRequest.getAkranexTag())) {
-            return ResponseEntity.badRequest().body(new OfferResponse(false, "You are not authorized to update this offer"));
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "You are not authorized to update this offer"));
         }
         offer.setAmountToBePaid(offerRequest.getAmountToBePaid());
         offer.setAmountToBeReceived(offerRequest.getAmountToBeReceived());

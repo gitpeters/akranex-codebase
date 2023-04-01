@@ -13,7 +13,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="bid_offer_tbl")
+@Table(name="barter_bid")
 public class BidOffer extends BaseEntity {
     @Column(name = "offer_id")
     private Long offerId;

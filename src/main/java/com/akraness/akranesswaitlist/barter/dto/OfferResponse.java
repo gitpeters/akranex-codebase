@@ -1,5 +1,6 @@
 package com.akraness.akranesswaitlist.barter.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OfferResponse {
     private double amountToBePaid;
     private double amountToBeReceived;
@@ -24,9 +26,4 @@ public class OfferResponse {
     private List<BidResponse> bids;
     private boolean offerStatus;
     private String offerMessage;
-
-    public OfferResponse(boolean offerStatus, String offerMessage) {
-        this.offerStatus = offerStatus;
-        this.offerMessage = offerMessage;
-    }
 }
