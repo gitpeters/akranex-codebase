@@ -80,6 +80,7 @@ public class OfferServiceImpl implements OfferService{
                     .map(User::getUsername)
                     .orElse("User not found!");
             return OfferResponse.builder()
+                    .offerId(offer.getId())
                     .amountToBePaid(offer.getAmountToBePaid())
                     .username(username)
                     .tradingCurrency(offer.getTradingCurrency())
@@ -141,6 +142,7 @@ public class OfferServiceImpl implements OfferService{
                 .filter(bid -> bid.getBidStatus().equalsIgnoreCase(String.valueOf(BidStatus.PENDING)))
                 .map(bid ->
                         BidResponse.builder()
+                                .bidId(bid.getId())
                                 .bidAmount(bid.getAmountToBePaid())
                                 .receivingAmount(bid.getAmountToBeReceived())
                                 .rate(bid.getRate())
@@ -157,6 +159,7 @@ public class OfferServiceImpl implements OfferService{
         }
 
         OfferResponse offerResponse = OfferResponse.builder()
+                .offerId(offer.getId())
                 .amountToBePaid(offer.getAmountToBePaid())
                 .amountToBeReceived(offer.getAmountToBeReceived())
                 .receivingCurrency(offer.getReceivingCurrency())
@@ -251,6 +254,7 @@ public class OfferServiceImpl implements OfferService{
 
     private OfferResponse mapToOfferResponse(Offer offer) {
         return OfferResponse.builder()
+                .offerId(offer.getId())
                 .amountToBePaid(offer.getAmountToBePaid())
                 .amountToBeReceived(offer.getAmountToBeReceived())
                 .rate(offer.getRate())
