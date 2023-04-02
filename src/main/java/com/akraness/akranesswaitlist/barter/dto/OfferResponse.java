@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OfferResponse {
+    private Long offerId;
     private double amountToBePaid;
     private double amountToBeReceived;
     private double rate;

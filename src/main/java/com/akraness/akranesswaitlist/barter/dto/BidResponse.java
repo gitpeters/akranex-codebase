@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BidResponse {
+    private Long bidId;
     private double bidAmount;
     private double receivingAmount;
     private Long offerId;
