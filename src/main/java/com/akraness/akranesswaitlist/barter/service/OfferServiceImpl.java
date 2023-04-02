@@ -72,6 +72,14 @@ public class OfferServiceImpl implements OfferService{
     }
 
     @Override
+    public List<MyBidResponse> getAllBidsByUser(String akranexTag) {
+        List<BidOffer> offers = (List<BidOffer>) bidRepository.findByAkranexTag(akranexTag);
+        return offers.stream()
+                .map(this::mapToBidResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public OfferResponse getOffer(Long offerId) {
         Optional<Offer> offerObj = offerRepository.findById(offerId);
         if (offerObj.isPresent()) {
@@ -262,6 +270,16 @@ public class OfferServiceImpl implements OfferService{
                 .receivingCurrency(offer.getReceivingCurrency())
                 .tradingCurrency(offer.getTradingCurrency())
                 .akranexTag(offer.getAkranexTag())
+                .build();
+    }
+
+    private MyBidResponse mapToBidResponse(BidOffer bidOffer) {
+        return MyBidResponse.builder()
+                .bidId(bidOffer.getId())
+                .bidAmount(bidOffer.getAmountToBePaid())
+                .askedAmount(bidOffer.getOfferAmount())
+                .rate(bidOffer.getRate())
+                .status(bidOffer.getBidStatus())
                 .build();
     }
 }
