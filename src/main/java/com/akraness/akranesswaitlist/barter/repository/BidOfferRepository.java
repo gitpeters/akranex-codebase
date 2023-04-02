@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface BidOfferRepository extends JpaRepository<BidOffer, Long> {
     List<BidOffer> findByOfferId(Long offerId);
+    List<BidOffer> findByAkranexTag(String akranexTag);
 }

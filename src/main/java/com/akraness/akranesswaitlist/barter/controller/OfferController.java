@@ -1,9 +1,6 @@
 package com.akraness.akranesswaitlist.barter.controller;
 
-import com.akraness.akranesswaitlist.barter.dto.BidRequest;
-import com.akraness.akranesswaitlist.barter.dto.CurrencyConvertRequest;
-import com.akraness.akranesswaitlist.barter.dto.OfferRequest;
-import com.akraness.akranesswaitlist.barter.dto.OfferResponse;
+import com.akraness.akranesswaitlist.barter.dto.*;
 import com.akraness.akranesswaitlist.barter.model.Offer;
 import com.akraness.akranesswaitlist.barter.service.CurrencyConverterService;
 import com.akraness.akranesswaitlist.barter.service.OfferService;
@@ -37,6 +34,11 @@ public class OfferController {
     @GetMapping("/my-offer/{akranexTag}")
     public ResponseEntity<List<OfferResponse>> getMyOffers(@PathVariable("akranexTag") String akranexTag){
        return ResponseEntity.ok().body(offerService.getAllOffersByUser(akranexTag));
+    }
+
+    @GetMapping("/my-bids/{akranexTag}")
+    public ResponseEntity<List<MyBidResponse>> getMyBids(@PathVariable("akranexTag") String akranexTag){
+        return ResponseEntity.ok().body(offerService.getAllBidsByUser(akranexTag));
     }
 
     @GetMapping("/offer/{offerId}")
