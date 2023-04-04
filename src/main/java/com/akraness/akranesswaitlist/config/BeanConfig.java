@@ -3,6 +3,7 @@ package com.akraness.akranesswaitlist.config;
 import com.azure.storage.blob.BlobClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,10 @@ public class BeanConfig {
                 .buildClient();
         containerClient.createIfNotExists();
         return containerClient;
+    }
+
+    public ObjectMapper objectMapper(){
+        return new ObjectMapper();
     }
 }
 

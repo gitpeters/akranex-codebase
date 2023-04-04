@@ -9,9 +9,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CurrencyConvertRequest {
-    String destinationCurrency;
-    double amountInUSD;
-    double amountInDestinationCurrency;
-    double rate;
+public class CurrencyConversionResponse {
+    private String fromCurrency;
+    private String toCurrency;
+    private double amount;
+    private double convertedAmount;
+    private double rate;
 }

@@ -1,7 +1,6 @@
 package com.akraness.akranesswaitlist.barter.controller;
 
 import com.akraness.akranesswaitlist.barter.dto.*;
-import com.akraness.akranesswaitlist.barter.model.Offer;
 import com.akraness.akranesswaitlist.barter.service.CurrencyConverterService;
 import com.akraness.akranesswaitlist.barter.service.OfferService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -46,10 +45,13 @@ public class OfferController {
         return ResponseEntity.ok().body(offerService.getOffer(offerId));
     }
 
-    @GetMapping("/covert-currency")
-    public ResponseEntity<?> convertCurrency(@RequestParam("destinationCurrency") String currencyCode, @RequestParam("amountInUSD") double amount) throws JsonProcessingException {
-        CurrencyConvertRequest convertRequest = converterService.getBalanceInLocalCurrency(currencyCode, amount);
-        return ResponseEntity.ok().body(convertRequest);
+    @GetMapping("/convert")
+    public ResponseEntity<CurrencyConversionResponse> convertCurrency(
+            @RequestParam("fromCurrency") String fromCurrency,
+            @RequestParam("toCurrency") String toCurrency,
+            @RequestParam("amount") double amount) throws JsonProcessingException {
+         CurrencyConversionResponse response =converterService.convertCurrency(fromCurrency, toCurrency, amount);
+         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/offer/{offerId}/bids")
