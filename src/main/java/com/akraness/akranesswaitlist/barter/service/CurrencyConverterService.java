@@ -34,12 +34,9 @@ public class CurrencyConverterService {
 
         double convertedAmount;
         double rate;
-
-        if(fromCurrencyCode.equals("USD")) {
-            convertedAmount =  convertToUSD(toCurrency, amount);
-        }else if(toCurrencyCode.equals("USD")){
-            convertedAmount =  convertFromUSD(fromCurrency, amount);
-        }else {
+        if(fromCurrency.equals(Currency.getInstance("USD"))){
+            convertedAmount = convertFromUSD(toCurrency, amount);
+        } else {
             double usdAmount = convertToUSD(fromCurrency, amount);
             convertedAmount = convertFromUSD(toCurrency, usdAmount);
         }
