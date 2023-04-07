@@ -46,9 +46,6 @@ public class SubAccountServiceImpl implements SubAccountService {
 
     @Override
     public ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request) {
-        if (utility.isNullOrEmpty(request.getEmail()))
-            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("email is required.").build());
-
         if (utility.isNullOrEmpty(request.getAkranexTag()))
             return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("akranexTag is required.").build());
 
@@ -68,7 +65,6 @@ public class SubAccountServiceImpl implements SubAccountService {
 
         Map<String, String> req = new HashMap<>();
         req.put("name", request.getAkranexTag());
-        req.put("email", request.getEmail());
 
         String url = baseUrl + "sub-account/create";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, req, this.headers());
@@ -86,6 +82,7 @@ public class SubAccountServiceImpl implements SubAccountService {
                     .build();
 
             subAccountRepository.save(subacct);
+            asyncRunner.removeBalanceFromRedis(Arrays.asList(subacct.getSubAccountId()));
         }
 
         return ResponseEntity.ok().body(response.getBody());

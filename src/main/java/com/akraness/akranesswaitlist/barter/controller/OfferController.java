@@ -55,8 +55,13 @@ public class OfferController {
     }
 
     @PostMapping("/offer/{offerId}/bids")
-    public ResponseEntity<?> bidOffer(@PathVariable("") Long offerId, @RequestBody BidRequest request){
+    public ResponseEntity<?> bidOffer(@PathVariable("offerId") Long offerId, @RequestBody BidRequest request){
         return ResponseEntity.ok().body(offerService.bidOffer(offerId, request));
+    }
+
+    @PostMapping("/offer/buy/{offerId}")
+    public ResponseEntity<?> buyOffer(@PathVariable("offerId") Long offerId, @RequestBody BuyDtoWrapper buyRequest) throws JsonProcessingException {
+        return ResponseEntity.ok().body(offerService.buyOffer(offerId, buyRequest));
     }
 
     @GetMapping("/get-bidding")

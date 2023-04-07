@@ -10,6 +10,5 @@ import javax.validation.constraints.NotEmpty;
 public class SubAccountRequestDto {
     private Long userId;
     private String akranexTag;
-    private String email;
     private String countryCode;
 }
