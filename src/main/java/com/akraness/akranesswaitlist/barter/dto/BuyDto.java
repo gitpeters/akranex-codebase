@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BuyDto {
     private String fromCountryCode;
-    private String amount;
+    private double amount;
     private String toCountryCode;
     private String akranexTag;
 }

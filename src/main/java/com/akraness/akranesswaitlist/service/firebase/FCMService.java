@@ -22,7 +22,6 @@ import com.google.gson.GsonBuilder;
 
     @Service
     public class FCMService {
-
         private Logger logger = LoggerFactory.getLogger(FCMService.class);
 
         public void sendMessage(Map<String, String> data, PushNotificationRequest request)
