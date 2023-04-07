@@ -40,9 +40,11 @@ public class BeanConfig {
         return containerClient;
     }
 
+    @Bean
     public ObjectMapper objectMapper(){
         return new ObjectMapper();
     }
+
 }
 
 

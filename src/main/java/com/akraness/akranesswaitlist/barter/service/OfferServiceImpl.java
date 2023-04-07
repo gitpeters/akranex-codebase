@@ -7,6 +7,7 @@ import com.akraness.akranesswaitlist.barter.model.Offer;
 import com.akraness.akranesswaitlist.barter.model.OfferStatus;
 import com.akraness.akranesswaitlist.barter.repository.BidOfferRepository;
 import com.akraness.akranesswaitlist.barter.repository.OfferRepository;
+import com.akraness.akranesswaitlist.chimoney.async.AsyncRunner;
 import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
@@ -41,6 +42,11 @@ public class OfferServiceImpl implements OfferService {
     private final BidOfferRepository bidRepository;
     private final ISubAccountRepository subAccountRepository;
     private final StringRedisTemplate redisTemplate;
+
+    private final CurrencyConverterService converterService;
+
+    private final AsyncRunner asyncRunner;
+
     private final ObjectMapper objectMapper;
     private final Utility utility;
 
@@ -289,6 +295,8 @@ public class OfferServiceImpl implements OfferService {
         ResponseEntity<CustomResponse> buyerResponse = null;
 
         String sellerFromSubAccountId = "";
+        String sellerCurrency = "";
+        String buyerCurrency ="";
         String buyerFromSubAccountId = "";
         String sellerToSubAccountId = "";
         String buyerToSubAccountId = "";
@@ -325,6 +333,7 @@ public class OfferServiceImpl implements OfferService {
             for(SubAccount subAccount: subAccountList){
                 if(subAccount.getCountryCode().equals(buyRequest.getSeller().getFromCountryCode()) && subAccount.getUserId()==seller.getId()){
                     sellerFromSubAccountId = subAccount.getSubAccountId();
+                    sellerCurrency = subAccount.getCurrencyCode();
                     log.info("Seller from account {}", sellerFromSubAccountId);
                 }
                 if(subAccount.getCountryCode().equals(buyRequest.getSeller().getToCountryCode()) && subAccount.getUserId()==seller.getId()){
@@ -333,6 +342,7 @@ public class OfferServiceImpl implements OfferService {
                 }
                 if(subAccount.getCountryCode().equals(buyRequest.getBuyer().getFromCountryCode()) && subAccount.getUserId()==buyer.getId()){
                     buyerFromSubAccountId = subAccount.getSubAccountId();
+                    buyerCurrency = subAccount.getCurrencyCode();
                     log.info("Buyer from account {}", buyerFromSubAccountId);
                 }
                 if(subAccount.getCountryCode().equals(buyRequest.getBuyer().getToCountryCode()) && subAccount.getUserId()==buyer.getId()){
@@ -360,18 +370,30 @@ public class OfferServiceImpl implements OfferService {
 
 
         // Check if seller sub account has enough fund to sell the offer
-//        BalanceDto sellerBalance = getUserBalance(seller.getId(), buyRequest.getSeller().getFromCountryCode());
-//        if (sellerBalance == null || sellerBalance.getAmount()  < Double.parseDouble(buyRequest.getSeller().getAmount())) {
-//            return ResponseEntity.badRequest().body(CustomResponse.builder()
-//                    .status(HttpStatus.BAD_REQUEST.name())
-//                    .error("Insufficient balance in seller sub account")
-//                    .build());
-//        }
+        BalanceDto sellerBalance = getUserBalance(seller.getId(), buyRequest.getSeller().getFromCountryCode());
+        if (sellerBalance == null || sellerBalance.getAmountInLocalCurrency() < buyRequest.getSeller().getAmount()) {
+            return ResponseEntity.badRequest().body(CustomResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.name())
+                    .error("Insufficient balance in seller sub account")
+                    .build());
+        }
+
+        // Check if seller sub account has enough fund to sell the offer
+        BalanceDto buyerBalance = getUserBalance(buyer.getId(), buyRequest.getBuyer().getFromCountryCode());
+        if (sellerBalance == null || buyerBalance.getAmountInLocalCurrency() < buyRequest.getBuyer().getAmount()) {
+            return ResponseEntity.badRequest().body(CustomResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.name())
+                    .error("Insufficient balance in buyer sub account")
+                    .build());
+        }
+
+       double convertedSellerAmount =  converterService.convertToUSD(Currency.getInstance(sellerCurrency), buyRequest.getSeller().getAmount());
+        double convertedBuyerAmount =  converterService.convertToUSD(Currency.getInstance(buyerCurrency), buyRequest.getBuyer().getAmount());
 
         // mapping buyer request for fund transfer
         buyerReq.put("receiver", sellerToSubAccountId);
         buyerReq.put("subAccount", buyerFromSubAccountId);
-        buyerReq.put("amount", buyRequest.getSeller().getAmount());
+        buyerReq.put("valueInUSD", String.valueOf(convertedSellerAmount));
         buyerReq.put("wallet", "chi");
 
         String url = baseUrl + "accounts/transfer";
@@ -380,7 +402,7 @@ public class OfferServiceImpl implements OfferService {
         // mapping seller request for fund transfer
         sellerReq.put("receiver", buyerToSubAccountId);
         sellerReq.put("subAccount", sellerFromSubAccountId);
-        sellerReq.put("amount", buyRequest.getBuyer().getAmount());
+        sellerReq.put("valueInUSD", String.valueOf(convertedBuyerAmount));
         sellerReq.put("wallet", "chi");
         sellerResponse = restTemplateService.post(url, sellerReq, this.headers());
 
@@ -388,6 +410,9 @@ public class OfferServiceImpl implements OfferService {
                 && sellerResponse.getStatusCodeValue() == HttpStatus.OK.value() && sellerResponse.getBody().getStatus().equalsIgnoreCase("success")) {
             offer.setOfferStatus(String.valueOf(OfferStatus.FULFILLED));
             offerRepository.save(offer);
+
+            asyncRunner.removeBalanceFromRedis(Arrays.asList(buyerFromSubAccountId, sellerFromSubAccountId, buyerToSubAccountId, sellerToSubAccountId));
+
             return ResponseEntity.ok().body(CustomResponse.builder()
                     .status(HttpStatus.OK.name())
                     .data(Arrays.asList(buyerResponse.getBody(), sellerResponse.getBody()))
