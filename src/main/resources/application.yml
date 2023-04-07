@@ -47,7 +47,7 @@ spring:
 
   redis:
     host: redis-master.redis-dev.svc.cluster.local
-    #host: localhost
+#    host: localhost
     port: 6379
     password: NY8lg9CzBP
     expiration: 15

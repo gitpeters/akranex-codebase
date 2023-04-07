@@ -7,39 +7,60 @@ import com.akraness.akranesswaitlist.barter.model.Offer;
 import com.akraness.akranesswaitlist.barter.model.OfferStatus;
 import com.akraness.akranesswaitlist.barter.repository.BidOfferRepository;
 import com.akraness.akranesswaitlist.barter.repository.OfferRepository;
+import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
+import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
+import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
+import com.akraness.akranesswaitlist.config.CustomResponse;
+import com.akraness.akranesswaitlist.config.RestTemplateService;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
+import com.akraness.akranesswaitlist.util.Utility;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class OfferServiceImpl implements OfferService{
+public class OfferServiceImpl implements OfferService {
     private final OfferRepository offerRepository;
     private final IUserRepository userRepository;
+    private final RestTemplateService restTemplateService;
 
     private final BidOfferRepository bidRepository;
+    private final ISubAccountRepository subAccountRepository;
+    private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper;
+    private final Utility utility;
+
+    @Value("${chimoney.base-url}")
+    private String baseUrl;
+    @Value("${chimoney.api-key}")
+    private String apiKey;
+    private static final String USER_BALANCE = "user_balance";
 
     @Override
     public ResponseEntity<?> createOffer(OfferRequest request) {
         Optional<User> userOpt = userRepository.findByAkranexTag(request.getAkranexTag());
-        if(!userOpt.isPresent()){
+        if (!userOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found"));
         }
         User user = userOpt.get();
         if (!request.getAkranexTag().equals(user.getAkranexTag())) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "You are not authorized to create offer"));
         }
-        double transactionFee = request.getAmountToBePaid()*0.6/100;
+        double transactionFee = request.getAmountToBePaid() * 0.6 / 100;
         Offer offer = Offer.builder()
                 .amountToBePaid(request.getAmountToBePaid())
                 .amountToBeReceived(request.getAmountToBeReceived())
@@ -58,9 +79,9 @@ public class OfferServiceImpl implements OfferService{
     @Override
     public List<OfferResponse> getAllOffers() {
         List<Offer> offers = offerRepository.findAll();
-       return offers
-               .stream()
-               .map(this::mapToOfferResponse).collect(Collectors.toList());
+        return offers
+                .stream()
+                .map(this::mapToOfferResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -108,20 +129,20 @@ public class OfferServiceImpl implements OfferService{
             return ResponseEntity.badRequest().body(new BarterResponse(false, "Offer not found"));
         }
         Offer offer = offerObj.get();
-        if (request.getBidAmount()==0) {
+        if (request.getBidAmount() == 0) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid amount cannot be 0.00"));
         }
 
-        if(request.getBidAmount()> offer.getAmountToBePaid()){
-            return ResponseEntity.badRequest().body(new BarterResponse(false,"Bid amount cannot more than offer amount"));
+        if (request.getBidAmount() > offer.getAmountToBePaid()) {
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid amount cannot more than offer amount"));
         }
-           BidOffer bidOffer = BidOffer.builder()
+        BidOffer bidOffer = BidOffer.builder()
                 .offerId(offer.getId())
                 .amountToBePaid(request.getBidAmount())
                 .amountToBeReceived(request.getReceivingAmount())
-                   .rate(request.getRate())
-                   .akranexTag(request.getAkranexTag())
-                   .bidStatus(String.valueOf(BidStatus.PENDING))
+                .rate(request.getRate())
+                .akranexTag(request.getAkranexTag())
+                .bidStatus(String.valueOf(BidStatus.PENDING))
                 .receivingCurrency(offer.getReceivingCurrency())
                 .tradingCurrency(offer.getTradingCurrency())
                 .offerAmount(offer.getAmountToBePaid())
@@ -139,11 +160,11 @@ public class OfferServiceImpl implements OfferService{
         Offer offer = offerObj.get();
         List<BidOffer> bids = bidRepository.findByOfferId(offerId);
 
-        if(bids.isEmpty()){
+        if (bids.isEmpty()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "No record found"));
         }
         Optional<BidOffer> bidOfferOpt = bidRepository.findById(offer.getId());
-        if(!bidOfferOpt.isPresent()){
+        if (!bidOfferOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid not found"));
         }
         List<BidResponse> bidResponses = bids.stream()
@@ -182,20 +203,20 @@ public class OfferServiceImpl implements OfferService{
     @Override
     public ResponseEntity<?> approveBid(Long bidId) {
         Optional<BidOffer> bidOfferOpt = bidRepository.findById(bidId);
-        if(!bidOfferOpt.isPresent()){
-            return ResponseEntity.badRequest().body(new BarterResponse(false,"Bid offer not found"));
+        if (!bidOfferOpt.isPresent()) {
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid offer not found"));
         }
         BidOffer bidOffer = bidOfferOpt.get();
         Optional<User> userOpt = userRepository.findByAkranexTag(bidOffer.getAkranexTag());
-        if(!userOpt.isPresent()){
+        if (!userOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found for this bid"));
         }
         User user = userOpt.get();
-        if(!bidOffer.getAkranexTag().equalsIgnoreCase(user.getAkranexTag())){
+        if (!bidOffer.getAkranexTag().equalsIgnoreCase(user.getAkranexTag())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new BarterResponse(false,"You are not authorized to approve this bid offer"));
+                    .body(new BarterResponse(false, "You are not authorized to approve this bid offer"));
         }
-        if(!bidOffer.getBidStatus().equalsIgnoreCase(String.valueOf(BidStatus.PENDING))){
+        if (!bidOffer.getBidStatus().equalsIgnoreCase(String.valueOf(BidStatus.PENDING))) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "It is either this bid as been accepted or declined"));
         }
         bidOffer.setBidStatus(String.valueOf(BidStatus.ACCEPTED));
@@ -206,20 +227,20 @@ public class OfferServiceImpl implements OfferService{
     @Override
     public ResponseEntity<?> declineBid(Long bidId) {
         Optional<BidOffer> bidOfferOpt = bidRepository.findById(bidId);
-        if(!bidOfferOpt.isPresent()){
-            return ResponseEntity.badRequest().body(new BarterResponse(false,"Bid offer not found"));
+        if (!bidOfferOpt.isPresent()) {
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid offer not found"));
         }
         BidOffer bidOffer = bidOfferOpt.get();
         Optional<User> userOpt = userRepository.findByAkranexTag(bidOffer.getAkranexTag());
-        if(!userOpt.isPresent()){
+        if (!userOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found for this bid"));
         }
         User user = userOpt.get();
-        if(!bidOffer.getAkranexTag().equalsIgnoreCase(user.getAkranexTag())){
+        if (!bidOffer.getAkranexTag().equalsIgnoreCase(user.getAkranexTag())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new BarterResponse(false,"You are not authorized to decline this bid offer"));
+                    .body(new BarterResponse(false, "You are not authorized to decline this bid offer"));
         }
-        if(!bidOffer.getBidStatus().equalsIgnoreCase(String.valueOf(BidStatus.PENDING))){
+        if (!bidOffer.getBidStatus().equalsIgnoreCase(String.valueOf(BidStatus.PENDING))) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "It is either this bid as been accepted or declined"));
         }
         bidOffer.setBidStatus(String.valueOf(BidStatus.DECLINED));
@@ -260,6 +281,132 @@ public class OfferServiceImpl implements OfferService{
         return ResponseEntity.ok().body(offerResponse);
     }
 
+    @Override
+    public ResponseEntity<?> buyOffer(Long offerId, BuyDtoWrapper buyRequest) throws JsonProcessingException {
+        Map<String, String> sellerReq = new HashMap<>();
+        Map<String, String> buyerReq = new HashMap<>();
+        ResponseEntity<CustomResponse> sellerResponse = null;
+        ResponseEntity<CustomResponse> buyerResponse = null;
+
+        String sellerFromSubAccountId = "";
+        String buyerFromSubAccountId = "";
+        String sellerToSubAccountId = "";
+        String buyerToSubAccountId = "";
+
+        if(buyRequest.getBuyer()==null) {
+                return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Buyer request body cannot be empty").build());
+            }
+        if(buyRequest.getSeller()==null) {
+            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Seller request body cannot be empty").build());
+        }
+        Optional<Offer> offerOpt = offerRepository.findById(offerId);
+        if (!offerOpt.isPresent()) {
+            ResponseEntity.badRequest().body(new BarterResponse(false, "No offer found"));
+        }
+
+        Offer offer = offerOpt.get();
+        Optional<User> sellerOpt = userRepository.findByAkranexTag(buyRequest.getSeller().getAkranexTag());
+        Optional<User> buyerOpt = userRepository.findByAkranexTag(buyRequest.getBuyer().getAkranexTag());
+
+        if (!sellerOpt.isPresent() || !buyerOpt.isPresent()) {
+            return ResponseEntity.badRequest().body(CustomResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.name())
+                    .error("Seller or Buyer not found")
+                    .build());
+        }
+        User buyer = buyerOpt.get();
+        User seller = sellerOpt.get();
+
+        //Optional<SubAccount> buyerSubAccountOpt = subAccountRepository.findByUserIdAndCountryCode(buyer.getId(), buyRequest.getBuyer().getFromCountryCode());
+        //Optional<SubAccount> sellerSubAccountOpt = subAccountRepository.findByUserIdAndCountryCode(seller.getId(), buyRequest.getSeller().getFromCountryCode());
+        List<SubAccount> subAccountList =
+                subAccountRepository.getSubAccountsByUserIdsAndCountryCodes(Arrays.asList(buyer.getId(), seller.getId()),
+                        Arrays.asList(buyRequest.getBuyer().getFromCountryCode(), buyRequest.getSeller().getFromCountryCode()));
+            for(SubAccount subAccount: subAccountList){
+                if(subAccount.getCountryCode().equals(buyRequest.getSeller().getFromCountryCode()) && subAccount.getUserId()==seller.getId()){
+                    sellerFromSubAccountId = subAccount.getSubAccountId();
+                    log.info("Seller from account {}", sellerFromSubAccountId);
+                }
+                if(subAccount.getCountryCode().equals(buyRequest.getSeller().getToCountryCode()) && subAccount.getUserId()==seller.getId()){
+                    sellerToSubAccountId = subAccount.getSubAccountId();
+                    log.info("Seller to account {}", sellerToSubAccountId);
+                }
+                if(subAccount.getCountryCode().equals(buyRequest.getBuyer().getFromCountryCode()) && subAccount.getUserId()==buyer.getId()){
+                    buyerFromSubAccountId = subAccount.getSubAccountId();
+                    log.info("Buyer from account {}", buyerFromSubAccountId);
+                }
+                if(subAccount.getCountryCode().equals(buyRequest.getBuyer().getToCountryCode()) && subAccount.getUserId()==buyer.getId()){
+                    buyerToSubAccountId = subAccount.getSubAccountId();
+                    log.info("Buyer to account {}", buyerToSubAccountId);
+                }
+            }
+
+//        if (!buyerSubAccountOpt.isPresent()) {
+//            return ResponseEntity.badRequest().body(CustomResponse.builder()
+//                    .status(HttpStatus.BAD_REQUEST.name())
+//                    .error("Sub account for buyer not found")
+//                    .build());
+//        }
+//        if (!sellerSubAccountOpt.isPresent()) {
+//            return ResponseEntity.badRequest().body(CustomResponse.builder()
+//                    .status(HttpStatus.BAD_REQUEST.name())
+//                    .error("Sub account for seller not found")
+//                    .build());
+//        }
+//
+//        SubAccount buyerSubAccount = buyerSubAccountOpt.get();
+//        SubAccount sellerSubAccount = sellerSubAccountOpt.get();
+
+
+
+        // Check if seller sub account has enough fund to sell the offer
+//        BalanceDto sellerBalance = getUserBalance(seller.getId(), buyRequest.getSeller().getFromCountryCode());
+//        if (sellerBalance == null || sellerBalance.getAmount()  < Double.parseDouble(buyRequest.getSeller().getAmount())) {
+//            return ResponseEntity.badRequest().body(CustomResponse.builder()
+//                    .status(HttpStatus.BAD_REQUEST.name())
+//                    .error("Insufficient balance in seller sub account")
+//                    .build());
+//        }
+
+        // mapping buyer request for fund transfer
+        buyerReq.put("receiver", sellerToSubAccountId);
+        buyerReq.put("subAccount", buyerFromSubAccountId);
+        buyerReq.put("amount", buyRequest.getSeller().getAmount());
+        buyerReq.put("wallet", "chi");
+
+        String url = baseUrl + "accounts/transfer";
+        buyerResponse = restTemplateService.post(url, buyerReq, this.headers());
+
+        // mapping seller request for fund transfer
+        sellerReq.put("receiver", buyerToSubAccountId);
+        sellerReq.put("subAccount", sellerFromSubAccountId);
+        sellerReq.put("amount", buyRequest.getBuyer().getAmount());
+        sellerReq.put("wallet", "chi");
+        sellerResponse = restTemplateService.post(url, sellerReq, this.headers());
+
+        if (buyerResponse.getStatusCodeValue() == HttpStatus.OK.value() && buyerResponse.getBody().getStatus().equalsIgnoreCase("success")
+                && sellerResponse.getStatusCodeValue() == HttpStatus.OK.value() && sellerResponse.getBody().getStatus().equalsIgnoreCase("success")) {
+            offer.setOfferStatus(String.valueOf(OfferStatus.FULFILLED));
+            offerRepository.save(offer);
+            return ResponseEntity.ok().body(CustomResponse.builder()
+                    .status(HttpStatus.OK.name())
+                    .data(Arrays.asList(buyerResponse.getBody(), sellerResponse.getBody()))
+                    .build());
+        } else {
+            String error = "";
+            if (buyerResponse.getStatusCodeValue() != HttpStatus.OK.value() || !buyerResponse.getBody().getStatus().equalsIgnoreCase("success")) {
+                error += "Fund transfer failed for buyer. ";
+            }
+            if (sellerResponse.getStatusCodeValue() != HttpStatus.OK.value() || !sellerResponse.getBody().getStatus().equalsIgnoreCase("success")) {
+                error += "Fund transfer failed for seller.";
+            }
+            return ResponseEntity.badRequest().body(CustomResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.name())
+                    .error(error)
+                    .build());
+        }
+    }
+
     private OfferResponse mapToOfferResponse(Offer offer) {
         return OfferResponse.builder()
                 .offerId(offer.getId())
@@ -281,5 +428,26 @@ public class OfferServiceImpl implements OfferService{
                 .rate(bidOffer.getRate())
                 .status(bidOffer.getBidStatus())
                 .build();
+    }
+    private BalanceDto getUserBalance(Long userId, String countryCode) throws JsonProcessingException {
+        String balanceData = redisTemplate.opsForValue().get(userId + USER_BALANCE);
+        if (Objects.nonNull(balanceData)) {
+            List<BalanceDto> balanceDtos = objectMapper.readValue(balanceData, new TypeReference<List<BalanceDto>>() {});
+            Optional<SubAccount> subAccountOpt = subAccountRepository.findByUserIdAndCountryCode(userId, countryCode);
+            if (subAccountOpt.isPresent()) {
+                SubAccount subAccount = subAccountOpt.get();
+                return balanceDtos.stream()
+                        .filter(balanceDto -> balanceDto.getSubAccountId().equals(subAccount.getSubAccountId()))
+                        .findFirst()
+                        .orElse(null);
+            }
+        }
+        return null;
+    }
+    private HttpHeaders headers() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-API-KEY", apiKey);
+
+        return headers;
     }
 }

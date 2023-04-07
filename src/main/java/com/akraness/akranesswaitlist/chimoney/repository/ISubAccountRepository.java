@@ -18,4 +18,7 @@ public interface ISubAccountRepository extends JpaRepository<SubAccount, Long> {
     Optional<SubAccount> findBySubAccountId(String subAccount);
     @Query( "select s from SubAccount s where s.subAccountId in :ids" )
     List<SubAccount> getSubAccountUsers(@Param("ids") List<String> ids);
+
+    @Query( "select s from SubAccount s where s.userId in :userId and s.countryCode in :countryCode" )
+    List<SubAccount> getSubAccountsByUserIdsAndCountryCodes(@Param("userId") List<Long> ids, @Param("countryCode") List<String> countryCodes);
 }

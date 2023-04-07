@@ -1,6 +1,7 @@
 package com.akraness.akranesswaitlist.barter.service;
 
 import com.akraness.akranesswaitlist.barter.dto.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -17,4 +18,5 @@ public interface OfferService {
     ResponseEntity<?> approveBid(Long bidId);
     ResponseEntity<?> declineBid(Long bidId);
     ResponseEntity<?> editOffer(Long offerId, OfferRequest offerRequest);
+    ResponseEntity<?> buyOffer(Long offerId, BuyDtoWrapper buyRequest) throws JsonProcessingException;
 }

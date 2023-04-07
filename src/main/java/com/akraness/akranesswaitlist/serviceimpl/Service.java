@@ -417,7 +417,7 @@ public class Service implements IService {
                 .userId(user.getId())
                 .akranexTag(user.getAkranexTag())
                 .countryCode(user.getCountryCode())
-                .email(user.getEmail())
+//                .email(user.getEmail())
                 .build();
         subAccountService.createSubAccount(subAccountRequestDto);
 

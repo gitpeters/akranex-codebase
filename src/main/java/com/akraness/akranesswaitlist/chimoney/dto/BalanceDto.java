@@ -13,4 +13,5 @@ public class BalanceDto {
     private String subAccountId;
     private double amount;
     private double amountInLocalCurrency;
+
 }
