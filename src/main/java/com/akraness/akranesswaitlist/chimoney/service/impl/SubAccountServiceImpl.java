@@ -244,11 +244,11 @@ public class SubAccountServiceImpl implements SubAccountService {
     private List<BalanceDto> getUserBalances(long userId, List<SubAccount> subAccountList) throws JsonProcessingException {
         List<BalanceDto> balanceDtos = new ArrayList<>();
         ObjectMapper om = new ObjectMapper();
-        String balanceData = redisTemplate.opsForValue().get(userId+USER_BALANCE);
-        if(Objects.nonNull(balanceData)) {
-           balanceDtos = om.readValue(balanceData, new TypeReference<List<BalanceDto>>(){});
-           return balanceDtos;
-        }
+//        String balanceData = redisTemplate.opsForValue().get(userId+USER_BALANCE);
+//        if(Objects.nonNull(balanceData)) {
+//           balanceDtos = om.readValue(balanceData, new TypeReference<List<BalanceDto>>(){});
+//           return balanceDtos;
+//        }
 
         List<BalanceDto> finalBalanceDtos = balanceDtos;
         subAccountList.stream().forEach(s -> {
@@ -259,7 +259,7 @@ public class SubAccountServiceImpl implements SubAccountService {
             }
         });
 
-        redisTemplate.opsForValue().set(userId+USER_BALANCE, om.writeValueAsString(balanceDtos), Duration.ofDays(5));
+        //redisTemplate.opsForValue().set(userId+USER_BALANCE, om.writeValueAsString(balanceDtos), Duration.ofDays(5));
 
         return balanceDtos;
     }
