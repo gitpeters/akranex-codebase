@@ -411,7 +411,7 @@ public class OfferServiceImpl implements OfferService {
             offer.setOfferStatus(String.valueOf(OfferStatus.FULFILLED));
             offerRepository.save(offer);
 
-            asyncRunner.removeBalanceFromRedis(Arrays.asList(buyerFromSubAccountId, sellerFromSubAccountId, buyerToSubAccountId, sellerToSubAccountId));
+            //asyncRunner.removeBalanceFromRedis(Arrays.asList(buyerFromSubAccountId, sellerFromSubAccountId, buyerToSubAccountId, sellerToSubAccountId));
 
             return ResponseEntity.ok().body(CustomResponse.builder()
                     .status(HttpStatus.OK.name())
