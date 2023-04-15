@@ -82,7 +82,7 @@ public class SubAccountServiceImpl implements SubAccountService {
                     .build();
 
             subAccountRepository.save(subacct);
-            asyncRunner.removeBalanceFromRedis(Arrays.asList(subacct.getSubAccountId()));
+            //asyncRunner.removeBalanceFromRedis(Arrays.asList(subacct.getSubAccountId()));
         }
 
         return ResponseEntity.ok().body(response.getBody());
@@ -153,7 +153,7 @@ public class SubAccountServiceImpl implements SubAccountService {
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, req, this.headers());
         if(response.getStatusCodeValue() == HttpStatus.OK.value() && response.getBody().getStatus().equalsIgnoreCase("success")) {
             //remove balance from redis
-            asyncRunner.removeBalanceFromRedis(Arrays.asList(transferDto.getSenderSubAccountId(), transferDto.getReceiverSubAccountId()));
+            //asyncRunner.removeBalanceFromRedis(Arrays.asList(transferDto.getSenderSubAccountId(), transferDto.getReceiverSubAccountId()));
         }
 
         return ResponseEntity.ok().body(response.getBody());
@@ -172,7 +172,7 @@ public class SubAccountServiceImpl implements SubAccountService {
 
         ResponseEntity<CustomResponse> response = restTemplateService.delete(url, this.headers());
         if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
-            asyncRunner.removeBalanceFromRedis(Arrays.asList(subAccountId));
+            //asyncRunner.removeBalanceFromRedis(Arrays.asList(subAccountId));
         }
         return ResponseEntity.ok().body(response.getBody());
     }

@@ -26,7 +26,7 @@ public class WalletServiceImpl implements WalletService {
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, fundAccountRequestDto, chimoneyUtility.headers());
         if(response.getStatusCodeValue() == HttpStatus.OK.value() && response.getBody().getStatus().equalsIgnoreCase("success")) {
             //remove balance from redis
-            asyncRunner.removeBalanceFromRedis(Arrays.asList(fundAccountRequestDto.getReceiver()));
+            //asyncRunner.removeBalanceFromRedis(Arrays.asList(fundAccountRequestDto.getReceiver()));
         }
 
         return ResponseEntity.ok().body(response.getBody());

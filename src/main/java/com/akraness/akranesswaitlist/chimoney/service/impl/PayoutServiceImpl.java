@@ -55,7 +55,7 @@ public class PayoutServiceImpl implements PayoutService {
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, req, this.headers());
         if(response.getStatusCodeValue() == HttpStatus.OK.value() && response.getBody().getStatus().equalsIgnoreCase("success")) {
             //remove balance from redis
-            asyncRunner.removeBalanceFromRedis(Arrays.asList(req.getSubAccount()));
+            //asyncRunner.removeBalanceFromRedis(Arrays.asList(req.getSubAccount()));
         }
         return ResponseEntity.ok().body(response.getBody());
     }
