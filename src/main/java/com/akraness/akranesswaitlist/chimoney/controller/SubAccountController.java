@@ -2,6 +2,7 @@ package com.akraness.akranesswaitlist.chimoney.controller;
 
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
+import com.akraness.akranesswaitlist.chimoney.dto.TransactionHistoryDto;
 import com.akraness.akranesswaitlist.chimoney.dto.TransferDto;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.config.CustomResponse;
@@ -61,5 +62,15 @@ public class SubAccountController {
         List<SubAccountDto> subAccounts = subAccountService.getUserSubAccountsAndBalance(userId);
 
         return ResponseEntity.ok().body(CustomResponse.builder().data(subAccounts).build());
+    }
+
+    @PostMapping("/transactions")
+    public ResponseEntity<?> transactions(@RequestBody TransactionHistoryDto transactionHistoryDto) throws JsonProcessingException {
+        return subAccountService.transactions(transactionHistoryDto);
+    }
+
+    @PostMapping("/transaction")
+    public ResponseEntity<?> transaction(@RequestParam(value = "transactionId") String transId, @RequestBody TransactionHistoryDto transactionHistoryDto) throws JsonProcessingException {
+        return subAccountService.transaction(transId, transactionHistoryDto);
     }
 }
