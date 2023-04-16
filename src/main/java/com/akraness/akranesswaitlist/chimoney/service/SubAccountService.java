@@ -22,4 +22,8 @@ public interface SubAccountService {
     List<SubAccountDto> getUserSubAccountsAndBalance(Long userId) throws JsonProcessingException;
     double getAmountInLocalCurrency(double amount, String currencyCode) throws JsonProcessingException;
     String getCurrencyCode(String countryCode);
+
+    ResponseEntity<?> transactions(TransactionHistoryDto transactionHistoryDto);
+
+    ResponseEntity<?> transaction(String transId, TransactionHistoryDto transactionHistoryDto);
 }

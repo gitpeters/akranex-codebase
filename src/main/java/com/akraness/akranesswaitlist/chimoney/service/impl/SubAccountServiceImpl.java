@@ -11,13 +11,10 @@ import com.akraness.akranesswaitlist.entity.Country;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.repository.ICountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
-import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
@@ -241,9 +238,36 @@ public class SubAccountServiceImpl implements SubAccountService {
         return null;
     }
 
+    @Override
+    public ResponseEntity<?> transactions(TransactionHistoryDto transactionHistoryDto) {
+        Optional<SubAccount> subAccount = subAccountRepository.findBySubAccountId(transactionHistoryDto.subAccount);
+        if(!subAccount.isPresent())
+            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Invalid sub account id provided").build());
+
+
+        String url = baseUrl + "accounts/transactions";
+
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, transactionHistoryDto, this.headers());
+
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
+    @Override
+    public ResponseEntity<?> transaction(String transId, TransactionHistoryDto transactionHistoryDto) {
+        Optional<SubAccount> subAccount = subAccountRepository.findBySubAccountId(transactionHistoryDto.subAccount);
+        if(!subAccount.isPresent())
+            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Invalid sub account id provided").build());
+
+        String url = baseUrl + "accounts/transaction?id="+transId;
+
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, transactionHistoryDto, this.headers());
+
+        return ResponseEntity.ok().body(response.getBody());
+    }
+
     private List<BalanceDto> getUserBalances(long userId, List<SubAccount> subAccountList) throws JsonProcessingException {
         List<BalanceDto> balanceDtos = new ArrayList<>();
-        ObjectMapper om = new ObjectMapper();
+        //ObjectMapper om = new ObjectMapper();
 //        String balanceData = redisTemplate.opsForValue().get(userId+USER_BALANCE);
 //        if(Objects.nonNull(balanceData)) {
 //           balanceDtos = om.readValue(balanceData, new TypeReference<List<BalanceDto>>(){});
