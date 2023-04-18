@@ -27,7 +27,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -302,14 +305,18 @@ public class OfferServiceImpl implements OfferService {
         String buyerToSubAccountId = "";
 
         if(buyRequest.getBuyer()==null) {
-                return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Buyer request body cannot be empty").build());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Buyer request body cannot be empty").build());
             }
         if(buyRequest.getSeller()==null) {
-            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Seller request body cannot be empty").build());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Seller request body cannot be empty").build());
         }
         Optional<Offer> offerOpt = offerRepository.findById(offerId);
         if (!offerOpt.isPresent()) {
-            ResponseEntity.badRequest().body(new BarterResponse(false, "No offer found"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.BAD_REQUEST.name())
+                            .error("No offer found")
+                            .build());
         }
 
         Offer offer = offerOpt.get();
@@ -317,10 +324,12 @@ public class OfferServiceImpl implements OfferService {
         Optional<User> buyerOpt = userRepository.findByAkranexTag(buyRequest.getBuyer().getAkranexTag());
 
         if (!sellerOpt.isPresent() || !buyerOpt.isPresent()) {
-            return ResponseEntity.badRequest().body(CustomResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST.name())
-                    .error("Seller or Buyer not found")
-                    .build());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.BAD_REQUEST.name())
+                            .error("Seller or Buyer not found")
+                            .build());
+
         }
         User buyer = buyerOpt.get();
         User seller = sellerOpt.get();
@@ -372,19 +381,22 @@ public class OfferServiceImpl implements OfferService {
         // Check if seller sub account has enough fund to sell the offer
         BalanceDto sellerBalance = getUserBalance(seller.getId(), buyRequest.getSeller().getFromCountryCode());
         if (sellerBalance == null || sellerBalance.getAmountInLocalCurrency() < buyRequest.getSeller().getAmount()) {
-            return ResponseEntity.badRequest().body(CustomResponse.builder()
+            CustomResponse customResponse = CustomResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.name())
-                    .error("Insufficient balance in seller sub account")
-                    .build());
+                    .error("Insufficient balance in seller's sub account")
+                    .build();
+            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
         }
 
-        // Check if seller sub account has enough fund to sell the offer
+        // Check if buyer sub account has enough fund to sell the offer
         BalanceDto buyerBalance = getUserBalance(buyer.getId(), buyRequest.getBuyer().getFromCountryCode());
         if (sellerBalance == null || buyerBalance.getAmountInLocalCurrency() < buyRequest.getBuyer().getAmount()) {
-            return ResponseEntity.badRequest().body(CustomResponse.builder()
+            CustomResponse customResponse = CustomResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.name())
-                    .error("Insufficient balance in buyer sub account")
-                    .build());
+                    .error("Insufficient balance in buyer's sub account")
+                    .build();
+            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
+
         }
 
        double convertedSellerAmount =  converterService.convertToUSD(Currency.getInstance(sellerCurrency), buyRequest.getSeller().getAmount());
@@ -425,6 +437,8 @@ public class OfferServiceImpl implements OfferService {
             if (sellerResponse.getStatusCodeValue() != HttpStatus.OK.value() || !sellerResponse.getBody().getStatus().equalsIgnoreCase("success")) {
                 error += "Fund transfer failed for seller.";
             }
+            HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getResponse();
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
             return ResponseEntity.badRequest().body(CustomResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.name())
                     .error(error)
