@@ -1,0 +1,2 @@
+ALTER TABLE user MODIFY COLUMN magic_pin VARCHAR(500),
+MODIFY COLUMN transaction_pin VARCHAR(500);

@@ -1,9 +1,6 @@
 package com.akraness.akranesswaitlist.controller;
 
-import com.akraness.akranesswaitlist.dto.MagicPinRequestDto;
-import com.akraness.akranesswaitlist.dto.Response;
-import com.akraness.akranesswaitlist.dto.VerifyPinRequestDto;
-import com.akraness.akranesswaitlist.dto.WaitListRequestDto;
+import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.service.IService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +26,10 @@ public class MainController {
     @GetMapping("/{id}")
     public ResponseEntity<Response> getUser(@PathVariable("id") long userId) throws JsonProcessingException {
         return service.getUser(userId);
+    }
+
+    @PostMapping("/edit-pin")
+    public ResponseEntity<Response> editPin(@RequestBody @Validated EditPinRequestDto requestDto) {
+        return service.editPin(requestDto);
     }
 }
