@@ -16,4 +16,6 @@ public interface IUserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     Optional<User> findByAkranexTag(String akranexTag);
     Optional<User> findById(Long userdId);
+    boolean existsByMagicPin(String magicPin);
+    boolean existsByTransactionPin(String transactionPin);
 }

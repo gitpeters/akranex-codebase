@@ -285,7 +285,7 @@ public class Service implements IService {
         if(!user.isEmailVerified())
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Email must be verified first.", null));
 
-        user.setMagicPin(requestDto.getMagicPin());
+        user.setMagicPin(passwordEncoder.encode(requestDto.getMagicPin()));
         userRepository.save(user);
         return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK),"Successful",null));
     }
@@ -304,7 +304,7 @@ public class Service implements IService {
 
         User user = userOp.get();
         if(requestDto.getPinType().equals(PinType.MAGIC)){
-            if(defaultPinAllowed && (!requestDto.getPin().equals("007712") && !user.getMagicPin().equals(requestDto.getPin()))){
+            if(defaultPinAllowed && (!requestDto.getPin().equals("007712") && !passwordEncoder.matches(requestDto.getPin(),user.getMagicPin()))){
                 return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST.value()),"Invalid pin provided.",null));
             }
             return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK.value()),"Successful",null));
@@ -544,6 +544,53 @@ public class Service implements IService {
         response.setData(userData);
 
         return ResponseEntity.ok().body(response);
+    }
+
+    @Override
+    public ResponseEntity<Response> editPin(EditPinRequestDto requestDto) {
+        String email = requestDto.getEmail();
+        if (!userRepository.existsByEmail(email)) {
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "No match found with the provided email.", null));
+        }
+
+        if (!requestDto.getNewPin().equals(requestDto.getNewPinConfirm())) {
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "New pin and confirm pin must be the same.", null));
+        }
+        Optional<User> userOp = userRepository.findByUsername(email);
+        User user = userOp.get();
+
+        if (!user.isMobileVerified())
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Mobile number must be verified first.", null));
+
+        if (!user.isEmailVerified())
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Email must be verified first.", null));
+
+        if (requestDto.getPinType().equals(PinType.MAGIC)) {
+            if (user.getMagicPin() == null || user.getMagicPin().trim().isEmpty())
+                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "You don't have a magic pin set yet, please use the set magic pin service.", null));
+
+            if (!userRepository.existsByMagicPin(requestDto.getOldPin()))
+                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Invalid old magic pin provided.", null));
+
+            if (!user.getMagicPin().equals(requestDto.getOldPin()))
+                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "The provided magic pin does not belong to you.", null));
+            user.setMagicPin(passwordEncoder.encode(requestDto.getNewPin()));
+        }
+
+        if (requestDto.getPinType().equals(PinType.TRANSACTION)) {
+            if (user.getTransactionPin() == null || user.getTransactionPin().trim().isEmpty())
+                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "You don't have a transaction pin set yet, please use the set transaction pin service.", null));
+
+            if (!userRepository.existsByTransactionPin(requestDto.getOldPin()))
+                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Invalid old transaction pin provided.", null));
+
+            if (!user.getTransactionPin().equals(requestDto.getOldPin()))
+                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "The provided transaction pin does not belong to you.", null));
+            user.setTransactionPin(passwordEncoder.encode(requestDto.getNewPin()));
+        }
+
+        userRepository.save(user);
+        return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK), "Successful", null));
     }
 
     private String generateSas(BlobClient blobClient) {
