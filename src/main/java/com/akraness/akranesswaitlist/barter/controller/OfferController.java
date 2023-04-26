@@ -22,7 +22,7 @@ public class OfferController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createOffer(@RequestBody OfferRequest request){
-        return ResponseEntity.ok().body(offerService.createOffer(request));
+        return offerService.createOffer(request);
     }
 
     @GetMapping("/offers")
@@ -56,7 +56,7 @@ public class OfferController {
 
     @PostMapping("/offer/{offerId}/bids")
     public ResponseEntity<?> bidOffer(@PathVariable("offerId") Long offerId, @RequestBody BidRequest request){
-        return ResponseEntity.ok().body(offerService.bidOffer(offerId, request));
+        return offerService.bidOffer(offerId, request);
     }
 
     @PostMapping("/offer/buy/{offerId}")
@@ -72,7 +72,7 @@ public class OfferController {
     @PutMapping("/edit/{offerId}")
     public ResponseEntity<?> editOffer(@PathVariable("offerId") Long offerId, @RequestBody OfferRequest request){
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/barter/edit").toUriString());
-        return ResponseEntity.created(uri).body(offerService.editOffer(offerId, request));
+        return offerService.editOffer(offerId, request);
     }
 
     @PutMapping("/bid-offers/{bidId}/approve")
