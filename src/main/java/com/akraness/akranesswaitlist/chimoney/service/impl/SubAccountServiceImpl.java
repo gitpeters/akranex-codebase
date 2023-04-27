@@ -60,8 +60,17 @@ public class SubAccountServiceImpl implements SubAccountService {
         if(subAccount.isPresent())
             return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("You already have sub account created for this region").build());
 
+        Optional<User> userOpt = userRepository.findByAkranexTag(request.getAkranexTag());
+        if(!userOpt.isPresent()){
+            return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("No user found for this akranexTag "+request.getAkranexTag()).build());
+        }
+        User user = userOpt.get();
         Map<String, String> req = new HashMap<>();
-        req.put("name", request.getAkranexTag());
+        req.put("name", user.getFirstName()+" "+user.getLastName());
+        req.put("email", user.getEmail());
+        req.put("firstName", user.getFirstName());
+        req.put("lastName", user.getLastName());
+        req.put("phoneNumber", user.getMobileNumber());
 
         String url = baseUrl + "sub-account/create";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, req, this.headers());
