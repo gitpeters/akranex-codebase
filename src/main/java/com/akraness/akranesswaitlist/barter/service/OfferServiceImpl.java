@@ -360,44 +360,30 @@ public class OfferServiceImpl implements OfferService {
                 }
             }
 
-//        if (!buyerSubAccountOpt.isPresent()) {
-//            return ResponseEntity.badRequest().body(CustomResponse.builder()
-//                    .status(HttpStatus.BAD_REQUEST.name())
-//                    .error("Sub account for buyer not found")
-//                    .build());
-//        }
-//        if (!sellerSubAccountOpt.isPresent()) {
-//            return ResponseEntity.badRequest().body(CustomResponse.builder()
-//                    .status(HttpStatus.BAD_REQUEST.name())
-//                    .error("Sub account for seller not found")
-//                    .build());
-//        }
 //
-//        SubAccount buyerSubAccount = buyerSubAccountOpt.get();
-//        SubAccount sellerSubAccount = sellerSubAccountOpt.get();
 
 
 
         // Check if seller sub account has enough fund to sell the offer
-        BalanceDto sellerBalance = getUserBalance(seller.getId(), buyRequest.getSeller().getFromCountryCode());
-        if (sellerBalance == null || sellerBalance.getAmountInLocalCurrency() < buyRequest.getSeller().getAmount()) {
-            CustomResponse customResponse = CustomResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST.name())
-                    .error("Insufficient balance in seller's sub account")
-                    .build();
-            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
-        }
+//        BalanceDto sellerBalance = getUserBalance(seller.getId(), buyRequest.getSeller().getFromCountryCode());
+//        if (sellerBalance == null || sellerBalance.getAmountInLocalCurrency() < buyRequest.getSeller().getAmount()) {
+//            CustomResponse customResponse = CustomResponse.builder()
+//                    .status(HttpStatus.BAD_REQUEST.name())
+//                    .error("Insufficient balance in seller's sub account")
+//                    .build();
+//            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
+//        }
 
         // Check if buyer sub account has enough fund to sell the offer
-        BalanceDto buyerBalance = getUserBalance(buyer.getId(), buyRequest.getBuyer().getFromCountryCode());
-        if (sellerBalance == null || buyerBalance.getAmountInLocalCurrency() < buyRequest.getBuyer().getAmount()) {
-            CustomResponse customResponse = CustomResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST.name())
-                    .error("Insufficient balance in buyer's sub account")
-                    .build();
-            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
-
-        }
+//        BalanceDto buyerBalance = getUserBalance(buyer.getId(), buyRequest.getBuyer().getFromCountryCode());
+//        if (buyerBalance == null || buyerBalance.getAmountInLocalCurrency() < buyRequest.getBuyer().getAmount()) {
+//            CustomResponse customResponse = CustomResponse.builder()
+//                    .status(HttpStatus.BAD_REQUEST.name())
+//                    .error("Insufficient balance in buyer's sub account")
+//                    .build();
+//            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
+//
+//        }
 
        double convertedSellerAmount =  converterService.convertToUSD(Currency.getInstance(sellerCurrency), buyRequest.getSeller().getAmount());
         double convertedBuyerAmount =  converterService.convertToUSD(Currency.getInstance(buyerCurrency), buyRequest.getBuyer().getAmount());
@@ -408,7 +394,7 @@ public class OfferServiceImpl implements OfferService {
         buyerReq.put("valueInUSD", String.valueOf(convertedSellerAmount));
         buyerReq.put("wallet", "chi");
 
-        String url = baseUrl + "accounts/transfer";
+        String url = baseUrl + "wallets/transfer";
         buyerResponse = restTemplateService.post(url, buyerReq, this.headers());
 
         // mapping seller request for fund transfer
