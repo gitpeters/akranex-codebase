@@ -569,10 +569,7 @@ public class Service implements IService {
             if (user.getMagicPin() == null || user.getMagicPin().trim().isEmpty())
                 return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "You don't have a magic pin set yet, please use the set magic pin service.", null));
 
-            if (!userRepository.existsByMagicPin(requestDto.getOldPin()))
-                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Invalid old magic pin provided.", null));
-
-            if (!user.getMagicPin().equals(requestDto.getOldPin()))
+            if (passwordEncoder.matches(user.getMagicPin(),requestDto.getOldPin()))
                 return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "The provided magic pin does not belong to you.", null));
             user.setMagicPin(passwordEncoder.encode(requestDto.getNewPin()));
         }
