@@ -60,7 +60,7 @@ public class OfferServiceImpl implements OfferService {
     private static final String USER_BALANCE = "user_balance";
 
     @Override
-    public ResponseEntity<?> createOffer(OfferRequest request) {
+    public ResponseEntity<?> createOffer(OfferRequest request) throws JsonProcessingException {
         Optional<User> userOpt = userRepository.findByAkranexTag(request.getAkranexTag());
         if (!userOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found"));
@@ -69,7 +69,25 @@ public class OfferServiceImpl implements OfferService {
         if (!request.getAkranexTag().equals(user.getAkranexTag())) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "You are not authorized to create offer"));
         }
-        double transactionFee = request.getAmountToBePaid() * 0.6 / 100;
+        Optional<SubAccount> subAccountOpt = subAccountRepository.findByUserIdAndCurrencyCode(user.getId(), request.getTradingCurrency());
+        if(!subAccountOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No subaccount found for this user"));
+        }
+        //Converting provided currency to USD
+        double convertedSellerAmount =  converterService.convertToUSD(Currency.getInstance(request.getTradingCurrency()), request.getAmountToBePaid());
+
+        SubAccount subAccount = subAccountOpt.get();
+        //Check if user have enough funds in subaccount of the provided currency
+        BalanceDto subAccountBalance = getSubAccountBalance(user.getId(), subAccount.getSubAccountId());
+        if (subAccountBalance == null) {
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No subaccount balance found for this subaccount"));
+        }
+
+        if (convertedSellerAmount > subAccountBalance.getAmount()) {
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "You do not have sufficient funds in this subaccount to create offer"));
+        }
+        double transactionFee = request.getAmountToBePaid() * 1.1 / 100;
+        double convertFeeToUSD = converterService.convertToUSD(Currency.getInstance(request.getTradingCurrency()), transactionFee);
         Offer offer = Offer.builder()
                 .amountToBePaid(request.getAmountToBePaid())
                 .amountToBeReceived(request.getAmountToBeReceived())
@@ -77,7 +95,7 @@ public class OfferServiceImpl implements OfferService {
                 .receivingCurrency(request.getReceivingCurrency())
                 .tradingCurrency(request.getTradingCurrency())
                 .rate(request.getRate())
-                .transactionFee(transactionFee)
+                .transactionFee(convertFeeToUSD)
                 .offerStatus(String.valueOf(OfferStatus.PENDING))
                 .build();
         offerRepository.save(offer);
@@ -305,8 +323,8 @@ public class OfferServiceImpl implements OfferService {
         String buyerToSubAccountId = "";
 
         if(buyRequest.getBuyer()==null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Buyer request body cannot be empty").build());
-            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Buyer request body cannot be empty").build());
+        }
         if(buyRequest.getSeller()==null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Seller request body cannot be empty").build());
         }
@@ -334,59 +352,86 @@ public class OfferServiceImpl implements OfferService {
         User buyer = buyerOpt.get();
         User seller = sellerOpt.get();
 
-        //Optional<SubAccount> buyerSubAccountOpt = subAccountRepository.findByUserIdAndCountryCode(buyer.getId(), buyRequest.getBuyer().getFromCountryCode());
-        //Optional<SubAccount> sellerSubAccountOpt = subAccountRepository.findByUserIdAndCountryCode(seller.getId(), buyRequest.getSeller().getFromCountryCode());
         List<SubAccount> subAccountList =
                 subAccountRepository.getSubAccountsByUserIdsAndCountryCodes(Arrays.asList(buyer.getId(), seller.getId()),
                         Arrays.asList(buyRequest.getBuyer().getFromCountryCode(), buyRequest.getSeller().getFromCountryCode()));
-            for(SubAccount subAccount: subAccountList){
-                if(subAccount.getCountryCode().equals(buyRequest.getSeller().getFromCountryCode()) && subAccount.getUserId()==seller.getId()){
-                    sellerFromSubAccountId = subAccount.getSubAccountId();
-                    sellerCurrency = subAccount.getCurrencyCode();
-                    log.info("Seller from account {}", sellerFromSubAccountId);
-                }
-                if(subAccount.getCountryCode().equals(buyRequest.getSeller().getToCountryCode()) && subAccount.getUserId()==seller.getId()){
-                    sellerToSubAccountId = subAccount.getSubAccountId();
-                    log.info("Seller to account {}", sellerToSubAccountId);
-                }
-                if(subAccount.getCountryCode().equals(buyRequest.getBuyer().getFromCountryCode()) && subAccount.getUserId()==buyer.getId()){
-                    buyerFromSubAccountId = subAccount.getSubAccountId();
-                    buyerCurrency = subAccount.getCurrencyCode();
-                    log.info("Buyer from account {}", buyerFromSubAccountId);
-                }
-                if(subAccount.getCountryCode().equals(buyRequest.getBuyer().getToCountryCode()) && subAccount.getUserId()==buyer.getId()){
-                    buyerToSubAccountId = subAccount.getSubAccountId();
-                    log.info("Buyer to account {}", buyerToSubAccountId);
-                }
+        if (subAccountList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomResponse.builder()
+                            .status(HttpStatus.BAD_REQUEST.name())
+                            .error("No subaccounts found")
+                            .build());
+        }
+        for(SubAccount subAccount: subAccountList){
+            if(subAccount.getCountryCode().equals(buyRequest.getSeller().getFromCountryCode()) && subAccount.getUserId()==seller.getId()){
+                sellerFromSubAccountId = subAccount.getSubAccountId();
+                sellerCurrency = subAccount.getCurrencyCode();
+                log.info("Seller from account {}", sellerFromSubAccountId);
             }
+            if(subAccount.getCountryCode().equals(buyRequest.getSeller().getToCountryCode()) && subAccount.getUserId()==seller.getId()){
+                sellerToSubAccountId = subAccount.getSubAccountId();
+                log.info("Seller to account {}", sellerToSubAccountId);
+            }
+            if(subAccount.getCountryCode().equals(buyRequest.getBuyer().getFromCountryCode()) && subAccount.getUserId()==buyer.getId()){
+                buyerFromSubAccountId = subAccount.getSubAccountId();
+                buyerCurrency = subAccount.getCurrencyCode();
+                log.info("Buyer from account {}", buyerFromSubAccountId);
+            }
+            if(subAccount.getCountryCode().equals(buyRequest.getBuyer().getToCountryCode()) && subAccount.getUserId()==buyer.getId()){
+                buyerToSubAccountId = subAccount.getSubAccountId();
+                log.info("Buyer to account {}", buyerToSubAccountId);
+            }
+        }
 
-//
 
 
-
-        // Check if seller sub account has enough fund to sell the offer
-//        BalanceDto sellerBalance = getUserBalance(seller.getId(), buyRequest.getSeller().getFromCountryCode());
-//        if (sellerBalance == null || sellerBalance.getAmountInLocalCurrency() < buyRequest.getSeller().getAmount()) {
-//            CustomResponse customResponse = CustomResponse.builder()
-//                    .status(HttpStatus.BAD_REQUEST.name())
-//                    .error("Insufficient balance in seller's sub account")
-//                    .build();
-//            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
-//        }
-
-        // Check if buyer sub account has enough fund to sell the offer
-//        BalanceDto buyerBalance = getUserBalance(buyer.getId(), buyRequest.getBuyer().getFromCountryCode());
-//        if (buyerBalance == null || buyerBalance.getAmountInLocalCurrency() < buyRequest.getBuyer().getAmount()) {
-//            CustomResponse customResponse = CustomResponse.builder()
-//                    .status(HttpStatus.BAD_REQUEST.name())
-//                    .error("Insufficient balance in buyer's sub account")
-//                    .build();
-//            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
-//
-//        }
-
-       double convertedSellerAmount =  converterService.convertToUSD(Currency.getInstance(sellerCurrency), buyRequest.getSeller().getAmount());
+        double convertedSellerAmount =  converterService.convertToUSD(Currency.getInstance(sellerCurrency), buyRequest.getSeller().getAmount());
         double convertedBuyerAmount =  converterService.convertToUSD(Currency.getInstance(buyerCurrency), buyRequest.getBuyer().getAmount());
+
+
+        // subaccount balance checking
+        BalanceDto sellerSubAccountBalance = getSubAccountBalance(seller.getId(), sellerFromSubAccountId);
+        BalanceDto buyerSubAccountBalance = getSubAccountBalance(buyer.getId(), buyerFromSubAccountId);
+
+        if(sellerSubAccountBalance==null){
+            CustomResponse customResponse = CustomResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.name())
+                    .error("No subaccount balance found for this subaccount")
+                    .build();
+            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
+        }
+        if(buyerSubAccountBalance==null){
+            CustomResponse customResponse = CustomResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.name())
+                    .error("No subaccount balance found for this subaccount")
+                    .build();
+            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        //Checking if seller have sufficient fund to pay buyer
+        if(convertedSellerAmount>sellerSubAccountBalance.getAmount()){
+            CustomResponse customResponse = CustomResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.name())
+                    .error("Insufficient balance for seller")
+                    .build();
+            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        //Checking if buyer have sufficient fund to buy offer
+        if(convertedBuyerAmount>buyerSubAccountBalance.getAmount()){
+            CustomResponse customResponse = CustomResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.name())
+                    .error("Insufficient balance for buyer")
+                    .build();
+            return new ResponseEntity<>(customResponse, HttpStatus.BAD_REQUEST);
+        }
+        double sellerTransanctionFee = offer.getTransactionFee();
+
+        double buyerTransactionFee = buyRequest.getBuyer().getAmount()*1.1/100;
+        double convertBuyerTransactionFeeToUSD = converterService.convertToUSD(Currency.getInstance(buyerCurrency), buyerTransactionFee);
+
+        double actualSellerAmount = convertedSellerAmount-sellerTransanctionFee;
+        double actualBuyerAmount = convertedSellerAmount-convertBuyerTransactionFeeToUSD;
 
         // mapping buyer request for fund transfer
         buyerReq.put("receiver", sellerToSubAccountId);
@@ -430,6 +475,73 @@ public class OfferServiceImpl implements OfferService {
                     .error(error)
                     .build());
         }
+    }
+
+    @Override
+    public BalanceDto getSubAccountBalance(Long userId, String subAccountId) throws JsonProcessingException {
+        List<SubAccount> subAccountList = getUserSubAccounts(userId);
+        List<BalanceDto> balanceDtos = getUserBalances(userId, subAccountList);
+
+        Optional<BalanceDto> balanceDto = balanceDtos.stream()
+                .filter(b -> b.getSubAccountId() != null && b.getSubAccountId().equalsIgnoreCase(subAccountId))
+                .findFirst();
+
+        if (balanceDto.isPresent()) {
+            return balanceDto.get();
+        } else {
+            // Subaccount not found
+            return null;
+        }
+    }
+
+    private List<BalanceDto> getUserBalances(Long userId, List<SubAccount> subAccountList) {
+        List<BalanceDto> balanceDtos = new ArrayList<>();
+
+        List<BalanceDto> finalBalanceDtos = balanceDtos;
+        subAccountList.stream().forEach(s -> {
+            finalBalanceDtos.add(getSubAccount(s.getSubAccountId(), s.getCurrencyCode()));
+        });
+
+        //redisTemplate.opsForValue().set(userId+USER_BALANCE, om.writeValueAsString(balanceDtos), Duration.ofDays(5));
+
+        return balanceDtos;
+    }
+
+    private BalanceDto getSubAccount(String subAccountId, String currencyCode) {
+        String url = baseUrl + "sub-account/get?id="+subAccountId;
+        BalanceDto balance = new BalanceDto();
+        ObjectMapper oMapper = new ObjectMapper();
+
+        ResponseEntity<CustomResponse> response = restTemplateService.get(url, this.headers());
+
+        if(response.getStatusCodeValue() == HttpStatus.OK.value()) {
+
+            Map<String, Object> map = oMapper.convertValue(response.getBody().getData(), Map.class);
+            List<Object> wallets = (List<Object>) map.get("wallets");
+
+            for(Object walletObj: wallets) {
+                Map<String, Object> walletData = oMapper.convertValue(walletObj, Map.class);
+                String walletType = (String) walletData.get("type");
+
+                if(!walletType.equalsIgnoreCase("chi")) continue;
+
+                String stringToConvert = String.valueOf(walletData.get("balance"));
+                Double amount = Double.parseDouble(stringToConvert);
+
+
+                balance = BalanceDto.builder()
+                        .subAccountId(subAccountId)
+                        .amount(amount)
+                        .build();
+            }
+        }
+
+        return balance;
+    }
+
+    private List<SubAccount> getUserSubAccounts(Long userId) {
+        List<SubAccount> subAccountList = subAccountRepository.findByUserId(userId);
+        return subAccountList;
     }
 
     private OfferResponse mapToOfferResponse(Offer offer) {

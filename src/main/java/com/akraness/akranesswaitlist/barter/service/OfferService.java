@@ -1,13 +1,14 @@
 package com.akraness.akranesswaitlist.barter.service;
 
 import com.akraness.akranesswaitlist.barter.dto.*;
+import com.akraness.akranesswaitlist.chimoney.dto.BalanceDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface OfferService {
-    ResponseEntity<?> createOffer(OfferRequest request);
+    ResponseEntity<?> createOffer(OfferRequest request) throws JsonProcessingException;
     List<OfferResponse> getAllOffers();
     List<OfferResponse> getAllOffersByUser(String akranexTag);
     List<MyBidResponse> getAllBidsByUser(String akranexTag);
@@ -19,4 +20,5 @@ public interface OfferService {
     ResponseEntity<?> declineBid(Long bidId);
     ResponseEntity<?> editOffer(Long offerId, OfferRequest offerRequest);
     ResponseEntity<?> buyOffer(Long offerId, BuyDtoWrapper buyRequest) throws JsonProcessingException;
+    BalanceDto getSubAccountBalance(Long userId, String subAccountId) throws JsonProcessingException;
 }
