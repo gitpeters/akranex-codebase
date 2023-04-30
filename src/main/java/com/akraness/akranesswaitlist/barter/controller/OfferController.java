@@ -21,7 +21,7 @@ public class OfferController {
     private final CurrencyConverterService converterService;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createOffer(@RequestBody OfferRequest request){
+    public ResponseEntity<?> createOffer(@RequestBody OfferRequest request) throws JsonProcessingException {
         return offerService.createOffer(request);
     }
 
