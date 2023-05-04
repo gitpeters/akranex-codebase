@@ -151,7 +151,7 @@ public class SubAccountServiceImpl implements SubAccountService {
         }
 
         req.put("subAccount", transferDto.getSenderSubAccountId());
-        req.put("amount", transferDto.getAmount());
+        req.put("valueInUSD", String.valueOf(transferDto.getAmount()));
         req.put("wallet", transferDto.getWalletType());
 
         String url = baseUrl + "accounts/transfer";
