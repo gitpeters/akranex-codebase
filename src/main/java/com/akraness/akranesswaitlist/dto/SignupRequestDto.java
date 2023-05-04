@@ -27,4 +27,5 @@ public class SignupRequestDto {
     @NotNull(message = "gender is compulsory")
     private String gender;
     private String referralCode;
+    private String fcmToken;
 }
