@@ -5,11 +5,13 @@ import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassDocumentReques
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequestPayload;
 import com.akraness.akranesswaitlist.identitypass.service.IdentityPassService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 @RestController
@@ -19,7 +21,7 @@ public class KYCController {
     private final IdentityPassService identityPassService;
 
     @PostMapping("/kyc-validate")
-    public ResponseEntity<?> validateRequest(@RequestBody Map<String, Object> request) throws JsonProcessingException {
+    public ResponseEntity<?> validateRequest(@RequestBody Map<String, Object> request) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         Object data = request.get("data");
 
         // Check if data is null

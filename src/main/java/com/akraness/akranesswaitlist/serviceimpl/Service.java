@@ -4,18 +4,12 @@ import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountRequestDto;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.dto.*;
-import com.akraness.akranesswaitlist.entity.Country;
-import com.akraness.akranesswaitlist.entity.Referral;
-import com.akraness.akranesswaitlist.entity.User;
-import com.akraness.akranesswaitlist.entity.WaitList;
+import com.akraness.akranesswaitlist.entity.*;
 import com.akraness.akranesswaitlist.enums.NotificationType;
 import com.akraness.akranesswaitlist.enums.PinType;
 import com.akraness.akranesswaitlist.enums.ReferralStatus;
 import com.akraness.akranesswaitlist.exception.DuplicateException;
-import com.akraness.akranesswaitlist.repository.ICountryRepository;
-import com.akraness.akranesswaitlist.repository.IUserRepository;
-import com.akraness.akranesswaitlist.repository.IWaitList;
-import com.akraness.akranesswaitlist.repository.ReferralRepository;
+import com.akraness.akranesswaitlist.repository.*;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
 import com.akraness.akranesswaitlist.util.Utility;
@@ -58,6 +52,7 @@ public class Service implements IService {
     private final ICountryRepository countryRepository;
     private final SubAccountService subAccountService;
     private final ReferralRepository referralRepository;
+    private final UserFCMTokenRepository fcmTokenRepository;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -204,11 +199,20 @@ public class Service implements IService {
 //
         User newUser = saveUser(requestDto);
         saveReferralDetailsToDb(newUser.getId(), referralUser);
+        saveUserFCMToken(newUser.getId(), requestDto.getFcmToken());
         redisTemplate.delete(requestDto.getEmail());
         log.info("Successfully deleted user email {} from redis store.",requestDto.getEmail());
         NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
         notificationService.sendNotification(notificationDto);
         return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
+    }
+
+    private void saveUserFCMToken(Long userId, String fcmToken) {
+        UserFCMToken userFCMToken = UserFCMToken.builder()
+                .userId(userId)
+                .fcmToken(fcmToken)
+                .build();
+        fcmTokenRepository.save(userFCMToken);
     }
 
     private void saveReferralDetailsToDb(Long newUserId, User referralUser) {

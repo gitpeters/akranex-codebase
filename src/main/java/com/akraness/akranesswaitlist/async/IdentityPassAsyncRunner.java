@@ -3,6 +3,7 @@ package com.akraness.akranesswaitlist.async;
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
 import com.akraness.akranesswaitlist.dto.NotificationDto;
+import com.akraness.akranesswaitlist.dto.PushNotificationRequest;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.enums.NotificationType;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassDocumentRequestPayload;
@@ -12,9 +13,11 @@ import com.akraness.akranesswaitlist.identitypass.entity.DataSupportedCountry;
 import com.akraness.akranesswaitlist.identitypass.repository.DataSupportedCountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.service.INotificationService;
+import com.akraness.akranesswaitlist.service.firebase.FCMServiceImpl;
 import com.akraness.akranesswaitlist.util.KYCVericationStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -24,11 +27,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Component
 @Service
@@ -52,8 +55,9 @@ public class IdentityPassAsyncRunner {
     private final DataSupportedCountryRepository dataSupportedCountryRepository;
 
     private final INotificationService notificationService;
+    private final FCMServiceImpl pushNotificationService;
     @Async
-    public void processKYCVerification(User user, Map<String, Object> request) throws JsonProcessingException {
+    public void processKYCVerification(User user, Map<String, Object> request) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         String type = (String) request.get("type");
         String dataType = (String) request.get("dataType");
         ResponseEntity<CustomResponse> response = processVerification(type, request);
@@ -81,6 +85,8 @@ public class IdentityPassAsyncRunner {
                     sendKyCVerificationMail(user.getEmail());
 
                     //Send push notification
+                    pushNotificationService.sendPushNotificationMessage(new PushNotificationRequest("KYC Verification", "KYC Verification is successful", "kyc"), user.getId());
+
 
                 }
                 else {
@@ -89,6 +95,7 @@ public class IdentityPassAsyncRunner {
                     userRepository.save(user);
 
                     //send push notification
+                    pushNotificationService.sendPushNotificationMessage(new PushNotificationRequest("KYC Verification", "KYC Verification failed", "kyc"), user.getId());
 
                 }
             }else {
@@ -97,6 +104,7 @@ public class IdentityPassAsyncRunner {
                 userRepository.save(user);
 
                 //send push notification
+                pushNotificationService.sendPushNotificationMessage(new PushNotificationRequest("KYC Verification", "KYC Verification failed", "kyc"), user.getId());
             }
 
         }else {
@@ -105,6 +113,7 @@ public class IdentityPassAsyncRunner {
             userRepository.save(user);
 
             //Send push notification
+            pushNotificationService.sendPushNotificationMessage(new PushNotificationRequest("KYC Verification", "KYC Verification failed", "kyc"), user.getId());
         }
 
     }
@@ -118,6 +127,7 @@ public class IdentityPassAsyncRunner {
                 .build();
         notificationService.sendNotification(notificationDto);
     }
+
 
     private Map<String, Object> getDataBody(String dataType, ResponseEntity<CustomResponse> response) {
         Map<String, Object> data = null;
