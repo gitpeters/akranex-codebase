@@ -35,7 +35,7 @@ public class FCMServiceImpl implements FCMService{
         for (List<String> batch : splitIntoBatches(tokens, 500)) {
             List<CompletableFuture<String>> futures = new ArrayList<>();
             for (String token : batch) {
-                Message message = getPreconfiguredMessageWithData(data, request);
+                Message message = getPreconfiguredMessageWithData(data, request, token);
                 futures.add(sendAsync(message, token));
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
@@ -48,7 +48,7 @@ public class FCMServiceImpl implements FCMService{
         for (List<String> batch : splitIntoBatches(tokens, 500)) {
             List<CompletableFuture<String>> futures = new ArrayList<>();
             for (String token : batch) {
-                Message message = getPreconfiguredMessageWithoutData(request);
+                Message message = getPreconfiguredMessageWithoutData(request,token);
                 futures.add(sendAsync(message, token));
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
@@ -74,7 +74,7 @@ public class FCMServiceImpl implements FCMService{
         for (List<String> batch : splitIntoBatches(tokens, 500)) {
             List<CompletableFuture<String>> futures = new ArrayList<>();
             for (String token : batch) {
-                Message message = getPreconfiguredMessageToToken(request);
+                Message message = getPreconfiguredMessageToToken(request, token);
                 CompletableFuture<String> future = sendAsync(message, token);
                 future.exceptionally(ex -> {
                     if (ex.getCause() instanceof FirebaseMessagingException) {
@@ -138,37 +138,36 @@ public class FCMServiceImpl implements FCMService{
                 .build();
     }
 
-    private Message getPreconfiguredMessageToToken(PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request)
-                .setToken(request.getToken())
+    private Message getPreconfiguredMessageToToken(PushNotificationRequest request, String token) {
+        return getPreconfiguredMessageBuilder(request, token)
+                .setToken(token)
                 .build();
     }
 
-    private Message getPreconfiguredMessageWithoutData(PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request)
-                .setTopic(request.getTopic())
+    private Message getPreconfiguredMessageWithoutData(PushNotificationRequest request, String token) {
+        return getPreconfiguredMessageBuilder(request, token)
+                .setTopic(token)
                 .build();
     }
 
-    private Message getPreconfiguredMessageWithData(Map<String, String> data, PushNotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request)
+    private Message getPreconfiguredMessageWithData(Map<String, String> data, PushNotificationRequest request, String token) {
+        return getPreconfiguredMessageBuilder(request, token)
                 .putAllData(data)
-                .setToken(request.getToken())
+                .setToken(token)
                 .build();
     }
 
-    private Message.Builder getPreconfiguredMessageBuilder(PushNotificationRequest request) {
+    private Message.Builder getPreconfiguredMessageBuilder(PushNotificationRequest request, String token) {
         AndroidConfig androidConfig = getAndroidConfig(request.getTopic());
         ApnsConfig apnsConfig = getApnsConfig(request.getTopic());
         Notification notification = Notification.builder()
                 .setTitle(request.getTitle())
                 .setBody(request.getMessage())
                 .build();
-        Message.Builder builder = Message.builder()
+        return Message.builder()
                 .setApnsConfig(apnsConfig)
                 .setAndroidConfig(androidConfig)
                 .setNotification(notification);
-        return builder;
     }
 
     private List<String> getFCMTokens(Long userId) {

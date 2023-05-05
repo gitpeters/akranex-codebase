@@ -48,10 +48,13 @@ public class AuthenticationService {
 
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
+        boolean isMagicPinAvailable;
+
         final UserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
         Optional<User> user_op = userDao.findByUsername(authenticationRequest.getUsername());
         User user = user_op.get();
+        isMagicPinAvailable = user.getMagicPin() != null;
 
         final String token = jwtTokenUtil.generateToken(userDetails);
 
@@ -66,7 +69,7 @@ public class AuthenticationService {
 
         LoginResponseDto resp_login = new LoginResponseDto(token,user.getId(), authenticationRequest.getUsername(),
                 user.getMobileNumber(),user.getFirstName(),user.getLastName(),user.getCountryCode(),
-                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified(),user.getAkranexTag(), user.getKycStatus(), user.getKycStatusMessage(), payload, subAccountList, user.getImagePath());
+                user.getDateOfBirth().toString(), user.getGender(),user.isEmailVerified(),user.isMobileVerified(),user.getAkranexTag(), user.getKycStatus(), user.getKycStatusMessage(), payload, subAccountList, user.getImagePath(), isMagicPinAvailable);
 
         Response resp = new Response();
         resp.setData(resp_login);

@@ -30,4 +30,5 @@ public class LoginResponseDto {
     private Map<String, Object> kycDataVerificationPayload;
     private List<SubAccountDto> subAccountList;
     private String imagePath;
+    private boolean isMagicPinExist;
 }
