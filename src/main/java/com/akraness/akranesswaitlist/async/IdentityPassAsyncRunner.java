@@ -5,7 +5,6 @@ import com.akraness.akranesswaitlist.config.RestTemplateService;
 import com.akraness.akranesswaitlist.dto.NotificationDto;
 import com.akraness.akranesswaitlist.dto.PushNotificationRequest;
 import com.akraness.akranesswaitlist.entity.User;
-import com.akraness.akranesswaitlist.entity.UserFCMToken;
 import com.akraness.akranesswaitlist.enums.NotificationType;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassDocumentRequestPayload;
 import com.akraness.akranesswaitlist.identitypass.dto.IdentityPassRequestPayload;
@@ -13,12 +12,12 @@ import com.akraness.akranesswaitlist.identitypass.dto.KYCVerification;
 import com.akraness.akranesswaitlist.identitypass.entity.DataSupportedCountry;
 import com.akraness.akranesswaitlist.identitypass.repository.DataSupportedCountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
-import com.akraness.akranesswaitlist.repository.UserFCMTokenRepository;
 import com.akraness.akranesswaitlist.service.INotificationService;
-import com.akraness.akranesswaitlist.service.firebase.FCMService;
+import com.akraness.akranesswaitlist.service.firebase.FCMServiceImpl;
 import com.akraness.akranesswaitlist.util.KYCVericationStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +27,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +55,9 @@ public class IdentityPassAsyncRunner {
     private final DataSupportedCountryRepository dataSupportedCountryRepository;
 
     private final INotificationService notificationService;
-    private final FCMService pushNotificationService;
+    private final FCMServiceImpl pushNotificationService;
     @Async
-    public void processKYCVerification(User user, Map<String, Object> request) throws JsonProcessingException, ExecutionException, InterruptedException {
+    public void processKYCVerification(User user, Map<String, Object> request) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         String type = (String) request.get("type");
         String dataType = (String) request.get("dataType");
         ResponseEntity<CustomResponse> response = processVerification(type, request);

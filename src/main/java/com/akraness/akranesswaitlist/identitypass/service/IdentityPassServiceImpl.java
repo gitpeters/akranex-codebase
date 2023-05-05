@@ -13,6 +13,7 @@ import com.akraness.akranesswaitlist.util.KYCVericationStatus;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +34,7 @@ public class IdentityPassServiceImpl implements IdentityPassService {
     private final Utility utility;
 
     @Override
-    public ResponseEntity<CustomResponse> validateAndProccessVerification(Map<String, Object> request) throws JsonProcessingException {
+    public ResponseEntity<CustomResponse> validateAndProccessVerification(Map<String, Object> request) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         String convertUserIdToString = String.valueOf(request.get("userId"));
         Long userId = Long.parseLong(convertUserIdToString);
         Optional<User> userObj = userRepository.findById(userId);
