@@ -40,6 +40,12 @@ public class CustomResponse {
     private KYCVerification verification;
     private DriverLicenseData driver_license;
     private String message;
+
+    //Mono
+    private String amount;
+    private String type;
+    private String description;
+    private String reference;
     public CustomResponse(String status, String error) {
         this.status = status;
         this.error = error;

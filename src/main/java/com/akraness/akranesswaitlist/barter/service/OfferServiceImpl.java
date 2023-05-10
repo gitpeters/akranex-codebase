@@ -456,10 +456,12 @@ public class OfferServiceImpl implements OfferService {
 
             //asyncRunner.removeBalanceFromRedis(Arrays.asList(buyerFromSubAccountId, sellerFromSubAccountId, buyerToSubAccountId, sellerToSubAccountId));
 
-            return ResponseEntity.ok().body(CustomResponse.builder()
-                    .status(HttpStatus.OK.name())
-                    .data(Arrays.asList(buyerResponse.getBody(), sellerResponse.getBody()))
-                    .build());
+            return ResponseEntity.ok().body(new OfferResponse(
+                    buyRequest.getSeller().getAmount(),  buyRequest.getBuyer().getAmount(),
+                    offer.getRate(), offer.getTradingCurrency(),
+                    offer.getReceivingCurrency(), offer.getTransactionFee(),
+                    true, "Successfully traded barter"
+            ));
         } else {
             String error = "";
             if (buyerResponse.getStatusCodeValue() != HttpStatus.OK.value() || !buyerResponse.getBody().getStatus().equalsIgnoreCase("success")) {

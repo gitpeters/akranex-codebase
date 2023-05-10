@@ -116,6 +116,11 @@ chimoney:
   base-url: https://api.chimoney.io/v0.2/
   api-key: 67483a429061214cd62365279b4b043df041da41a01f1ed6d518a14816d5c0a4
 
+# mono
+mono:
+  base-url: https://api.withmono.com/v1/
+  api-key: test_sk_kfklx01b9mkf295s87iw
+
 #plaid
 plaid:
   template-id: idvtmp_5B3B3Q3w7mUPrE
