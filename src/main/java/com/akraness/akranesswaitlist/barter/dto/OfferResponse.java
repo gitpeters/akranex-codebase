@@ -27,4 +27,15 @@ public class OfferResponse {
     private List<BidResponse> bids;
     private boolean offerStatus;
     private String offerMessage;
+
+    public OfferResponse(double amountToBePaid, double amountToBeReceived, double rate, String tradingCurrency, String receivingCurrency, double transactionFee, boolean offerStatus, String offerMessage) {
+        this.amountToBePaid = amountToBePaid;
+        this.amountToBeReceived = amountToBeReceived;
+        this.rate = rate;
+        this.tradingCurrency = tradingCurrency;
+        this.receivingCurrency = receivingCurrency;
+        this.transactionFee = transactionFee;
+        this.offerStatus = offerStatus;
+        this.offerMessage = offerMessage;
+    }
 }

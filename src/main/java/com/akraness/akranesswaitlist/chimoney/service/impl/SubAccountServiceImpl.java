@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.*;
 
+import static javax.xml.bind.DatatypeConverter.parseDouble;
+
 @Service
 @RequiredArgsConstructor
 public class SubAccountServiceImpl implements SubAccountService {
@@ -250,16 +252,87 @@ public class SubAccountServiceImpl implements SubAccountService {
     @Override
     public ResponseEntity<?> transactions(TransactionHistoryDto transactionHistoryDto) {
         Optional<SubAccount> subAccount = subAccountRepository.findBySubAccountId(transactionHistoryDto.subAccount);
-        if(!subAccount.isPresent())
+        if (!subAccount.isPresent())
             return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Invalid sub account id provided").build());
 
-
         String url = baseUrl + "accounts/transactions";
-
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, transactionHistoryDto, this.headers());
 
-        return ResponseEntity.ok().body(response.getBody());
+        if (response.getStatusCodeValue() == HttpStatus.OK.value()) {
+            List<Map<String, Object>> transactionsData = new ObjectMapper().convertValue(response.getBody().getData(), List.class);
+
+            if (transactionsData.isEmpty()) {
+                return ResponseEntity.ok().body(new TransactionHistoryResponse("No transactions found"));
+            }
+
+            List<TransactionHistoryResponse> transactions = new ArrayList<>();
+
+            for (Map<String, Object> transactionData : transactionsData) {
+                String type = (String) transactionData.get("type");
+                double amount = parseDouble(transactionData.get("valueInUSD"));
+                TransactionHistoryResponse transaction = TransactionHistoryResponse.builder()
+                        .transactionDate((String) transactionData.get("issueDate"))
+                        .transactionType(type)
+                        .referenceId((String) transactionData.get("id"))
+                        .amount(amount)
+                        .build();
+
+                if (type.equalsIgnoreCase("bank")) {
+                    if (transactionData.containsKey("payout")) {
+                        Map<String, Object> payoutMapData = (Map<String, Object>) transactionData.get("payout");
+                        double amountInLocalCurrency = parseDouble(payoutMapData.get("amount"));
+                        BankPayoutResponse bankPayoutResponse = BankPayoutResponse.builder()
+                                .accountNumber((String) payoutMapData.get("account_number"))
+                                .amountInLocalCurrency(amountInLocalCurrency)
+                                .bankName((String) payoutMapData.get("bank_name"))
+                                .currency((String) payoutMapData.get("currency"))
+                                .build();
+                        //double fee = parseDouble(transactionData.get("fee"));
+                        BankTransferHistoryDto bankTrf = BankTransferHistoryDto.builder()
+                                .accountName((String) transactionData.get("fullname"))
+                                .payout(bankPayoutResponse)
+                                .fee(transactionData.get("fee"))
+                                .build();
+
+                        transaction.setTransactionStatus((String) transactionData.get("deliveryStatus"));
+                        transaction.setBankTransfer(bankTrf);
+                    }
+                }
+                if(type.equalsIgnoreCase("airtime")){
+                    if (transactionData.containsKey("payout")) {
+                        Map<String, Object> payoutMapData = (Map<String, Object>) transactionData.get("payout");
+                        AirtimePayoutResponse airtimePayoutResponse = AirtimePayoutResponse.builder()
+                                .phoneNumber((String) payoutMapData.get("phoneNumber"))
+                                .amount((String) payoutMapData.get("amount"))
+                                .status((String) payoutMapData.get("status"))
+                                .build();
+
+                        AirtimePurhcaseHistoryDto airtime = AirtimePurhcaseHistoryDto.builder()
+                                .payout(airtimePayoutResponse)
+                                .build();
+                        transaction.setAirtimePurchase(airtime);
+                    }
+
+                }
+                if(type.equalsIgnoreCase("chimoney")){
+                    ExchangeHistoryDto exchange = ExchangeHistoryDto.builder()
+                            .transactionType("exchange")
+                            .sender((String) transactionData.get("issuer"))
+                            .receiver((String) transactionData.get("receiver"))
+                            .status((String) transactionData.get("deliveryStatus"))
+                            .build();
+                    transaction.setExchange(exchange);
+                }
+
+                transactions.add(transaction);
+            }
+
+            return ResponseEntity.ok().body(transactions);
+        }
+
+        return ResponseEntity.ok().body(new TransactionHistoryResponse("No transactions found"));
     }
+
 
     @Override
     public ResponseEntity<?> transaction(String transId, TransactionHistoryDto transactionHistoryDto) {
@@ -296,6 +369,49 @@ public class SubAccountServiceImpl implements SubAccountService {
 
         return balanceDtos;
     }
+
+    private double parseDouble(Object value) throws NumberFormatException {
+        if (value instanceof Double) {
+            return (Double) value;
+        } else if (value instanceof String) {
+            String stringValue = (String) value;
+            try {
+                return Double.parseDouble(stringValue);
+            } catch (NumberFormatException e) {
+                throw new NumberFormatException("Invalid value for parsing to double: " + stringValue);
+            }
+        } else if (value instanceof Integer) {
+            return (double) ((Integer) value);
+        } else if (value instanceof Object) {
+            if (value == null) {
+                throw new IllegalArgumentException("Value is null");
+            } else {
+                Object extractedValue = ((Map<?, ?>) value).get("fee");
+                if (extractedValue == null) {
+                    throw new IllegalArgumentException("Extracted value is null");
+                } else if (extractedValue instanceof Double) {
+                    return (Double) extractedValue;
+                } else if (extractedValue instanceof Integer) {
+                    return (double) ((Integer) extractedValue);
+                } else if (extractedValue instanceof String) {
+                    String stringValue = (String) extractedValue;
+                    try {
+                        return Double.parseDouble(stringValue);
+                    } catch (NumberFormatException e) {
+                        throw new NumberFormatException("Invalid value for parsing to double: " + stringValue);
+                    }
+                } else {
+                    throw new IllegalArgumentException("Invalid value type for parsing to double: " + extractedValue.getClass().getName());
+                }
+            }
+        }
+        throw new IllegalArgumentException("Invalid value type for parsing to double: " + value.getClass().getName());
+    }
+
+
+
+
+
 
     private HttpHeaders headers() {
         HttpHeaders headers = new HttpHeaders();
