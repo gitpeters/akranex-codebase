@@ -258,7 +258,6 @@ public class SubAccountServiceImpl implements SubAccountService {
         Optional<SubAccount> subAccount = subAccountRepository.findBySubAccountId(transactionHistoryDto.subAccount);
         if (!subAccount.isPresent())
             return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Invalid sub account id provided").build());
-
         String url = baseUrl + "accounts/transactions";
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, transactionHistoryDto, this.headers());
 
@@ -274,6 +273,7 @@ public class SubAccountServiceImpl implements SubAccountService {
             for (Map<String, Object> transactionData : transactionsData) {
                 String type = (String) transactionData.get("type");
                 double amount = parseDouble(transactionData.get("valueInUSD"));
+                double rate = amount * 1.1 / 100;
                 TransactionHistoryResponse transaction = TransactionHistoryResponse.builder()
                         .transactionDate((String) transactionData.get("issueDate"))
                         .transactionType(type)
@@ -319,11 +319,17 @@ public class SubAccountServiceImpl implements SubAccountService {
 
                 }
                 if(type.equalsIgnoreCase("chimoney")){
+                    Optional<SubAccount> senderSubAccountOpt = subAccountRepository.findBySubAccountId((String) transactionData.get("issuer"));
+                    Optional<SubAccount> receiverSubAccountOpt = subAccountRepository.findBySubAccountId((String) transactionData.get("receiver"));
+                    SubAccount senderSubAccount = senderSubAccountOpt.get();
+                    SubAccount receiverSubAccount = receiverSubAccountOpt.get();
                     ExchangeHistoryDto exchange = ExchangeHistoryDto.builder()
                             .transactionType("exchange")
                             .sender((String) transactionData.get("issuer"))
                             .receiver((String) transactionData.get("receiver"))
                             .status((String) transactionData.get("deliveryStatus"))
+                            .currencyPair(senderSubAccount.getCurrencyCode()+"-"+receiverSubAccount.getCurrencyCode())
+                            .fee(rate)
                             .build();
                     transaction.setExchange(exchange);
                 }
