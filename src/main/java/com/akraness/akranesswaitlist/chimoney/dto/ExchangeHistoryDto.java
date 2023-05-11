@@ -16,4 +16,6 @@ public class ExchangeHistoryDto {
     private String receiver;
     private String status;
     private String transactionType;
+    private String currencyPair;
+    private double fee;
 }
