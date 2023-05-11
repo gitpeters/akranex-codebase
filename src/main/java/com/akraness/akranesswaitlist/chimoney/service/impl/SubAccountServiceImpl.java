@@ -21,10 +21,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.*;
-
-import static javax.xml.bind.DatatypeConverter.parseDouble;
 
 @Service
 @RequiredArgsConstructor
@@ -343,8 +340,112 @@ public class SubAccountServiceImpl implements SubAccountService {
         return ResponseEntity.ok().body(new TransactionHistoryResponse("No transactions found"));
     }
 
+    public ResponseEntity<?> allTransactions(Long userId) {
 
-    @Override
+        List<Map<String, Object>> transactionsMapList = new ArrayList<>();
+
+        List<SubAccount> subaccounts = subAccountRepository.findByUserId(userId);
+        if (subaccounts.isEmpty()) {
+            return ResponseEntity.ok().body(new TransactionHistoryResponse("No subaccounts found for the user"));
+        }
+
+        List<TransactionHistoryResponse> transactions = new ArrayList<>();
+
+        for (SubAccount subaccount : subaccounts) {
+            String subaccountId = subaccount.getSubAccountId();
+            String url = baseUrl + "accounts/transactions";
+            TransactionHistoryDto transactionHistoryDto = TransactionHistoryDto.builder()
+                    .subAccount(subaccountId)
+                    .build();
+
+            ResponseEntity<CustomResponse> response = restTemplateService.post(url, transactionHistoryDto, this.headers());
+
+            if (response.getStatusCodeValue() == HttpStatus.OK.value()) {
+                List<Map<String, Object>> transactionsData = new ObjectMapper().convertValue(response.getBody().getData(), List.class);
+
+                if (!transactionsData.isEmpty()) {
+                    for (Map<String, Object> transactionData : transactionsData) {
+                        String type = (String) transactionData.get("type");
+                        double amount = parseDouble(transactionData.get("valueInUSD"));
+                        double rate = amount * 1.1 / 100;
+                        TransactionHistoryResponse transaction = TransactionHistoryResponse.builder()
+                                .transactionDate((String) transactionData.get("issueDate"))
+                                .transactionType(type)
+                                .referenceId((String) transactionData.get("id"))
+                                .amount(amount)
+                                .build();
+
+                        if (type.equalsIgnoreCase("bank")) {
+                            if (transactionData.containsKey("payout")) {
+                                Map<String, Object> payoutMapData = (Map<String, Object>) transactionData.get("payout");
+                                double amountInLocalCurrency = parseDouble(payoutMapData.get("amount"));
+                                BankPayoutResponse bankPayoutResponse = BankPayoutResponse.builder()
+                                        .accountNumber((String) payoutMapData.get("account_number"))
+                                        .amountInLocalCurrency(amountInLocalCurrency)
+                                        .bankName((String) payoutMapData.get("bank_name"))
+                                        .currency((String) payoutMapData.get("currency"))
+                                        .build();
+
+                                BankTransferHistoryDto bankTrf = BankTransferHistoryDto.builder()
+                                        .accountName((String) transactionData.get("fullname"))
+                                        .payout(bankPayoutResponse)
+                                        .fee(transactionData.get("fee"))
+                                        .build();
+
+                                transaction.setTransactionStatus((String) transactionData.get("deliveryStatus"));
+                                transaction.setBankTransfer(bankTrf);
+                            }
+                        } else if (type.equalsIgnoreCase("airtime")) {
+                            if (transactionData.containsKey("payout")) {
+                                Map<String, Object> payoutMapData = (Map<String, Object>) transactionData.get("payout");
+                                AirtimePayoutResponse airtimePayoutResponse = AirtimePayoutResponse.builder()
+                                        .phoneNumber((String) payoutMapData.get("phoneNumber"))
+                                        .amount((String) payoutMapData.get("amount"))
+                                        .status((String) payoutMapData.get("status"))
+                                        .build();
+
+                                AirtimePurhcaseHistoryDto airtime = AirtimePurhcaseHistoryDto.builder()
+                                        .payout(airtimePayoutResponse)
+                                        .build();
+                                transaction.setAirtimePurchase(airtime);
+                            }
+                        } else if (type.equalsIgnoreCase("chimoney")) {
+                            Optional<SubAccount> senderSubAccountOpt = subAccountRepository.findBySubAccountId((String) transactionData.get("issuer"));
+                            Optional<SubAccount> receiverSubAccountOpt = subAccountRepository.findBySubAccountId((String) transactionData.get("receiver"));
+                            SubAccount senderSubAccount = senderSubAccountOpt.get();
+                            SubAccount receiverSubAccount = receiverSubAccountOpt.get();
+                            ExchangeHistoryDto exchange = ExchangeHistoryDto.builder()
+                                    .transactionType("exchange")
+                                    .sender((String) transactionData.get("issuer"))
+                                    .receiver((String) transactionData.get("receiver"))
+                                    .status((String) transactionData.get("deliveryStatus"))
+                                    .currencyPair(senderSubAccount.getCurrencyCode() + "-" + receiverSubAccount.getCurrencyCode())
+                                    .fee(rate)
+                                    .build();
+                            transaction.setExchange(exchange);
+                        }
+
+                        transactions.add(transaction);
+                    }
+                }
+            } else {
+               continue;
+            }
+            Map<String, Object> transactionMap = new HashMap<>();
+            transactionMap.put(subaccountId, transactions);
+            transactionsMapList.add(transactionMap);
+        }
+
+        if (!transactionsMapList.isEmpty()) {
+            return ResponseEntity.ok().body(transactionsMapList);
+        } else {
+            return ResponseEntity.ok().body(new TransactionHistoryResponse("No transactions found"));
+        }
+    }
+
+
+
+                                @Override
     public ResponseEntity<?> transaction(String transId, TransactionHistoryDto transactionHistoryDto) {
         Optional<SubAccount> subAccount = subAccountRepository.findBySubAccountId(transactionHistoryDto.subAccount);
         if(!subAccount.isPresent())

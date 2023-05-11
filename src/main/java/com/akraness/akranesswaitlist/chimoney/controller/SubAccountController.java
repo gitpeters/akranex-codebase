@@ -69,6 +69,11 @@ public class SubAccountController {
         return subAccountService.transactions(transactionHistoryDto);
     }
 
+    @PostMapping("/all-transactions")
+    public ResponseEntity<?> alltransactions(@RequestParam Long userId) throws JsonProcessingException {
+        return subAccountService.allTransactions(userId);
+    }
+
     @PostMapping("/transaction")
     public ResponseEntity<?> transaction(@RequestParam(value = "transactionId") String transId, @RequestBody TransactionHistoryDto transactionHistoryDto) throws JsonProcessingException {
         return subAccountService.transaction(transId, transactionHistoryDto);

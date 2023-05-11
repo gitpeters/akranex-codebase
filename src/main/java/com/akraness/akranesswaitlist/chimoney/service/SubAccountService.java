@@ -24,6 +24,7 @@ public interface SubAccountService {
     String getCurrencyCode(String countryCode);
 
     ResponseEntity<?> transactions(TransactionHistoryDto transactionHistoryDto);
+    ResponseEntity<?> allTransactions(Long userId);
 
     ResponseEntity<?> transaction(String transId, TransactionHistoryDto transactionHistoryDto);
 }
