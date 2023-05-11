@@ -1,5 +1,6 @@
 package com.akraness.akranesswaitlist.chimoney.service.impl;
 
+import com.akraness.akranesswaitlist.barter.service.CurrencyConverterService;
 import com.akraness.akranesswaitlist.chimoney.async.AsyncRunner;
 import com.akraness.akranesswaitlist.chimoney.dto.*;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
@@ -42,6 +43,7 @@ public class SubAccountServiceImpl implements SubAccountService {
     private final ICountryRepository countryRepository;
     private static final String USER_BALANCE = "user_balance";
     private final IUserRepository userRepository;
+    private final CurrencyConverterService converterService;
 
     @Override
     public ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request) {
@@ -152,8 +154,10 @@ public class SubAccountServiceImpl implements SubAccountService {
             req.put("receiver", transferDto.getReceiverSubAccountId());
         }
 
+        double amount = converterService.convertToUSD(Currency.getInstance(transferDto.getCurrencyCode()), transferDto.getAmount());
+
         req.put("subAccount", transferDto.getSenderSubAccountId());
-        req.put("valueInUSD", String.valueOf(transferDto.getAmount()));
+        req.put("valueInUSD", String.valueOf(amount));
         req.put("wallet", transferDto.getWalletType());
 
         String url = baseUrl + "accounts/transfer";
