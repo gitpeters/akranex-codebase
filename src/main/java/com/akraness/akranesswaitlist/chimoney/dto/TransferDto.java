@@ -17,4 +17,5 @@ public class TransferDto {
     private String akranexTag;
     private double amount;
     private String walletType;
+    private String currencyCode;
 }
