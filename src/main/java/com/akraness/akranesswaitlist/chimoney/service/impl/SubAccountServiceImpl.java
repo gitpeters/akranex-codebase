@@ -342,7 +342,7 @@ public class SubAccountServiceImpl implements SubAccountService {
 
     public ResponseEntity<?> allTransactions(Long userId) {
 
-        List<Map<String, Object>> transactionsMapList = new ArrayList<>();
+        List<List<TransactionHistoryResponse>> transactionsList = new ArrayList<>();
 
         List<SubAccount> subaccounts = subAccountRepository.findByUserId(userId);
         if (subaccounts.isEmpty()) {
@@ -427,17 +427,15 @@ public class SubAccountServiceImpl implements SubAccountService {
 
                         transactions.add(transaction);
                     }
+                    transactionsList.add(transactions);
                 }
             } else {
                continue;
             }
-            Map<String, Object> transactionMap = new HashMap<>();
-            transactionMap.put(subaccountId, transactions);
-            transactionsMapList.add(transactionMap);
         }
 
-        if (!transactionsMapList.isEmpty()) {
-            return ResponseEntity.ok().body(transactionsMapList);
+        if (!transactionsList.isEmpty()) {
+            return ResponseEntity.ok().body(transactionsList);
         } else {
             return ResponseEntity.ok().body(new TransactionHistoryResponse("No transactions found"));
         }
