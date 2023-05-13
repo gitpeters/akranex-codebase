@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,12 @@ public class WalletServiceImpl implements WalletService {
     public ResponseEntity<?> fundAccount(FundAccountRequestDto fundAccountRequestDto) {
         String url = chimoneyUtility.getBaseUrl() + "wallets/transfer";
 
-        ResponseEntity<CustomResponse> response = restTemplateService.post(url, fundAccountRequestDto, chimoneyUtility.headers());
+        Map<String, Object> mapReq = new HashMap<>();
+        mapReq.put("receiver", fundAccountRequestDto.getReceiver());
+        mapReq.put("wallet", fundAccountRequestDto.getWallet());
+        mapReq.put("valueInUSD", fundAccountRequestDto.getAmount());
+
+        ResponseEntity<CustomResponse> response = restTemplateService.post(url, mapReq, chimoneyUtility.headers());
         if(response.getStatusCodeValue() == HttpStatus.OK.value() && response.getBody().getStatus().equalsIgnoreCase("success")) {
             //remove balance from redis
             //asyncRunner.removeBalanceFromRedis(Arrays.asList(fundAccountRequestDto.getReceiver()));

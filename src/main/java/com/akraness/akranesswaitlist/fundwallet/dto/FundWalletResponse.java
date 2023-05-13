@@ -12,6 +12,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FundWalletResponse {
+    private double amount;
+    private String reference;
     private String status;
     private String description;
+    private String transactionDate;
+    private String message;
+
+    public FundWalletResponse(String status, String message) {
+        this.status = status;
+        this.message = message;
+    }
 }

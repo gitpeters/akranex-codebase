@@ -2,12 +2,10 @@ package com.akraness.akranesswaitlist.fundwallet.controller;
 
 import com.akraness.akranesswaitlist.fundwallet.dto.FundWalletRequest;
 import com.akraness.akranesswaitlist.fundwallet.service.FundWalletService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/mono")
@@ -18,8 +16,8 @@ public class FundWalletController {
 
     @PostMapping("/fund-wallet")
 
-    public ResponseEntity<?> fundWallet(@RequestBody FundWalletRequest request){
-        return fundWalletService.fundWallet(request);
+    public ResponseEntity<?> fundWallet(@RequestBody FundWalletRequest request, @RequestParam String akranexTag) throws JsonProcessingException {
+        return fundWalletService.fundWallet(request, akranexTag);
     }
 
 }

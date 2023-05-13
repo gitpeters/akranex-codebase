@@ -38,4 +38,9 @@ public class OfferResponse {
         this.offerStatus = offerStatus;
         this.offerMessage = offerMessage;
     }
+
+    public OfferResponse(boolean offerStatus, String offerMessage) {
+        this.offerStatus = offerStatus;
+        this.offerMessage = offerMessage;
+    }
 }

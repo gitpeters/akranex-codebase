@@ -119,7 +119,8 @@ chimoney:
 # mono
 mono:
   base-url: https://api.withmono.com/v1/
-  api-key: test_sk_kfklx01b9mkf295s87iw
+  api-key: test_sk_p7ytuejkach5i4zdcr31
+  reference: 2023610075
 
 #plaid
 plaid:
