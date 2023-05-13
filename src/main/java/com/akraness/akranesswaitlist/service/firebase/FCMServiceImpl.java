@@ -55,19 +55,6 @@ public class FCMServiceImpl implements FCMService{
         }
     }
     @Override
-//    public void sendPushNotificationMessage(PushNotificationRequest request, Long userId)
-//            throws InterruptedException, ExecutionException {
-//
-//        List<String> tokens = getFCMTokens(userId);
-//        for (List<String> batch : splitIntoBatches(tokens, 500)) {
-//            List<CompletableFuture<String>> futures = new ArrayList<>();
-//            for (String token : batch) {
-//                Message message = getPreconfiguredMessageToToken(request);
-//                futures.add(sendAsync(message, token));
-//            }
-//            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
-//        }
-//    }
     public void sendPushNotificationMessage(PushNotificationRequest request, Long userId)
             throws InterruptedException, ExecutionException, FirebaseMessagingException {
         List<String> tokens = getFCMTokens(userId);

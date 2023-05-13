@@ -160,9 +160,10 @@ public class OfferServiceImpl implements OfferService {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid amount cannot be 0.00"));
         }
 
-        if (request.getBidAmount() > offer.getAmountToBePaid()) {
-            return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid amount cannot more than offer amount"));
+        if (request.getRate() == 0) {
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid rate cannot be 0.00"));
         }
+
         BidOffer bidOffer = BidOffer.builder()
                 .offerId(offer.getId())
                 .amountToBePaid(request.getBidAmount())
@@ -247,6 +248,19 @@ public class OfferServiceImpl implements OfferService {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "It is either this bid as been accepted or declined"));
         }
         bidOffer.setBidStatus(String.valueOf(BidStatus.ACCEPTED));
+        Optional<Offer> offerOpt = offerRepository.findById(bidOffer.getOfferId());
+        if(!offerOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No bid found for this offer"));
+        }
+
+        Offer offer = offerOpt.get();
+        Offer.builder()
+                .rate(offer.getRate())
+                .offerStatus(String.valueOf(OfferStatus.PARTIAL_FULFILLED))
+                .build();
+
+        offerRepository.save(offer);
+
         bidRepository.save(bidOffer);
         return ResponseEntity.ok().body(new BarterResponse(true, "Successfully accepted bid offer"));
     }
@@ -312,8 +326,11 @@ public class OfferServiceImpl implements OfferService {
     public ResponseEntity<?> buyOffer(Long offerId, BuyDtoWrapper buyRequest) throws JsonProcessingException {
         Map<String, String> sellerReq = new HashMap<>();
         Map<String, String> buyerReq = new HashMap<>();
+        Map<String, String>sellerCredit = new HashMap<>();
+        Map<String, String>buyerCredit = new HashMap<>();
         ResponseEntity<CustomResponse> sellerResponse = null;
         ResponseEntity<CustomResponse> buyerResponse = null;
+        ResponseEntity<CustomResponse> creditResponse = null;
 
         String sellerFromSubAccountId = "";
         String sellerCurrency = "";
@@ -328,7 +345,7 @@ public class OfferServiceImpl implements OfferService {
         if(buyRequest.getSeller()==null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Seller request body cannot be empty").build());
         }
-        Optional<Offer> offerOpt = offerRepository.findById(offerId);
+        Optional<Offer> offerOpt = offerRepository.findOfferWithBidOfferById(offerId);
         if (!offerOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     CustomResponse.builder()
@@ -455,7 +472,29 @@ public class OfferServiceImpl implements OfferService {
             offerRepository.save(offer);
 
             //asyncRunner.removeBalanceFromRedis(Arrays.asList(buyerFromSubAccountId, sellerFromSubAccountId, buyerToSubAccountId, sellerToSubAccountId));
-
+            // credit akranex main subaccount
+            //seller credit
+            sellerCredit.put("receiver", "35d8776f-3708-4403-8d7d-b50a605777fd");
+            sellerCredit.put("subAccount", sellerFromSubAccountId);
+            sellerCredit.put("valueInUSD", String.valueOf(sellerTransanctionFee));
+            sellerCredit.put("wallet", "chi");
+            creditResponse = restTemplateService.post(url, sellerCredit, this.headers());
+            if(creditResponse.getStatusCodeValue()==HttpStatus.OK.value()){
+                return ResponseEntity.ok().body(new OfferResponse(
+                        true, "Successful"
+                ));
+            }
+            //buyer credit
+            sellerCredit.put("receiver", "35d8776f-3708-4403-8d7d-b50a605777fd");
+            sellerCredit.put("subAccount", buyerFromSubAccountId);
+            sellerCredit.put("valueInUSD", String.valueOf(convertBuyerTransactionFeeToUSD));
+            sellerCredit.put("wallet", "chi");
+            creditResponse = restTemplateService.post(url, sellerCredit, this.headers());
+            if(creditResponse.getStatusCodeValue()==HttpStatus.OK.value()){
+                return ResponseEntity.ok().body(new OfferResponse(
+                        true, "Successful"
+                ));
+            }
             return ResponseEntity.ok().body(new OfferResponse(
                     buyRequest.getSeller().getAmount(),  buyRequest.getBuyer().getAmount(),
                     offer.getRate(), offer.getTradingCurrency(),

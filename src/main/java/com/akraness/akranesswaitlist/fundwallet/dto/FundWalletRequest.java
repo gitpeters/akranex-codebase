@@ -11,9 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class FundWalletRequest {
-    private String amount;
-    private String type;
+    private double amount;
     private String description;
-    private String reference;
-    private String akranexTag;
+    private String currencyCode;
 }
