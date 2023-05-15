@@ -3,6 +3,7 @@ package com.akraness.akranesswaitlist.dto;
 import com.akraness.akranesswaitlist.chimoney.dto.SubAccountDto;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class LoginResponseDto {
     private String access_token;
     private long id;
