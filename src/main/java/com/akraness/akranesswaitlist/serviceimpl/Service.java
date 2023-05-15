@@ -9,6 +9,7 @@ import com.akraness.akranesswaitlist.enums.NotificationType;
 import com.akraness.akranesswaitlist.enums.PinType;
 import com.akraness.akranesswaitlist.enums.ReferralStatus;
 import com.akraness.akranesswaitlist.exception.DuplicateException;
+import com.akraness.akranesswaitlist.identitypass.service.IdentityPassService;
 import com.akraness.akranesswaitlist.repository.*;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 import org.webjars.NotFoundException;
@@ -53,6 +55,7 @@ public class Service implements IService {
     private final SubAccountService subAccountService;
     private final ReferralRepository referralRepository;
     private final UserFCMTokenRepository fcmTokenRepository;
+    private final IdentityPassService identityPassService;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -535,12 +538,48 @@ public class Service implements IService {
                     "User not found", null));
         }
 
+        boolean isMagicPinAvailable;
+
+
+
+
         User user = userObj.get();
+        isMagicPinAvailable = user.getMagicPin() != null;
+
         List<SubAccountDto> subAccountDtos = subAccountService.getUserSubAccountsAndBalance(user.getId());
 
+        //call identitypass service
+        List<String> dataVerificationCountries = Arrays.asList("NG", "ZA", "UG", "GH", "SL", "KE");
+        Map<String, Object> payload = null;
+        if(dataVerificationCountries.contains(user.getCountryCode())) {
+            payload = identityPassService.getCountryDataPayload(user.getCountryCode());
+        }
+
+
+        LoginResponseDto getUserResponse = LoginResponseDto
+                .builder()
+                .id(user.getId())
+                .email(user.getUsername())
+                .mobileNumber(user.getMobileNumber())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .country(user.getCountryCode())
+                .dateOfBirth(user.getDateOfBirth().toString())
+                .gender(user.getGender())
+                .emailVerified(user.isEmailVerified())
+                .mobileVerified(user.isMobileVerified())
+                .akranexTag(user.getAkranexTag())
+                .kycStatus(user.getKycStatus())
+                .kycStatusMessage(user.getKycStatusMessage())
+                .subAccountList(subAccountDtos)
+                .isMagicPinExist(isMagicPinAvailable)
+                .kycDataVerificationPayload(payload)
+                .imagePath(user.getImagePath())
+                .build();
+
+
         Map<String, Object> userData = new HashMap<>();
-        userData.put("userDetails", user);
-        userData.put("subAccountList", subAccountDtos);
+        userData.put("userDetails", getUserResponse);
 
         Response response = new Response();
         response.setCode(HttpStatus.OK.name());
