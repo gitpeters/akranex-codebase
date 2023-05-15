@@ -21,6 +21,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -340,7 +344,7 @@ public class SubAccountServiceImpl implements SubAccountService {
         return ResponseEntity.ok().body(new TransactionHistoryResponse("No transactions found"));
     }
 
-    public ResponseEntity<?> allTransactions(Long userId) {
+    public ResponseEntity<?> allTransactions(Long userId) throws JsonProcessingException {
 
         List<List<TransactionHistoryResponse>> transactionsList = new ArrayList<>();
 
@@ -358,12 +362,17 @@ public class SubAccountServiceImpl implements SubAccountService {
                     .subAccount(subaccountId)
                     .build();
 
+            Optional<SubAccount> subAccountDetails = subAccountRepository.findBySubAccountId(subaccountId);
+
+            SubAccount subAccount = subAccountDetails.get();
+
             ResponseEntity<CustomResponse> response = restTemplateService.post(url, transactionHistoryDto, this.headers());
 
             if (response.getStatusCodeValue() == HttpStatus.OK.value()) {
                 List<Map<String, Object>> transactionsData = new ObjectMapper().convertValue(response.getBody().getData(), List.class);
 
                 if (!transactionsData.isEmpty()) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
                     for (Map<String, Object> transactionData : transactionsData) {
                         String type = (String) transactionData.get("type");
                         double amount = parseDouble(transactionData.get("valueInUSD"));
@@ -376,25 +385,23 @@ public class SubAccountServiceImpl implements SubAccountService {
                                 .build();
 
                         if (type.equalsIgnoreCase("bank")) {
-                            if (transactionData.containsKey("payout")) {
-                                Map<String, Object> payoutMapData = (Map<String, Object>) transactionData.get("payout");
-                                double amountInLocalCurrency = parseDouble(payoutMapData.get("amount"));
+                            String status = new ObjectMapper().convertValue(response.getBody().getStatus(), String.class);
+                            transaction.setTransactionStatus(status);
                                 BankPayoutResponse bankPayoutResponse = BankPayoutResponse.builder()
-                                        .accountNumber((String) payoutMapData.get("account_number"))
-                                        .amountInLocalCurrency(amountInLocalCurrency)
-                                        .bankName((String) payoutMapData.get("bank_name"))
-                                        .currency((String) payoutMapData.get("currency"))
+                                        .accountNumber((String) transactionData.get("account_number"))
+                                        .amountInLocalCurrency(converterService.convertFromUSD(Currency.getInstance(subAccount.getCurrencyCode()), amount))
+                                        .bankName((String) transactionData.get("bank_name"))
+                                        .currency(subAccount.getCurrencyCode())
                                         .build();
 
                                 BankTransferHistoryDto bankTrf = BankTransferHistoryDto.builder()
                                         .accountName((String) transactionData.get("fullname"))
                                         .payout(bankPayoutResponse)
-                                        .fee(transactionData.get("fee"))
+                                        .fee(converterService.convertFromUSD(Currency.getInstance(subAccount.getCurrencyCode()), rate))
                                         .build();
 
-                                transaction.setTransactionStatus((String) transactionData.get("deliveryStatus"));
                                 transaction.setBankTransfer(bankTrf);
-                            }
+
                         } else if (type.equalsIgnoreCase("airtime")) {
                             if (transactionData.containsKey("payout")) {
                                 Map<String, Object> payoutMapData = (Map<String, Object>) transactionData.get("payout");
@@ -424,14 +431,15 @@ public class SubAccountServiceImpl implements SubAccountService {
                                     .build();
                             transaction.setExchange(exchange);
                         }
-
                         transactions.add(transaction);
                     }
-                    transactionsList.add(transactions);
+
                 }
             } else {
                continue;
             }
+            transactions.sort(Comparator.comparing(this::parseTransactionDate).reversed());
+            transactionsList.add(transactions);
         }
 
         if (!transactionsList.isEmpty()) {
@@ -517,10 +525,16 @@ public class SubAccountServiceImpl implements SubAccountService {
         throw new IllegalArgumentException("Invalid value type for parsing to double: " + value.getClass().getName());
     }
 
-
-
-
-
+    private Date parseTransactionDate(TransactionHistoryResponse transaction) {
+        try {
+            String transactionDateStr = transaction.getTransactionDate();
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            return format.parse(transactionDateStr);
+        } catch (ParseException e) {
+            // Handle the exception or log an error
+            return new Date();
+        }
+    }
 
     private HttpHeaders headers() {
         HttpHeaders headers = new HttpHeaders();
