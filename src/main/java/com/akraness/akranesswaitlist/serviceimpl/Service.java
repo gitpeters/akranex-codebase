@@ -592,6 +592,7 @@ public class Service implements IService {
     @Override
     public ResponseEntity<Response> editPin(EditPinRequestDto requestDto) {
         String email = requestDto.getEmail();
+
         if (!userRepository.existsByEmail(email)) {
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "No match found with the provided email.", null));
         }
@@ -599,39 +600,55 @@ public class Service implements IService {
         if (!requestDto.getNewPin().equals(requestDto.getNewPinConfirm())) {
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "New pin and confirm pin must be the same.", null));
         }
+
         Optional<User> userOp = userRepository.findByUsername(email);
+        if (!userOp.isPresent()) {
+            // Handle the case where the user is not found based on the username/email.
+            return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "User not found.", null));
+        }
+
         User user = userOp.get();
 
-        if (!user.isMobileVerified())
+        if (!user.isMobileVerified()) {
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Mobile number must be verified first.", null));
+        }
 
-        if (!user.isEmailVerified())
+        if (!user.isEmailVerified()) {
             return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Email must be verified first.", null));
+        }
 
         if (requestDto.getPinType().equals(PinType.MAGIC)) {
-            if (user.getMagicPin() == null || user.getMagicPin().trim().isEmpty())
+            String magicPin = user.getMagicPin();
+            if (magicPin == null || magicPin.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "You don't have a magic pin set yet, please use the set magic pin service.", null));
+            }
 
-            if (passwordEncoder.matches(user.getMagicPin(),requestDto.getOldPin()))
-                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "The provided magic pin does not belong to you.", null));
+            if (!passwordEncoder.matches(requestDto.getOldPin(), magicPin)) {
+                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Wrong old magic pin. Try again", null));
+            }
+
             user.setMagicPin(passwordEncoder.encode(requestDto.getNewPin()));
         }
 
         if (requestDto.getPinType().equals(PinType.TRANSACTION)) {
-            if (user.getTransactionPin() == null || user.getTransactionPin().trim().isEmpty())
+            String transactionPin = user.getTransactionPin();
+            if (transactionPin == null || transactionPin.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "You don't have a transaction pin set yet, please use the set transaction pin service.", null));
+            }
 
-            if (!userRepository.existsByTransactionPin(requestDto.getOldPin()))
+            if (!transactionPin.equals(requestDto.getOldPin())) {
                 return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "Invalid old transaction pin provided.", null));
+            }
 
-            if (!user.getTransactionPin().equals(requestDto.getOldPin()))
-                return ResponseEntity.badRequest().body(new Response(String.valueOf(HttpStatus.BAD_REQUEST), "The provided transaction pin does not belong to you.", null));
             user.setTransactionPin(passwordEncoder.encode(requestDto.getNewPin()));
         }
 
+        // Save the updated user object here.
         userRepository.save(user);
-        return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK), "Successful", null));
+
+        return ResponseEntity.ok(new Response(String.valueOf(HttpStatus.OK), "Pin updated successfully.", null));
     }
+
 
     private String generateSas(BlobClient blobClient) {
         OffsetDateTime expiryTime = OffsetDateTime.now().plusYears(10);
