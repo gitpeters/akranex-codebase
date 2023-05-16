@@ -4,11 +4,13 @@ import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.entity.Country;
 import com.akraness.akranesswaitlist.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public interface IService {
 ResponseEntity<Response> joinWaitList(WaitListRequestDto request);
@@ -32,5 +34,5 @@ ResponseEntity<Response> createAkranexTag(AkranexTagCreationRequestDto requestDt
 ResponseEntity<Response> checkAkranexTag(String akranexTag) throws JsonProcessingException;
 ResponseEntity<Response> uploadUserProfilePic(MultipartFile file, Long userId) throws Exception;
 ResponseEntity<Response> getUser(long userId) throws JsonProcessingException;
-ResponseEntity<Response> editPin(EditPinRequestDto requestDto);
+ResponseEntity<Response> editPin(EditPinRequestDto requestDto) throws ExecutionException, InterruptedException, FirebaseMessagingException;
 }

@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 
 
@@ -63,21 +64,6 @@ public class BeanConfig {
         return Jackson2ObjectMapperBuilder.json()
                 .modules(new JavaTimeModule())
                 .build();
-    }
-
-    @Bean
-    public FirebaseMessaging firebaseMessaging() throws IOException {
-        try {
-            FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(firebaseConfigPath).getInputStream())).build();
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-                logger.info("Firebase application has been initialized");
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-        return FirebaseMessaging.getInstance();
     }
 
 }

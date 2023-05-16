@@ -8,13 +8,16 @@ import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
+import com.akraness.akranesswaitlist.dto.PushNotificationRequest;
 import com.akraness.akranesswaitlist.entity.Country;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.repository.ICountryRepository;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
+import com.akraness.akranesswaitlist.service.firebase.PushNotificationService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -26,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +49,7 @@ public class SubAccountServiceImpl implements SubAccountService {
     private static final String USER_BALANCE = "user_balance";
     private final IUserRepository userRepository;
     private final CurrencyConverterService converterService;
+    private final PushNotificationService pushNotification;
 
     @Override
     public ResponseEntity<CustomResponse> createSubAccount(SubAccountRequestDto request) {
@@ -137,8 +142,9 @@ public class SubAccountServiceImpl implements SubAccountService {
     }
 
     @Override
-    public ResponseEntity<?> transfer(TransferDto transferDto) throws JsonProcessingException {
+    public ResponseEntity<?> transfer(TransferDto transferDto) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         Map<String, String> req = new HashMap<>();
+        Optional<SubAccount> subAccountObj = null;
         if(!utility.isNullOrEmpty(transferDto.getAkranexTag())) {
             Optional<User> userObj = userRepository.findByAkranexTag(transferDto.getAkranexTag());
             if(!userObj.isPresent()){
@@ -146,7 +152,7 @@ public class SubAccountServiceImpl implements SubAccountService {
             }
 
             User user = userObj.get();
-            Optional<SubAccount> subAccountObj = subAccountRepository.findByUserIdAndCountryCode(user.getId(), user.getCountryCode());
+            subAccountObj = subAccountRepository.findByUserIdAndCountryCode(user.getId(), user.getCountryCode());
             if(!subAccountObj.isPresent()) {
                 return ResponseEntity.badRequest().body(CustomResponse.builder().status(HttpStatus.BAD_REQUEST.name()).error("Primary wallet attached to "+transferDto.getAkranexTag() +" is not found").build());
             }
@@ -165,6 +171,10 @@ public class SubAccountServiceImpl implements SubAccountService {
 
         ResponseEntity<CustomResponse> response = restTemplateService.post(url, req, this.headers());
         if(response.getStatusCodeValue() == HttpStatus.OK.value() && response.getBody().getStatus().equalsIgnoreCase("success")) {
+            pushNotification.sendPushNotificationToUser(subAccountObj.get().getUserId(), new PushNotificationRequest(
+                    "FUND TRANSFER", "A transaction occurred in your account."+"\n You successfully transfer"+ amount+"\n to "+transferDto.getReceiverSubAccountId()
+            ));
+
             //remove balance from redis
             //asyncRunner.removeBalanceFromRedis(Arrays.asList(transferDto.getSenderSubAccountId(), transferDto.getReceiverSubAccountId()));
         }

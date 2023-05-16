@@ -19,6 +19,7 @@ public class Response {
     private String description;
     private List<Error> errors;
     private Object data;
+    private String fcmToken;
     private boolean status;
 
     public Response(String code, String description, @Nullable List<Error> errors) {
@@ -26,6 +27,10 @@ public class Response {
         this.description = description;
         this.errors = errors;
         this.data = null;
+    }
+
+    public Response(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     @Override

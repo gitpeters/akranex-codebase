@@ -13,12 +13,15 @@ import com.akraness.akranesswaitlist.chimoney.entity.SubAccount;
 import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
+import com.akraness.akranesswaitlist.dto.PushNotificationRequest;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
+import com.akraness.akranesswaitlist.service.firebase.PushNotificationService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +35,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +51,7 @@ public class OfferServiceImpl implements OfferService {
     private final StringRedisTemplate redisTemplate;
 
     private final CurrencyConverterService converterService;
+    private final PushNotificationService pushNotification;
 
     private final AsyncRunner asyncRunner;
 
@@ -60,7 +65,7 @@ public class OfferServiceImpl implements OfferService {
     private static final String USER_BALANCE = "user_balance";
 
     @Override
-    public ResponseEntity<?> createOffer(OfferRequest request) throws JsonProcessingException {
+    public ResponseEntity<?> createOffer(OfferRequest request) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         Optional<User> userOpt = userRepository.findByAkranexTag(request.getAkranexTag());
         if (!userOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found"));
@@ -100,6 +105,9 @@ public class OfferServiceImpl implements OfferService {
                 .build();
         offerRepository.save(offer);
         log.info("Offer {} successfully created", offer.getId());
+        pushNotification.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                "OFFER", "Successfully created an offer"
+        ));
         return ResponseEntity.ok().body(new BarterResponse(true, "Successfully created offer"));
     }
 
@@ -150,7 +158,7 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public ResponseEntity<?> bidOffer(Long offerId, BidRequest request) {
+    public ResponseEntity<?> bidOffer(Long offerId, BidRequest request) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         Optional<Offer> offerObj = offerRepository.findById(offerId);
         if (!offerObj.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "Offer not found"));
@@ -164,18 +172,27 @@ public class OfferServiceImpl implements OfferService {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid rate cannot be 0.00"));
         }
 
+        Optional<User> userOpt = userRepository.findByAkranexTag(offer.getAkranexTag());
+
+        User user = userOpt.get();
+
         BidOffer bidOffer = BidOffer.builder()
                 .offerId(offer.getId())
                 .amountToBePaid(request.getBidAmount())
                 .amountToBeReceived(request.getReceivingAmount())
                 .rate(request.getRate())
                 .akranexTag(request.getAkranexTag())
+                .sellerAkranexTag(offer.getAkranexTag())
                 .bidStatus(String.valueOf(BidStatus.PENDING))
                 .receivingCurrency(offer.getReceivingCurrency())
                 .tradingCurrency(offer.getTradingCurrency())
                 .offerAmount(offer.getAmountToBePaid())
                 .offerRate(offer.getRate())
                 .build();
+
+        pushNotification.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                "OFFER BIDING", "A bid has been successfully placed on offer\n"+offer.getId()+"\n Offer amount "+bidOffer.getOfferAmount()+"\n Bidded amount "+bidOffer.getAmountToBePaid()
+        ));
         return ResponseEntity.ok().body(bidRepository.save(bidOffer));
     }
 
@@ -229,18 +246,26 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public ResponseEntity<?> approveBid(Long bidId) {
+    public ResponseEntity<?> approveBid(Long bidId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         Optional<BidOffer> bidOfferOpt = bidRepository.findById(bidId);
         if (!bidOfferOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid offer not found"));
         }
         BidOffer bidOffer = bidOfferOpt.get();
+
+        Optional<Offer> offerOpt = offerRepository.findById(bidOffer.getOfferId());
+        if(!offerOpt.isPresent()){
+            return ResponseEntity.badRequest().body(new BarterResponse(false, "No bid found for this offer"));
+        }
+
+        Offer offer = offerOpt.get();
+
         Optional<User> userOpt = userRepository.findByAkranexTag(bidOffer.getAkranexTag());
         if (!userOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found for this bid"));
         }
         User user = userOpt.get();
-        if (!bidOffer.getAkranexTag().equalsIgnoreCase(user.getAkranexTag())) {
+        if (!bidOffer.getSellerAkranexTag().equalsIgnoreCase(offer.getAkranexTag())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(new BarterResponse(false, "You are not authorized to approve this bid offer"));
         }
@@ -248,12 +273,7 @@ public class OfferServiceImpl implements OfferService {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "It is either this bid as been accepted or declined"));
         }
         bidOffer.setBidStatus(String.valueOf(BidStatus.ACCEPTED));
-        Optional<Offer> offerOpt = offerRepository.findById(bidOffer.getOfferId());
-        if(!offerOpt.isPresent()){
-            return ResponseEntity.badRequest().body(new BarterResponse(false, "No bid found for this offer"));
-        }
 
-        Offer offer = offerOpt.get();
         Offer.builder()
                 .rate(offer.getRate())
                 .offerStatus(String.valueOf(OfferStatus.PARTIAL_FULFILLED))
@@ -262,11 +282,15 @@ public class OfferServiceImpl implements OfferService {
         offerRepository.save(offer);
 
         bidRepository.save(bidOffer);
+
+        pushNotification.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                "OFFER BIDING", "Your bid on offer "+offer.getId()+"\n has been approved"
+        ));
         return ResponseEntity.ok().body(new BarterResponse(true, "Successfully accepted bid offer"));
     }
 
     @Override
-    public ResponseEntity<?> declineBid(Long bidId) {
+    public ResponseEntity<?> declineBid(Long bidId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         Optional<BidOffer> bidOfferOpt = bidRepository.findById(bidId);
         if (!bidOfferOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "Bid offer not found"));
@@ -276,6 +300,7 @@ public class OfferServiceImpl implements OfferService {
         if (!userOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new BarterResponse(false, "No user found for this bid"));
         }
+
         User user = userOpt.get();
         if (!bidOffer.getAkranexTag().equalsIgnoreCase(user.getAkranexTag())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -286,7 +311,18 @@ public class OfferServiceImpl implements OfferService {
         }
         bidOffer.setBidStatus(String.valueOf(BidStatus.DECLINED));
         bidRepository.save(bidOffer);
+        pushNotification.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                "OFFER BIDING", "Your bid on offer "+bidOffer.getOfferId()+"\n has been declined"
+        ));
         return ResponseEntity.ok().body(new BarterResponse(true, "Successfully declined bid offer"));
+    }
+
+    @Override
+    public ResponseEntity<?> deleteOffer(Long offerId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
+        Optional<Offer> offerOpt = offerRepository.findById(offerId);
+        Offer offer = offerOpt.get();
+        offerRepository.delete(offer);
+        return ResponseEntity.ok().body(new OfferResponse(true, "Successfully deleted offer"));
     }
 
     @Override
@@ -323,7 +359,7 @@ public class OfferServiceImpl implements OfferService {
     }
 
     @Override
-    public ResponseEntity<?> buyOffer(Long offerId, BuyDtoWrapper buyRequest) throws JsonProcessingException {
+    public ResponseEntity<?> buyOffer(Long offerId, BuyDtoWrapper buyRequest) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         Map<String, String> sellerReq = new HashMap<>();
         Map<String, String> buyerReq = new HashMap<>();
         Map<String, String>sellerCredit = new HashMap<>();
@@ -480,9 +516,13 @@ public class OfferServiceImpl implements OfferService {
             sellerCredit.put("wallet", "chi");
             creditResponse = restTemplateService.post(url, sellerCredit, this.headers());
             if(creditResponse.getStatusCodeValue()==HttpStatus.OK.value()){
+                pushNotification.sendPushNotificationToUser(seller.getId(), new PushNotificationRequest(
+                        "OFFER PURCHASE", "A transaction occurred in your account."+"\n Your offer has been bought"
+                ));
                 return ResponseEntity.ok().body(new OfferResponse(
                         true, "Successful"
                 ));
+
             }
             //buyer credit
             sellerCredit.put("receiver", "35d8776f-3708-4403-8d7d-b50a605777fd");
@@ -491,6 +531,9 @@ public class OfferServiceImpl implements OfferService {
             sellerCredit.put("wallet", "chi");
             creditResponse = restTemplateService.post(url, sellerCredit, this.headers());
             if(creditResponse.getStatusCodeValue()==HttpStatus.OK.value()){
+                pushNotification.sendPushNotificationToUser(seller.getId(), new PushNotificationRequest(
+                        "OFFER PURCHASE", "A transaction occurred in your account."+"\n You successfully purchased an offer"
+                ));
                 return ResponseEntity.ok().body(new OfferResponse(
                         true, "Successful"
                 ));

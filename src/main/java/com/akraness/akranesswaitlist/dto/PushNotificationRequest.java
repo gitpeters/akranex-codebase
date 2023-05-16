@@ -10,7 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PushNotificationRequest {
-    private String title;
+    private String subject;
     private String message;
     private String topic;
+
+    public PushNotificationRequest(String subject, String message) {
+        this.subject = subject;
+        this.message = message;
+    }
 }

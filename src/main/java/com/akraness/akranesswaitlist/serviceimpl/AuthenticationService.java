@@ -8,9 +8,11 @@ import com.akraness.akranesswaitlist.dto.LoginRequestDto;
 import com.akraness.akranesswaitlist.dto.LoginResponseDto;
 import com.akraness.akranesswaitlist.dto.Response;
 import com.akraness.akranesswaitlist.entity.User;
+import com.akraness.akranesswaitlist.entity.UserFCMToken;
 import com.akraness.akranesswaitlist.exception.ApplicationAuthenticationException;
 import com.akraness.akranesswaitlist.identitypass.service.IdentityPassService;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
+import com.akraness.akranesswaitlist.repository.UserFCMTokenRepository;
 import com.akraness.akranesswaitlist.security.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,6 +45,7 @@ public class AuthenticationService {
     private final IUserRepository userDao;
     private final IdentityPassService identityPassService;
     private final SubAccountService subAccountService;
+    private final UserFCMTokenRepository fcmTokenRepository;
 
     public ResponseEntity<Response> createAuthenticationToken(LoginRequestDto authenticationRequest) throws Exception {
 
@@ -75,7 +78,19 @@ public class AuthenticationService {
         resp.setData(resp_login);
         resp.setDescription("Successful");
         resp.setCode("200");
+        resp.setFcmToken(authenticationRequest.getFcmToken());
+
+        //Save fcm token to db
+        saveUserFCMToken(user.getId(), authenticationRequest.getFcmToken());
         return ResponseEntity.ok(resp);
+
+    }
+    private void saveUserFCMToken(Long userId, String fcmToken) {
+        UserFCMToken userFCMToken = UserFCMToken.builder()
+                .userId(userId)
+                .fcmToken(fcmToken)
+                .build();
+        fcmTokenRepository.save(userFCMToken);
     }
     
     private ResponseEntity<?> authenticate(String username, String password) throws Exception {

@@ -13,6 +13,7 @@ import com.akraness.akranesswaitlist.identitypass.service.IdentityPassService;
 import com.akraness.akranesswaitlist.repository.*;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.IService;
+import com.akraness.akranesswaitlist.service.firebase.PushNotificationService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
@@ -21,6 +22,7 @@ import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -41,6 +43,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @org.springframework.stereotype.Service
@@ -54,8 +57,8 @@ public class Service implements IService {
     private final ICountryRepository countryRepository;
     private final SubAccountService subAccountService;
     private final ReferralRepository referralRepository;
-    private final UserFCMTokenRepository fcmTokenRepository;
     private final IdentityPassService identityPassService;
+    private final PushNotificationService pushNotification;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -202,7 +205,6 @@ public class Service implements IService {
 //
         User newUser = saveUser(requestDto);
         saveReferralDetailsToDb(newUser.getId(), referralUser);
-        saveUserFCMToken(newUser.getId(), requestDto.getFcmToken());
         redisTemplate.delete(requestDto.getEmail());
         log.info("Successfully deleted user email {} from redis store.",requestDto.getEmail());
         NotificationDto notificationDto = buildSignUpNotificationDto(requestDto);
@@ -210,13 +212,7 @@ public class Service implements IService {
         return ResponseEntity.ok().body(new Response("200", "Successfully created account.", null));
     }
 
-    private void saveUserFCMToken(Long userId, String fcmToken) {
-        UserFCMToken userFCMToken = UserFCMToken.builder()
-                .userId(userId)
-                .fcmToken(fcmToken)
-                .build();
-        fcmTokenRepository.save(userFCMToken);
-    }
+//
 
     private void saveReferralDetailsToDb(Long newUserId, User referralUser) {
 //        User newUser = saveUser(requestDto);
@@ -590,7 +586,7 @@ public class Service implements IService {
     }
 
     @Override
-    public ResponseEntity<Response> editPin(EditPinRequestDto requestDto) {
+    public ResponseEntity<Response> editPin(EditPinRequestDto requestDto) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         String email = requestDto.getEmail();
 
         if (!userRepository.existsByEmail(email)) {
@@ -628,6 +624,10 @@ public class Service implements IService {
             }
 
             user.setMagicPin(passwordEncoder.encode(requestDto.getNewPin()));
+          ;
+            pushNotification.sendPushNotificationToUser(
+                   user.getId(), new PushNotificationRequest("Change Magic Pin", "Your magic pin has been changed")
+            );
         }
 
         if (requestDto.getPinType().equals(PinType.TRANSACTION)) {

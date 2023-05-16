@@ -7,6 +7,7 @@ import com.akraness.akranesswaitlist.chimoney.repository.ISubAccountRepository;
 import com.akraness.akranesswaitlist.chimoney.service.WalletService;
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.akraness.akranesswaitlist.config.RestTemplateService;
+import com.akraness.akranesswaitlist.dto.PushNotificationRequest;
 import com.akraness.akranesswaitlist.entity.Referral;
 import com.akraness.akranesswaitlist.entity.User;
 import com.akraness.akranesswaitlist.enums.ReferralStatus;
@@ -14,9 +15,11 @@ import com.akraness.akranesswaitlist.fundwallet.dto.FundWalletRequest;
 import com.akraness.akranesswaitlist.fundwallet.dto.FundWalletResponse;
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.repository.ReferralRepository;
+import com.akraness.akranesswaitlist.service.firebase.PushNotificationService;
 import com.akraness.akranesswaitlist.util.Utility;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +41,7 @@ public class FundWalletServiceImpl implements FundWalletService{
     private final ReferralRepository referralRepository;
     private final ISubAccountRepository subAccountRepository;
     private final CurrencyConverterService converterService;
+    private final PushNotificationService notificationService;
     @Value("${mono.api-key}")
     private String apiKey;
     @Value("${mono.base-url}")
@@ -47,7 +52,7 @@ public class FundWalletServiceImpl implements FundWalletService{
     private final Utility utility;
 
     @Override
-    public ResponseEntity<?> fundWallet(FundWalletRequest request, String akranexTag) throws JsonProcessingException {
+    public ResponseEntity<?> fundWallet(FundWalletRequest request, String akranexTag) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
 
         Map<String, String> fundWalletRequest = new HashMap<>();
 
@@ -108,7 +113,7 @@ public class FundWalletServiceImpl implements FundWalletService{
         );
     }
 
-    private ResponseEntity<?> fundUserAccount(FundWalletRequest request, String akranexTag) throws JsonProcessingException {
+    private ResponseEntity<?> fundUserAccount(FundWalletRequest request, String akranexTag) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         Optional<User> userOpt = userRepository.findByAkranexTag(akranexTag);
         if (!userOpt.isPresent()) {
             return ResponseEntity.badRequest().body(new FundWalletResponse(String.valueOf(HttpStatus.BAD_REQUEST), "No user found"));
@@ -128,6 +133,10 @@ public class FundWalletServiceImpl implements FundWalletService{
                 .wallet("chi")
                 .build();
         walletService.fundAccount(fundUserAccount);
+
+        notificationService.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                "FUND WALLET", "A transaction occurred in your account."+"\n Your wallet has been successfully funded with" + amount
+        ));
 
         var referralOptional = referralRepository.findByNewUserId(user.getId());
 
