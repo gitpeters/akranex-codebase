@@ -3,6 +3,7 @@ package com.akraness.akranesswaitlist.controller;
 import com.akraness.akranesswaitlist.dto.*;
 import com.akraness.akranesswaitlist.service.IService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -29,7 +31,7 @@ public class MainController {
     }
 
     @PostMapping("/edit-pin")
-    public ResponseEntity<Response> editPin(@RequestBody @Validated EditPinRequestDto requestDto) {
+    public ResponseEntity<Response> editPin(@RequestBody @Validated EditPinRequestDto requestDto) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         return service.editPin(requestDto);
     }
 }

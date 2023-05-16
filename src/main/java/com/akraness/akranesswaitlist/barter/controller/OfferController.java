@@ -4,6 +4,7 @@ import com.akraness.akranesswaitlist.barter.dto.*;
 import com.akraness.akranesswaitlist.barter.service.CurrencyConverterService;
 import com.akraness.akranesswaitlist.barter.service.OfferService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/v1/barter")
@@ -21,7 +23,7 @@ public class OfferController {
     private final CurrencyConverterService converterService;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createOffer(@RequestBody OfferRequest request) throws JsonProcessingException {
+    public ResponseEntity<?> createOffer(@RequestBody OfferRequest request) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         return offerService.createOffer(request);
     }
 
@@ -55,12 +57,12 @@ public class OfferController {
     }
 
     @PostMapping("/offer/{offerId}/bids")
-    public ResponseEntity<?> bidOffer(@PathVariable("offerId") Long offerId, @RequestBody BidRequest request){
+    public ResponseEntity<?> bidOffer(@PathVariable("offerId") Long offerId, @RequestBody BidRequest request) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         return offerService.bidOffer(offerId, request);
     }
 
     @PostMapping("/offer/buy/{offerId}")
-    public ResponseEntity<?> buyOffer(@PathVariable("offerId") Long offerId, @RequestBody BuyDtoWrapper buyRequest) throws JsonProcessingException {
+    public ResponseEntity<?> buyOffer(@PathVariable("offerId") Long offerId, @RequestBody BuyDtoWrapper buyRequest) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         return offerService.buyOffer(offerId, buyRequest);
     }
 
@@ -77,13 +79,18 @@ public class OfferController {
 
     @PutMapping("/bid-offers/{bidId}/approve")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> approveBidOffer(@PathVariable("bidId") Long bidId){
+    public ResponseEntity<?> approveBidOffer(@PathVariable("bidId") Long bidId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         return ResponseEntity.ok().body(offerService.approveBid(bidId));
     }
 
     @PutMapping("/bid-offers/{bidId}/decline")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> declineBidOffer(@PathVariable("bidId") Long bidId){
+    public ResponseEntity<?> declineBidOffer(@PathVariable("bidId") Long bidId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
         return ResponseEntity.ok().body(offerService.declineBid(bidId));
+    }
+
+    @DeleteMapping("/delete/{offerId}")
+    public ResponseEntity<?> deleteOffer(@PathVariable("offerId") Long offerId) throws ExecutionException, InterruptedException, FirebaseMessagingException {
+        return offerService.deleteOffer(offerId);
     }
 }

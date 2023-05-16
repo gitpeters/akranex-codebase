@@ -14,6 +14,7 @@ import com.akraness.akranesswaitlist.identitypass.repository.DataSupportedCountr
 import com.akraness.akranesswaitlist.repository.IUserRepository;
 import com.akraness.akranesswaitlist.service.INotificationService;
 import com.akraness.akranesswaitlist.service.firebase.FCMServiceImpl;
+import com.akraness.akranesswaitlist.service.firebase.PushNotificationService;
 import com.akraness.akranesswaitlist.util.KYCVericationStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,7 +56,7 @@ public class IdentityPassAsyncRunner {
     private final DataSupportedCountryRepository dataSupportedCountryRepository;
 
     private final INotificationService notificationService;
-    private final FCMServiceImpl pushNotificationService;
+    private final PushNotificationService pushNotification;
     @Async
     public void processKYCVerification(User user, Map<String, Object> request) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         String type = (String) request.get("type");
@@ -85,8 +86,9 @@ public class IdentityPassAsyncRunner {
                     sendKyCVerificationMail(user.getEmail());
 
                     //Send push notification
-                    pushNotificationService.sendPushNotificationMessage(new PushNotificationRequest("KYC Verification", "KYC Verification is successful", "kyc"), user.getId());
-
+                    pushNotification.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                            "KYC VERIFICATION", "Your KYC verification is successful"
+                    ));
 
                 }
                 else {
@@ -95,8 +97,9 @@ public class IdentityPassAsyncRunner {
                     userRepository.save(user);
 
                     //send push notification
-                    pushNotificationService.sendPushNotificationMessage(new PushNotificationRequest("KYC Verification", "KYC Verification failed", "kyc"), user.getId());
-
+                    pushNotification.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                            "KYC VERIFICATION", "Your KYC verification failed"
+                    ));
                 }
             }else {
                 user.setKycStatus(KYCVericationStatus.FAILED.name());
@@ -104,7 +107,9 @@ public class IdentityPassAsyncRunner {
                 userRepository.save(user);
 
                 //send push notification
-                pushNotificationService.sendPushNotificationMessage(new PushNotificationRequest("KYC Verification", "KYC Verification failed", "kyc"), user.getId());
+                pushNotification.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                        "KYC VERIFICATION", "Your KYC verification failed"
+                ));
             }
 
         }else {
@@ -113,7 +118,9 @@ public class IdentityPassAsyncRunner {
             userRepository.save(user);
 
             //Send push notification
-            pushNotificationService.sendPushNotificationMessage(new PushNotificationRequest("KYC Verification", "KYC Verification failed", "kyc"), user.getId());
+            pushNotification.sendPushNotificationToUser(user.getId(), new PushNotificationRequest(
+                    "KYC VERIFICATION", "Your KYC verification failed"
+            ));
         }
 
     }

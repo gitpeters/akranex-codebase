@@ -7,6 +7,7 @@ import com.akraness.akranesswaitlist.chimoney.dto.TransferDto;
 import com.akraness.akranesswaitlist.chimoney.service.SubAccountService;
 import com.akraness.akranesswaitlist.config.CustomResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/v1/chimoney/subaccout")
@@ -53,7 +55,7 @@ public class SubAccountController {
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<?> transfer(@RequestBody TransferDto transferDto) throws JsonProcessingException {
+    public ResponseEntity<?> transfer(@RequestBody TransferDto transferDto) throws JsonProcessingException, ExecutionException, InterruptedException, FirebaseMessagingException {
         return subAccountService.transfer(transferDto);
     }
 

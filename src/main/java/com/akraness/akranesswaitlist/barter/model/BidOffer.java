@@ -33,6 +33,8 @@ public class BidOffer extends BaseEntity {
     private String receivingCurrency;
     @Column(name = "akranex_tag")
     private String akranexTag;
+    @Column(name = "seller_akranex_tag")
+    private String sellerAkranexTag;
     @Column(name = "bid_status")
     private String bidStatus;
 }
