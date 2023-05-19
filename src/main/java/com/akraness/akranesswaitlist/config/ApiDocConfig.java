@@ -8,17 +8,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@OpenAPIDefinition(info = @Info(title = "Waiting List API Doc", version = "v1"),
-servers = {
-        @Server(
-                description = "PROD ENV",
-                url="https://user-service-dev.akranex.com/user"
-        ),
-        @Server(
-                description = "LOCAL ENV",
-                url = "http://localhost:8083/user"
-        )
-})
+@OpenAPIDefinition(info = @Info(title = "Waiting List API Doc", version = "v1"))
 @SecurityScheme(
         name = "bearerAuth",
         type = SecuritySchemeType.HTTP,
