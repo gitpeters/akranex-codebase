@@ -1,0 +1,1 @@
+ALTER TABLE fcm_token DROP INDEX user_id;
